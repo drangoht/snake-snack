@@ -17,7 +17,8 @@ plus de passage.**
 
 Verbe du joueur : *diriger*. Ce qui s'y oppose : *sa propre queue* — pas un ennemi, pas un aléa.
 Snake canonique, sans twist : le jeu est déjà entier, l'enjeu est la qualité de la sensation, pas
-l'ajout de mécaniques.
+l'ajout de mécaniques. « Canonique » vaut pour les *mécaniques*, pas pour les *réglages* : la cadence
+qui accélère du Snake Nokia n'est pas héritée (§4.1, et §7 pour la raison).
 
 ## 2. La boucle de jeu
 
@@ -83,10 +84,11 @@ elle est plus courte qu'un temps de réaction visuel simple (200–250 ms, ordre
 **non mesuré ici**) : on ne peut donc pas *réagir* à un mur qui arrive, il faut avoir décidé une case
 à l'avance. C'est la compétence visée — la file (§4.2) évite qu'une fenêtre si courte perde des appuis.
 
-**Cadence constante sur toute la partie.** La difficulté monte déjà seule : chaque pomme allonge le
-corps et réduit l'espace libre — c'est la règle du §1, lisible avant de lancer. Accélérer en plus
-serait un multiplicateur empilé dessus, et brouillerait l'attribution de la mort (§2) : le joueur ne
-saurait plus s'il a mal planifié ou si le jeu a dépassé ses doigts. (Alternative écartée : §7.)
+**Cadence constante sur toute la partie** (arbitrage tranché par l'auteur le 2026-08-27, contre la
+canonicité du Nokia). La difficulté monte déjà seule : chaque pomme allonge le corps et réduit
+l'espace libre — c'est la règle du §1, lisible avant de lancer. Accélérer en plus serait un
+multiplicateur empilé dessus, et brouillerait l'attribution de la mort (§2) : le joueur ne saurait
+plus s'il a mal planifié ou si le jeu a dépassé ses doigts. (Alternative écartée : §7.)
 
 **Départ à l'arrêt** (§2) : le premier tick est déclenché par la première direction *acceptée*, pas
 par le chargement de la scène. Personne ne meurt pendant que le joueur lit l'écran.
