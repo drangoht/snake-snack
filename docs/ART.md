@@ -168,24 +168,36 @@ avec une échéance d'extinction :
 | Plafond de prolongation continue (pictogramme) | 500 ms | 4 ticks |
 | Durée d'affichage du texte de pause | 1,5 s après le dernier appui refusé | non lié au tick — la simulation est figée en pause, la contrainte des 125 ms ne s'y applique pas |
 
-**Ce que le développeur doit pouvoir appeler :**
+⚠ **Le motif de refus n'a pas une source unique** — c'est le piège de cette API, et il découle
+directement du §4.2 du GDD : le demi-tour ne peut pas être jugé à l'appui, seulement au tick, contre
+la direction réellement appliquée. Il n'appartient donc **pas** à `ResultatEmpilage` (qui ne connaît
+que `RefuseeDoublon`, `RefuseeFilePleine`, `RefuseeJeuEnPause`) mais à `ResultatTick.DemiTourRefuse`.
+Une UI qui n'écouterait que `Empiler()` n'afficherait **jamais** le refus de demi-tour — le cas que
+le §3 impose pourtant de rendre visible.
 
 ```csharp
-// Point d'entrée unique, appelé par le code de jeu (Gameplay/) immédiatement après chaque
-// FileEntrees.Empiler() dont le résultat n'est pas Acceptee.
+// Deux points d'appel, deux moments :
+//  - après FileEntrees.Empiler(), pour tout résultat qui n'est pas Acceptee ;
+//  - après FileEntrees.Tick(), quand ResultatTick.DemiTourRefuse est vrai.
 public interface IRetourEntreeRefusee
 {
-    void Notifier(ResultatEmpilage motif, Direction directionDemandee);
+    void Notifier(MotifRefus motif, Direction directionRefusee);
 }
 ```
 
+`MotifRefus` est une énumération **propre à la couche de retour**, alimentée depuis les deux
+sources ; sa forme exacte est laissée au développeur, tant qu'elle distingue les trois traitements
+ci-dessous. Ne pas ajouter le demi-tour à `ResultatEmpilage` pour uniformiser : ce serait déclarer
+qu'un demi-tour peut être refusé à l'empilage, exactement l'erreur que le contre-exemple Nord/Sud du
+§4.2 interdit.
+
 - L'implémentation filtre `RefuseeDoublon` en tout premier — aucun rendu, retour immédiat (§5.3).
-- `DemiTourRefuse` et `RefuseeFilePleine` routent vers le composant qui pilote le pictogramme
-  ancré à la tête (position = case tête courante + direction demandée), avec la logique de §5.5.
+- Le **demi-tour refusé** (source : tick) et `RefuseeFilePleine` (source : empilage) routent vers le
+  composant qui pilote le pictogramme ancré à la tête (position = case tête courante + direction
+  refusée), avec la logique d'échéance ci-dessus.
 - `RefuseeJeuEnPause` route vers le composant qui pilote la ligne de texte sur l'écran pause.
 - `FileEntrees` reste une classe pure sans dépendance moteur (§4.2 du GDD) : c'est au
-  `MonoBehaviour` de gameplay d'appeler `Notifier` après chaque `Empiler()`, pas à `FileEntrees`
-  de connaître l'UI.
+  `MonoBehaviour` de gameplay d'appeler `Notifier`, jamais à `FileEntrees` de connaître l'UI.
 
 ### 5.6 Ce qui reste à confirmer séparément
 
