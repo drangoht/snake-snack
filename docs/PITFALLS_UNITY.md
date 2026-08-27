@@ -291,6 +291,13 @@ Voir le skill **`/verifier-en-jeu`** pour la procédure complète. Les pièges, 
   un appui **ALT** enfoncé-relâché — qui fait entrer le processus dans la fenêtre d'autorisation de
   Windows —, puis `AttachThreadInput` vers le thread de la fenêtre cible avant
   `SetForegroundWindow`. Vérifier ensuite `GetForegroundWindow()`, sans quoi tout le reste ment.
+  ✔ **Versé dans `piloter_jeu.donner_le_focus` le 2026-08-27** : il enchaîne désormais les trois
+  moyens, du moins insistant au plus insistant.
+- ⚠ **L'amorce « une touche pour rien » doit être une touche que LE JEU IGNORE.** Elle était Bas
+  puis Haut ; dans Snake Snack, où la partie démarre sur la première direction applicable (GDD
+  §4.1), elle lançait la partie et envoyait le serpent vers le sud **avant** le scénario. La capture
+  montrait alors un serpent ailleurs que là où le scénario le plaçait — sans erreur, et en donnant
+  l'impression d'un bug de gameplay. `piloter_jeu.amorcer` amorce sur **Tab**, lié à rien.
 - ⚠ **`PrintWindow` tronque la capture dès que Windows applique une mise à l'échelle DPI** : il rend
   en pixels logiques pendant que le jeu dessine en pixels physiques. On obtient le coin supérieur
   gauche de la fenêtre, agrandi — ce qui ressemble à un problème de cadrage du jeu. Capturer l'écran

@@ -22,6 +22,10 @@ Les pièges déjà payés (ne pas les redécouvrir)
    interactif : la fenêtre reste en arrière-plan et Unity ne reçoit alors **aucune touche**. Ce qui
    marche : injecter un vrai clic dans la fenêtre, ce qui lui vaut le premier plan légitimement.
    Toujours vérifier `GetForegroundWindow() == hwnd` avant de conclure quoi que ce soit.
+   ⚠ **Depuis une session d'agent en arrière-plan, même le vrai clic échoue** : le processus n'a
+   jamais « reçu d'entrée utilisateur » et Windows lui refuse le premier plan. `donner_le_focus`
+   lève alors le verrou de premier plan, s'amorce par un ALT, et s'attache à la file d'entrées de
+   la fenêtre cible — c'est ce chemin-là qui marche.
 2. **`keybd_event` doit porter le CODE DE BALAYAGE**, pas seulement le code virtuel : le système
    d'entrée d'Unity lit le raw input.
 3. **Les flèches exigent `KEYEVENTF_EXTENDEDKEY`** : sans lui, leur scan code est celui du pavé
@@ -84,6 +88,13 @@ KEYEVENTF_KEYUP = 0x0002
 MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
 
+# Reprise de premier plan depuis un processus non interactif — voir donner_le_focus().
+SPI_SETFOREGROUNDLOCKTIMEOUT = 0x2001
+SPIF_SENDCHANGE = 0x0002
+SW_RESTORE = 9
+VK_MENU = 0x12   # ALT
+SCAN_ALT = 0x38
+
 
 # --- Fenêtre -----------------------------------------------------------------------
 
@@ -129,21 +140,62 @@ def rectangle(hwnd: int) -> tuple[int, int, int, int]:
     return rect.left, rect.top, rect.right, rect.bottom
 
 
-def donner_le_focus(hwnd: int) -> bool:
+def _lever_le_verrou_de_premier_plan() -> None:
     """
-    Met la fenêtre au premier plan — par un VRAI clic en son centre.
+    Annule le délai pendant lequel Windows refuse qu'un processus vole le premier plan.
 
-    `SetForegroundWindow` seul est refusé à un processus non interactif : Windows se contente de
-    faire clignoter la barre des tâches. Un clic, lui, donne le focus légitimement. Le curseur est
-    remis là où il était.
+    Sans ça, `SetForegroundWindow` « réussit » (il rend TRUE) mais se contente de faire clignoter
+    la barre des tâches : la fenêtre n'a pas le focus, Unity ne reçoit rien, et le test ment.
     """
-    HWND_TOPMOST, SWP_NOMOVE, SWP_NOSIZE = -1, 0x0002, 0x0001
-    user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)
-    user32.SetForegroundWindow(hwnd)
+    user32.SystemParametersInfoW(
+        SPI_SETFOREGROUNDLOCKTIMEOUT, 0, ctypes.c_void_p(0), SPIF_SENDCHANGE)
 
-    if user32.GetForegroundWindow() == hwnd:
-        return True
 
+def _amorcer_par_alt() -> None:
+    """
+    Un appui ALT enfoncé-relâché, envoyé à personne en particulier.
+
+    Windows n'accorde le droit de passer au premier plan qu'à un processus qui a « reçu la dernière
+    entrée ». Cet appui fabrique cette entrée : c'est le laissez-passer, pas une commande envoyée au
+    jeu. ALT plutôt qu'une autre touche parce qu'il n'est lié à rien dans le jeu — une touche de
+    gameplay produirait ici une action fantôme, avant même que le scénario commence.
+    """
+    user32.keybd_event(VK_MENU, SCAN_ALT, 0, 0)
+    time.sleep(0.02)
+    user32.keybd_event(VK_MENU, SCAN_ALT, KEYEVENTF_KEYUP, 0)
+    time.sleep(0.02)
+
+
+def _mettre_au_premier_plan_par_attachement(hwnd: int) -> bool:
+    """
+    Se rattache à la file d'entrées de la fenêtre cible, le temps de lui donner le focus.
+
+    Attachés, les deux threads partagent le même état d'entrée : du point de vue de Windows, c'est
+    la fenêtre elle-même qui demande le premier plan, et la demande est accordée. Le détachement est
+    dans un `finally` — rester attaché ferait dépendre le sort de ce script de celui du jeu.
+    """
+    kernel32 = ctypes.windll.kernel32
+    fil_cible = user32.GetWindowThreadProcessId(hwnd, None)
+    fil_courant = kernel32.GetCurrentThreadId()
+
+    attache = fil_cible != fil_courant and bool(
+        user32.AttachThreadInput(fil_courant, fil_cible, True))
+    try:
+        user32.ShowWindow(hwnd, SW_RESTORE)
+        user32.BringWindowToTop(hwnd)
+        user32.SetForegroundWindow(hwnd)
+        user32.SetActiveWindow(hwnd)
+        user32.SetFocus(hwnd)
+    finally:
+        if attache:
+            user32.AttachThreadInput(fil_courant, fil_cible, False)
+
+    time.sleep(0.15)
+    return user32.GetForegroundWindow() == hwnd
+
+
+def _mettre_au_premier_plan_par_clic(hwnd: int) -> bool:
+    """Un VRAI clic au centre de la fenêtre. Le curseur est remis là où il était."""
     gauche, haut, droite, bas = rectangle(hwnd)
     ancien = wt.POINT()
     user32.GetCursorPos(ctypes.byref(ancien))
@@ -157,6 +209,41 @@ def donner_le_focus(hwnd: int) -> bool:
 
     user32.SetCursorPos(ancien.x, ancien.y)
     return user32.GetForegroundWindow() == hwnd
+
+
+def donner_le_focus(hwnd: int) -> bool:
+    """
+    Met la fenêtre au premier plan, par trois moyens de plus en plus insistants.
+
+    ⚠ **Le focus est LE point de blocage de tout ce script.** Hors focus, Unity ne reçoit aucune
+    touche et aucun mouvement de souris : le scénario se déroule entièrement, la capture sort, et
+    elle montre un jeu qui n'a rien reçu. D'où la vérification de `GetForegroundWindow()` après
+    chaque tentative, et le retour booléen que l'appelant doit lire.
+
+    L'ordre vient de ce qui a été constaté le 2026-08-27 (`docs/PITFALLS_UNITY.md`) :
+
+    1. `SetWindowPos` en TOPMOST puis `SetForegroundWindow` — suffit quand le shell est interactif.
+    2. Verrou de premier plan levé, amorce ALT, puis attachement de file d'entrées. C'est le seul
+       chemin qui marche **depuis une session d'agent en arrière-plan**, où même un vrai clic
+       échoue : le processus appelant n'a alors jamais « reçu d'entrée utilisateur », et Windows lui
+       refuse le premier plan quoi qu'il fasse.
+    3. Le vrai clic, en dernier recours — il reste le moyen le plus légitime aux yeux de Windows,
+       mais il a l'inconvénient d'envoyer un clic au jeu.
+    """
+    HWND_TOPMOST, SWP_NOMOVE, SWP_NOSIZE = -1, 0x0002, 0x0001
+    user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE)
+    user32.SetForegroundWindow(hwnd)
+
+    if user32.GetForegroundWindow() == hwnd:
+        return True
+
+    _lever_le_verrou_de_premier_plan()
+    _amorcer_par_alt()
+
+    if _mettre_au_premier_plan_par_attachement(hwnd):
+        return True
+
+    return _mettre_au_premier_plan_par_clic(hwnd)
 
 
 # --- Entrées -----------------------------------------------------------------------
@@ -185,10 +272,16 @@ def amorcer() -> None:
     La toute première touche après une prise de focus se perd systématiquement — le jeu vient de
     reprendre la main et son système d'entrée n'a pas encore resynchronisé ses périphériques. Sans
     cette amorce, le premier appui d'un scénario disparaît et le résultat semble aléatoire.
+
+    ⚠ **L'amorce doit être une touche que le jeu ignore.** Elle était Bas puis Haut : dans Snake
+    Snack, où la partie démarre sur la première direction applicable (GDD §4.1), cette amorce
+    lançait la partie et envoyait le serpent vers le sud avant que le scénario ait commencé. Le
+    scénario semblait alors partir de la pose initiale alors que le serpent avait déjà bougé — un
+    décalage qui ne lève rien et fausse toute lecture de capture. Tab n'est lié à aucune commande.
     """
-    appuyer("bas")
+    appuyer("tab")
     time.sleep(0.15)
-    appuyer("haut")
+    appuyer("tab")
     time.sleep(0.15)
 
 
