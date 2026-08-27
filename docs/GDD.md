@@ -90,8 +90,23 @@ l'espace libre — c'est la règle du §1, lisible avant de lancer. Accélérer 
 multiplicateur empilé dessus, et brouillerait l'attribution de la mort (§2) : le joueur ne saurait
 plus s'il a mal planifié ou si le jeu a dépassé ses doigts. (Alternative écartée : §7.)
 
-**Départ à l'arrêt** (§2) : le premier tick est déclenché par la première direction *acceptée*, pas
-par le chargement de la scène. Personne ne meurt pendant que le joueur lit l'écran.
+**Départ à l'arrêt** (§2) : le premier tick est déclenché par la première direction **applicable**,
+pas par le chargement de la scène, et pas par un simple appui. Serpent orienté est, corps derrière
+lui : un joueur qui tape Ouest voit le refus (§3) et **rien ne bouge** ; la partie démarre au premier
+appui qui n'est pas un demi-tour. La règle du demi-tour s'enseigne ainsi d'elle-même, avant qu'aucun
+danger n'existe, et personne ne meurt pendant que le joueur lit l'écran.
+<!-- Arbitrage de l'auteur, 2026-08-27 : lève une contradiction entre « direction acceptée » (§4.1,
+     l'empilage, qui ne juge pas le demi-tour) et « le refus se voit avant le démarrage » (§4.3). La
+     variante « l'appui refusé lance quand même la partie » est écartée : le jeu démarrerait tout
+     seul sur une touche qu'il vient de refuser. Ce cas particulier vit dans le câblage moteur, pas
+     dans FileEntrees. -->
+
+**Le retard de cadence ne se rattrape pas** (arbitrage de l'auteur, 2026-08-27). Perdre le focus de
+la fenêtre met le jeu en pause ; hors de ce cas, une image ne fait avancer le serpent que d'**un
+tick au maximum**, le retard accumulé est jeté. Sans ce plafond, une seconde de gel (alt-tab,
+chargement) fait parcourir huit cases d'un coup, **invisibles** : la mort qui suit n'est imputable à
+aucun virage, ce que le §2 interdit. Le prix assumé est une brève dérive de la cadence après un
+hoquet — préférable à des cases parcourues hors de la vue du joueur.
 
 Règles pressenties : `Assets/Scripts/Rules/Cadence.cs`. La durée du tick se règle **sans recompiler**
 — c'est la valeur du jeu qui sera ré-essayée le plus souvent.
@@ -130,6 +145,11 @@ geste, soit 250 ms à 8 ticks/s — **profondeur et cadence sont liées** : revo
 empilée (§3). Un appui identique à la dernière direction déjà en file (ou à la direction courante si
 la file est vide) n'est pas empilé non plus : il ne changerait rien et consommerait une place.
 
+**Un zigzag n'est pas un doublon** (précisé à l'implémentation, 2026-08-27) : direction courante est,
+file `[Nord]`, le joueur tape Est — c'est **accepté**. Le test du doublon ne compare qu'à la
+*dernière* direction connue, jamais à la direction courante quand la file n'est pas vide : refuser
+ici perdrait la seconde moitié d'une chicane Est → Nord → Est réellement voulue.
+
 Règles pressenties : `Assets/Scripts/Rules/FileEntrees.cs` — logique pure, testable sans moteur. Le
 contre-exemple Nord/Sud ci-dessus est le premier test à écrire.
 
@@ -156,6 +176,12 @@ c'est la durée que suppose la relance à une touche du §2.
 **Lisibilité** (calculé) : dans un cadre web 1280×720 avec un bandeau de HUD d'environ 60 px, la case
 fait `min(1280/21, 660/15)` = 44 px. La grille occupe 924 px de large et laisse ~178 px de marge de
 chaque côté — de quoi poser score et record **hors de l'aire de jeu**, sans recouvrement de calques.
+
+**Bornes de la grille réglable** (déduites de la pose de départ, non issues d'un choix de design) :
+largeur ≥ 5 et hauteur ≥ 3 — trois segments alignés depuis la colonne centrale, plus une ligne
+au-dessus et une en dessous pour qu'un virage existe. Les dimensions paires sont **refusées à la
+construction** : sans case centrale exacte, la pose de départ du §2 n'a pas de sens.
+<!-- à valider : ces minima n'ont jamais été joués, ils empêchent seulement un état incohérent. -->
 
 Règles pressenties : `Assets/Scripts/Rules/Grille.cs` — dimensions, case centrale, pose initiale et
 test « case hors grille » (le mur mortel du §2). Dimensions réglables **sans recompiler**.
