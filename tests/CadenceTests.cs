@@ -128,21 +128,82 @@ public class CadenceTests
     }
 
     /// <summary>
-    /// Un gel d'image (chargement, alt-tab) accumule plusieurs ticks : ils sont rendus d'un coup à
-    /// l'appelant, à lui de décider s'il les rejoue tous.
-    ///
-    /// ⚠ Le GDD §4 ne dit RIEN de ce rattrapage. Ce test constate le comportement actuel — il ne
-    /// tranche pas le design. Un plafond de rattrapage est une VALEUR : elle appartient au
-    /// game-designer.
+    /// Le retard de cadence NE SE RATTRAPE PAS (§4.1, arbitrage de l'auteur du 2026-08-27) : une
+    /// image ne fait avancer le serpent que d'un tick. Sans ce plafond, une seconde de gel fait
+    /// parcourir huit cases d'un coup, invisibles, et la mort qui suit n'est imputable à aucun
+    /// virage — ce que le §2 interdit.
     /// </summary>
     [Fact]
-    public void UnGelDImageAccumulePlusieursTicks()
+    public void UnGelDImageNeFaitAvancerQueDUnTick()
     {
         double reste;
-        int ticks = Cadence.NombreDeTicks(1.0, Cadence.DureeTickParDefautSecondes, out reste);
+        int ticks = Cadence.NombreDeTicks(0.9, Cadence.DureeTickParDefautSecondes, out reste);
 
-        Assert.Equal(8, ticks);
-        Assert.Equal(0.0, reste, 12);
+        Assert.Equal(1, ticks);
+        Assert.Equal(Cadence.PlafondDeRattrapageParDefaut, ticks);
+    }
+
+    /// <summary>
+    /// LE piège de cette règle : le retard doit être JETÉ, pas reporté. S'il était conservé dans le
+    /// reliquat, le plafond ne servirait à rien — les huit cases du gel passeraient en huit images
+    /// successives au lieu d'une seule, le joueur les regarderait défiler sans pouvoir agir, et le
+    /// défaut que le plafond corrige serait simplement étalé dans le temps.
+    ///
+    /// Ce test échoue si quelqu'un rend le retard complet dans le reliquat : les dix images qui
+    /// suivent le gel joueraient dix ticks au lieu d'un.
+    /// </summary>
+    [Fact]
+    public void LeRetardJeteNeRevientPasAuxImagesSuivantes()
+    {
+        const double pasDImage = 1.0 / 60.0;
+        double dureeTick = Cadence.DureeTickSecondes();
+
+        // Un gel d'environ une seconde : sept ticks dus, un seul joué, six jetés.
+        double accumulateur = 0.9;
+        Assert.Equal(1, Cadence.NombreDeTicks(accumulateur, dureeTick, out accumulateur));
+
+        // Le reliquat ne porte plus que la fraction sous-tick, jamais le retard.
+        Assert.True(accumulateur < dureeTick, $"Le retard a été reporté : reliquat {accumulateur}.");
+
+        int ticksApres = 0;
+        for (int image = 0; image < 10; image++)
+        {
+            accumulateur += pasDImage;
+            ticksApres += Cadence.NombreDeTicks(accumulateur, dureeTick, out accumulateur);
+        }
+
+        // 10 images à 60 Hz = 167 ms : un seul tick, celui que la cadence normale y place.
+        Assert.Equal(1, ticksApres);
+    }
+
+    /// <summary>
+    /// Le plafond est du tuning comme le reste : quelqu'un voudra l'essayer à 2 sans recompiler.
+    /// </summary>
+    [Fact]
+    public void LePlafondDeRattrapageEstReglable()
+    {
+        double reste;
+
+        Assert.Equal(2, Cadence.NombreDeTicks(0.9, Cadence.DureeTickParDefautSecondes, out reste, 2));
+        Assert.Equal(7, Cadence.NombreDeTicks(0.9, Cadence.DureeTickParDefautSecondes, out reste, 8));
+
+        // Le plafond ne CRÉE pas de ticks : sous le plafond, on joue ce qui est dû, pas davantage.
+        Assert.Equal(1, Cadence.NombreDeTicks(0.2, Cadence.DureeTickParDefautSecondes, out reste, 8));
+    }
+
+    /// <summary>
+    /// Un plafond nul figerait le serpent sans rien lever : c'est la classe de bug que ce dépôt
+    /// traque, donc on lève à la lecture du réglage.
+    /// </summary>
+    [Fact]
+    public void UnPlafondInferieurAUnTickEstRefuse()
+    {
+        double reste;
+
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => Cadence.NombreDeTicks(0.5, Cadence.DureeTickParDefautSecondes, out reste, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => Cadence.NombreDeTicks(0.5, Cadence.DureeTickParDefautSecondes, out reste, -1));
     }
 
     /// <summary>
