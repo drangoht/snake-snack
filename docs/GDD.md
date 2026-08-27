@@ -12,31 +12,57 @@ qui la justifie. Le code dit *comment* ; ce document dit **pourquoi**.
 
 ## 1. Pitch
 
-Le classique jeu de Snake
+**On dirige un serpent qui s'allonge à chaque bouchée, jusqu'à ce que son propre corps ne laisse
+plus de passage.**
 
-Une phrase qui dit **ce que le joueur fait**, pas ce qu'est l'univers. Si le verbe principal n'y est
-pas, le pitch n'est pas encore trouvé.
+Verbe du joueur : *diriger*. Ce qui s'y oppose : *sa propre queue* — pas un ennemi, pas un aléa.
+Snake canonique, sans twist : le jeu est déjà entier, l'enjeu est la qualité de la sensation, pas
+l'ajout de mécaniques.
 
 ## 2. La boucle de jeu
 
-<!--
-Décrire le cycle que le joueur répète, du lancement à la fin d'une partie. Une boucle qui ne tient
-pas en cinq lignes est une boucle qu'on n'a pas encore comprise.
+```
+apparition au centre, trois segments à l'arrêt  →  orienter la tête ; le serpent avance seul,
+   une case par tick
+   →  pomme avalée : +1 segment, +1 point, une nouvelle pomme apparaît ailleurs
+   →  l'espace encore libre se réduit à chaque bouchée
+   →  la tête touche le corps ou un mur : mort, score et record affichés sur place
+   →  Espace : nouvelle partie immédiate, sans menu ni écran intermédiaire
+```
 
-    entrée dans la partie  →  ...  →  ...  →  fin  →  ce qui donne envie de relancer
--->
+**Les bords tuent, ils ne téléportent pas.** Une grille close se lit d'un coup d'œil dès la première
+seconde, et toute mort reste imputable à un virage — jamais à un serpent qui a « disparu quelque
+part ». (La téléportation a été envisagée puis écartée : voir §7.)
+
+**Ce qui donne envie de relancer** : la relance coûte une touche et zéro attente, et la partie
+précédente a laissé une phrase en tête — « j'aurais dû passer par la droite ». C'est cette phrase
+qui relance, pas le bouton. Elle n'existe que si la mort est toujours attribuable à une décision du
+joueur : d'où l'absence d'aléa hostile dans tout le jeu.
 
 ## 3. Commandes
 
 | Action | Clavier | Manette | Tactile |
 |---|---|---|---|
-| | | | |
+| Tourner (4 directions) | Flèches **ou** ZQSD | — pas en 0.1 | — pas en 0.1 |
+| Pause / reprise | Échap | — pas en 0.1 | — pas en 0.1 |
+| Relancer après la mort | Espace | — pas en 0.1 | — pas en 0.1 |
+
+Manette et tactile sont **décidés vides**, pas oubliés : le jeu se joue au clavier sur la page itch,
+et chaque périphérique supplémentaire est un chemin à rejouer à chaque build. À rouvrir si des
+retours de joueurs mobiles arrivent (voir §7).
+
+⚠ **Déclaration côté code** : les touches Z, Q, S, D d'un clavier français se déclarent
+`Key.W`, `Key.A`, `Key.S`, `Key.D`. Écrire `Key.Z` pour la touche marquée Z vise en réalité le W —
+aucune erreur n'est levée, le jeu répond simplement à la mauvaise touche.
+
+⚠ **Deux entrées sont refusées, et le refus doit se voir** :
+- le **demi-tour instantané** (le serpent se mangerait à la nuque) ;
+- toute direction tapée pendant la pause.
+
+Invisible se lit inexistant : un appui ignoré sans retour à l'écran est lu comme un appui *raté* par
+le jeu. Le retour choisi reste à décider avec le directeur artistique — <!-- forme à définir -->.
 
 ⚠ **Une capacité doit annoncer sa touche dans le jeu** (HUD, description, écran d'acquisition).
-Invisible se lit inexistant.
-
-⚠ Clavier **AZERTY** : `Key.A` tombe sous la touche marquée Q. Proscrire `A`, `Q`, `Z`, `W`, `M`
-pour les raccourcis globaux.
 
 ## 4. Systèmes
 
@@ -68,3 +94,20 @@ test des signes.
 ## 7. Ce qui a été écarté, et pourquoi
 
 <!-- La liste la plus utile du document : elle évite de rouvrir dix fois le même débat. -->
+
+> **Bords téléportants (le serpent ressort par le côté opposé).** Écarté pour la 0.1, décidé au
+> design, **pas encore contredit par une partie** : une grille close se lit entièrement d'un coup
+> d'œil, alors qu'un bord traversant demande de simuler mentalement une continuité invisible. Surtout,
+> il rend certaines morts non imputables (« il est ressorti où ? »), ce que le pilier de la §2
+> interdit. À rouvrir si les premières parties montrent une mortalité précoce contre les murs.
+
+> **Snacks à effets distincts, bonus temporaires.** Écartés au pitch (§1). Ils déplacent la décision
+> « par où passer » vers « atteindre le bon objet », et la mort cesse d'être attribuable à un virage.
+> Le jeu retenu est le Snake canonique : l'enjeu est la sensation, pas l'ajout de mécaniques.
+
+> **Manette et tactile.** *Reportés, pas écartés* — voir §3. Chaque périphérique est un chemin de
+> plus à rejouer à chaque build, pour un jeu web joué au clavier. À rouvrir sur retour de joueurs
+> mobiles.
+
+⚠ Quand une de ces conclusions est réfutée par une partie réelle, **la garder et la marquer comme
+telle** plutôt que la réécrire.
