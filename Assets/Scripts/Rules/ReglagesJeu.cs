@@ -41,6 +41,27 @@ namespace SnakeSnack.Rules
         /// <summary>Profondeur de la file d'entrées (GDD §4.2 : 2, liée à la cadence).</summary>
         public int profondeurFile = FileEntrees.ProfondeurParDefaut;
 
+        /// <summary>
+        /// Graine du tirage des pommes (GDD §4.4). <b><see cref="GraineDeLHorloge"/> (0) = tirer une
+        /// graine neuve à chaque partie.</b>
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Zéro est une sentinelle, pas une graine</b> : <c>JsonUtility</c> ne sait pas
+        /// distinguer une clé absente d'une clé à zéro (elle retombe sur la valeur du champ dans les
+        /// deux cas), donc « pas de graine » et « graine 0 » sont indiscernables. Le prix assumé est
+        /// une valeur perdue sur 2^64 ; en échange, régler une graine ne demande qu'un nombre dans le
+        /// JSON, sans second champ « graineFixee » que l'on oublierait de mettre à <c>true</c>.
+        ///
+        /// <para>Poser une graine non nulle fait rejouer <b>exactement</b> la même suite de pommes à
+        /// chaque partie : c'est le mode banc du §4.4, pas un mode de jeu. La graine effectivement
+        /// employée est journalisée au démarrage de chaque partie, y compris quand elle vient de
+        /// l'horloge — sans ça, une partie remarquable ne serait pas rejouable.</para>
+        /// </remarks>
+        public long graine = GraineDeLHorloge;
+
+        /// <summary>Valeur de <see cref="graine"/> qui signifie « une graine neuve à chaque partie ».</summary>
+        public const long GraineDeLHorloge = 0L;
+
         /// <summary>Durée d'affichage du pictogramme de refus (ART §5.5 : 250 ms, au jugé).</summary>
         public double dureeAffichageRefusSecondes = 0.25;
 
@@ -149,6 +170,10 @@ namespace SnakeSnack.Rules
             {
                 sain.profondeurFile = profondeurFile;
             }
+
+            // Aucune valeur de graine n'est invalide : toute la plage de `long` désigne une suite
+            // légitime, et 0 en désigne l'absence. Rien à corriger, donc rien à signaler.
+            sain.graine = graine;
 
             ReglagesJeu defauts = new ReglagesJeu();
 

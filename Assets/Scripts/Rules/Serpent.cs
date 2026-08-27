@@ -25,11 +25,12 @@ namespace SnakeSnack.Rules
     /// rendu dessinerait une tête hors de l'aire de jeu pendant l'image de la mort — le joueur
     /// verrait le serpent traverser le mur, exactement ce que le §2 interdit de laisser croire.
     ///
-    /// <para>⚠ <b>La queue libère sa case dans le même tick.</b> Entrer dans la case que la queue
-    /// quitte n'est <b>pas</b> une morsure : c'est la manœuvre normale d'un serpent qui suit sa
-    /// propre trace. Compter la queue parmi les obstacles produit une mort inexplicable pour le
-    /// joueur, sur une case qu'il a vue se vider. Ce cas n'a pas de contre-partie : il n'y a pas de
-    /// pomme dans ce lot, donc pas de croissance, donc la queue avance toujours.</para>
+    /// <para>⚠ <b>La queue libère sa case dans le même tick — sauf au tick d'une pomme.</b> Entrer
+    /// dans la case que la queue quitte n'est <b>pas</b> une morsure : c'est la manœuvre normale
+    /// d'un serpent qui suit sa propre trace, et la refuser tuerait sur un mouvement que le joueur
+    /// voit se libérer à l'écran. Mais au tick où le serpent mange, la queue <b>ne bouge pas</b>
+    /// (§4.4) : elle redevient un obstacle. L'exception a donc elle-même une exception, et c'est
+    /// exactement l'endroit où se loge le bug d'une case.</para>
     ///
     /// <para>Classe à état, comme <see cref="FileEntrees"/>, et sans aucune dépendance moteur :
     /// c'est le seul critère qui compte pour <c>Rules/</c>.</para>
@@ -101,16 +102,50 @@ namespace SnakeSnack.Rules
         }
 
         /// <summary>
-        /// Avance d'une case dans cette direction, ou meurt (GDD §2).
+        /// Avance d'une case dans cette direction, sans pomme sur la grille.
         /// </summary>
+        /// <remarks>
+        /// Surcharge de confort pour les cas où la pomme n'entre pas en jeu (tests de mur et de
+        /// morsure). Le jeu appelle toujours la forme complète : au §4.4, il y a une pomme sur la
+        /// grille <b>à tout instant</b>.
+        /// </remarks>
+        public ResultatDeplacement Avancer(Direction direction, Grille grille)
+        {
+            bool ignore;
+            return Avancer(direction, grille, null, out ignore);
+        }
+
+        /// <summary>
+        /// Joue le tick du GDD §4.4 : avance d'une case, mange, grandit, ou meurt.
+        /// </summary>
+        /// <param name="direction">Direction déjà validée par <see cref="FileEntrees.Tick"/>.</param>
+        /// <param name="grille">Aire de jeu — ses bords tuent (§2).</param>
+        /// <param name="pomme">Case de la pomme, ou <c>null</c> s'il n'y en a pas.</param>
+        /// <param name="mange">
+        /// Vrai si la tête vient d'entrer sur la pomme. ⚠ <b>Toujours faux quand le serpent
+        /// meurt</b> : un pas mortel ne mange pas, même vers la case de la pomme.
+        /// </param>
         /// <remarks>
         /// La direction n'est <b>pas</b> validée ici : le demi-tour est jugé par
         /// <see cref="FileEntrees.Tick"/>, contre la direction effectivement appliquée au tick
         /// précédent (§4.2). Dupliquer ce jugement ici ferait exister deux vérités sur la même
         /// règle, et c'est la seconde qui finirait par diverger.
+        ///
+        /// <para>⚠ <b>L'ordre des étapes est celui du GDD §4.4, à la lettre</b> : mur, puis
+        /// croissance, puis morsure, puis déplacement. Tester la morsure avant de savoir si le
+        /// serpent mange ferait perdre l'exclusion de la queue — ou la garderait à tort. Les deux
+        /// erreurs sont invisibles en lecture et évidentes à l'écran : une mort d'une case trop tôt,
+        /// ou un serpent qui se traverse.</para>
+        ///
+        /// <para>⚠ Le serpent <b>s'allonge par la tête</b>, au tick même où elle entre sur la
+        /// pomme — pas au tick suivant, pas par un segment ajouté derrière la queue. La longueur
+        /// passe de N à N+1 immédiatement, et vaut toujours <c>3 + score</c> (§4.5).</para>
         /// </remarks>
-        public ResultatDeplacement Avancer(Direction direction, Grille grille)
+        public ResultatDeplacement Avancer(Direction direction, Grille grille, Case? pomme, out bool mange)
         {
+            mange = false;
+
+            // 1 et 2 — la case visée, puis le mur.
             Case suivante = Directions.Avance(Tete, direction);
 
             if (grille.EstHorsGrille(suivante))
@@ -118,9 +153,15 @@ namespace SnakeSnack.Rules
                 return ResultatDeplacement.MortMur;
             }
 
-            // Tous les segments SAUF le dernier : celui-là libère sa case pendant ce même tick.
-            int indexQueue = _segments.Count - 1;
-            for (int i = 0; i < indexQueue; i++)
+            // 3 — manger se décide AVANT la collision, parce que c'est ce qui décide du sort de la queue.
+            bool croissance = pomme.HasValue && pomme.Value == suivante;
+
+            // 4 — collision : queue exclue seulement si elle bouge, c'est-à-dire si on ne mange pas.
+            //     ⚠ Écrit sans supposer qu'une pomme n'apparaît jamais sur le corps : cette garantie
+            //     est posée à l'étape 6, ailleurs, et une règle ne doit pas dépendre d'une garantie
+            //     qu'elle ne porte pas elle-même.
+            int obstacles = croissance ? _segments.Count : _segments.Count - 1;
+            for (int i = 0; i < obstacles; i++)
             {
                 if (_segments[i] == suivante)
                 {
@@ -128,12 +169,22 @@ namespace SnakeSnack.Rules
                 }
             }
 
-            for (int i = indexQueue; i > 0; i--)
+            // 5 — insérer la tête ; ne retirer la queue que si on ne mange pas. Dupliquer la queue
+            //     avant le décalage revient exactement à « ne pas la retirer » : la boucle suivante
+            //     est alors la même dans les deux cas, donc il n'existe qu'un seul chemin à relire.
+            if (croissance)
+            {
+                _segments.Add(_segments[_segments.Count - 1]);
+            }
+
+            for (int i = _segments.Count - 1; i > 0; i--)
             {
                 _segments[i] = _segments[i - 1];
             }
 
             _segments[0] = suivante;
+
+            mange = croissance;
             return ResultatDeplacement.Avance;
         }
     }

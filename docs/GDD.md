@@ -256,6 +256,23 @@ grille ; absente, elle est dérivée de l'horloge et **journalisée au démarrag
 À graine et suite d'appuis identiques, une partie se rejoue à l'identique — c'est la condition du
 banc apparié réclamé en §4.1 et §4.3, pas un confort de développement.
 
+**« Propre à la partie » vaut aussi pour la relance** (précisé à l'implémentation, 2026-08-27). Le
+générateur est re-semé à **chaque** nouvelle partie, pas une fois par session :
+- **graine fixée** dans le fichier de tuning → toutes les parties rejouent la même suite de pommes.
+  C'est le **mode banc**, et non un mode de jeu : sans lui, une partie ne se rejoue qu'une fois.
+- **graine absente** (valeur 0, qui sert de sentinelle) → chaque partie reçoit une graine neuve,
+  **journalisée elle aussi**. Sans ce point, le joueur qui appuie sur Espace rejouerait indéfiniment
+  les mêmes pommes, et « relancer » perdrait ce qui donne envie de relancer (§2).
+
+Ces graines de partie sont tirées par un **second** générateur, semé une fois par l'horloge — pas par
+celui des pommes, qu'un tirage supplémentaire décalerait. C'est la première application de la règle
+« tout autre besoin d'aléa prend une instance séparée » ci-dessous.
+
+⚠ **La résolution réelle de l'horloge sous Windows est d'environ 15 ms**, pas 100 ns : deux parties
+relancées coup sur coup en tireraient la même graine si celle-ci venait directement de l'horloge.
+Le second générateur évite ce cas — qui ne serait apparu qu'à l'usage, sous la forme « deux parties
+d'affilée ont les mêmes pommes, parfois ».
+
 ⚠ **Ni `UnityEngine.Random` ni `System.Random`** : le premier est un état global partagé et
 indisponible dans `Rules/` ; la suite du second **n'est pas contractuellement stable** d'un runtime à
 l'autre, et un banc dont les pommes changent entre `dotnet test`, le build bureau et le build WebGL
@@ -265,10 +282,16 @@ ne compare plus rien. Le générateur est écrit dans `Rules/`, son algorithme e
 nombre décalerait toute la suite et casserait l'appariement, sans qu'aucun test ne tombe. Tout autre
 besoin d'aléa (cosmétique, audio) prend une instance séparée.
 
-Règles pressenties : `Assets/Scripts/Rules/Pomme.cs` (tirage par énumération) et
-`Assets/Scripts/Rules/Aleatoire.cs` (générateur semé). La résolution du tick appartient à la règle
-qui fait déjà avancer le serpent (`Assets/Scripts/Rules/Serpent.cs`, en cours d'écriture), pas à
-`Pomme.cs` : la pomme répond « où » et « combien », jamais « quand ».
+Règles **écrites** (2026-08-27) : `Assets/Scripts/Rules/Pomme.cs` (tirage par énumération) et
+`Assets/Scripts/Rules/Aleatoire.cs` (générateur semé, **SplitMix64**, algorithme écrit dans le
+dépôt). La résolution du tick appartient à la règle qui fait déjà avancer le serpent
+(`Assets/Scripts/Rules/Serpent.cs`), pas à `Pomme.cs` : la pomme répond « où » et « combien »,
+jamais « quand ». Seule l'étape 6 — remplacer la pomme ou constater la grille pleine — vit dans le
+câblage moteur (`JeuSnake.JouerUnTick`), parce qu'elle touche à l'état de la partie et au rendu.
+
+⚠ **Le score du §4.5 n'est pas encore compté** : la pomme allonge bien le serpent, mais rien
+n'affiche ni ne persiste de nombre. La longueur vaut `3 + score`, donc l'information *existe* à
+l'écran — elle n'est simplement pas lisible comme un score.
 
 ### 4.5 Le score et le record
 

@@ -183,4 +183,32 @@ public class ReglagesJeuTests
 
         Assert.All(anomalies, phrase => Assert.True(phrase.Length > 20, $"Anomalie trop laconique : « {phrase} »"));
     }
+
+    /// <summary>
+    /// La graine traverse la validation <b>sans être corrigée ni signalée</b> : toute la plage de
+    /// <c>long</c> désigne une suite légitime (GDD §4.4). Une graine « corrigée » ferait rejouer une
+    /// autre partie que celle qu'on voulait rejouer, ce qui est exactement l'inverse du but.
+    /// </summary>
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(1L)]
+    [InlineData(-20260827L)]
+    [InlineData(long.MaxValue)]
+    public void LaGraineNEstJamaisCorrigee(long graine)
+    {
+        ReglagesJeu brut = ReglagesJeu.ParDefaut();
+        brut.graine = graine;
+
+        ReglagesJeu sain = brut.Valider(out IList<string> anomalies);
+
+        Assert.Equal(graine, sain.graine);
+        Assert.Empty(anomalies);
+    }
+
+    /// <summary>Par défaut, chaque partie reçoit une graine neuve (§4.4).</summary>
+    [Fact]
+    public void ParDefautAucuneGraineNEstFixee()
+    {
+        Assert.Equal(ReglagesJeu.GraineDeLHorloge, ReglagesJeu.ParDefaut().graine);
+    }
 }
