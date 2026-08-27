@@ -195,6 +195,113 @@ construction** : sans case centrale exacte, la pose de départ du §2 n'a pas de
 Règles pressenties : `Assets/Scripts/Rules/Grille.cs` — dimensions, case centrale, pose initiale et
 test « case hors grille » (le mur mortel du §2). Dimensions réglables **sans recompiler**.
 
+### 4.4 La pomme
+
+**Une seule pomme sur la grille, à tout instant.** Elle est posée à la mise en place de la partie,
+donc **avant le premier appui** : le départ est à l'arrêt (§4.1), le joueur regarde l'écran et
+choisit sa première direction — s'il n'y avait rien à viser, ce choix serait aveugle. Elle est
+remplacée **dans le tick même** où elle est mangée : aucune image ne doit s'afficher sans pomme, une
+grille vide une fraction de seconde se lit comme un bug, pas comme une transition.
+
+**Manger n'est jamais obligatoire** — ni faim, ni minuteur, ni pomme qui expire. C'est ce qui rend
+*toute* position de pomme légitime : elle ne peut ni bloquer, ni blesser, ni forcer un trajet. Un
+joueur qui juge le chemin trop risqué tourne en rond et ne perd rien d'autre que du temps. La mort
+reste donc imputable au virage qui l'a engagé (§2), quelle que soit la case tirée.
+
+**Tirage : énumération, pas rejet.** Le nombre de cases libres vaut `Grille.NombreDeCases −
+longueur` (le serpent occupe exactement `longueur` cases distinctes, sinon il serait mort). On tire
+`k` uniformément dans `[0, nbLibres)`, puis on **parcourt la grille dans un ordre fixe** (X croissant
+dans Y croissant) en sautant les cases du corps, et on s'arrête à la `k`-ième libre. Un seul
+parcours, **au plus 315 cases**, aucune allocation, coût borné et identique quel que soit le remplissage.
+
+⚠ **« Tirer au hasard, retirer tant que c'est occupé » est le piège de ce système.** Sur une grille
+presque pleine, l'espérance du nombre de tirages tend vers l'infini et le jeu **se fige sans lever la
+moindre erreur** — pas d'exception, pas de log, juste une image qui ne revient pas. Le défaut
+n'apparaît qu'en fin de partie longue, c'est-à-dire jamais pendant les tests. Écarté, voir §7.
+
+**Aucune contrainte de placement** : pas de distance minimale à la tête, pas d'interdiction dans le
+prolongement immédiat. Contraindre retirerait au joueur des pommes *favorables* (rien de plus) tout
+en changeant le nombre de cases éligibles, donc en rendant chaque banc plus difficile à décrire. La
+fréquence des pommes « offertes » à une ou deux cases est une question de ressenti, pas de sécurité.
+<!-- à mesurer : ces pommes très proches dévaluent-elles le score aux yeux du joueur ? Ressenti. -->
+
+**Résolution d'un tick, dans cet ordre exact** (l'ambiguïté ici produit un bug d'une case, invisible
+en lecture et évident à l'écran) :
+
+1. Dépiler et valider la direction (§4.2) → `cible = Directions.Avance(tête, direction)`.
+2. `Grille.EstHorsGrille(cible)` → **mort** (mur, §2).
+3. `mange = (cible == pomme)`.
+4. Collision corps : `cible` comparée aux segments, **queue exclue si `!mange`** → mort si touchée.
+5. Insérer `cible` **en tête** ; retirer la queue **seulement si `!mange`**.
+6. Si `mange` : score +1, puis tirer la nouvelle pomme **sur l'état final du tick**.
+
+**Le serpent s'allonge par la tête, au tick où la tête entre sur la case de la pomme** — pas au tick
+suivant, pas par ajout d'un segment derrière la queue. C'est la **queue qui ne bouge pas** pendant ce
+seul tick ; la longueur passe de N à N+1 immédiatement, et vaut toujours `3 + score`. Corollaire de
+l'étape 4 : hors croissance, la tête **peut** entrer sur la case que la queue libère au même tick —
+la queue s'en va visiblement à l'écran, refuser ce coup tuerait sur un mouvement qui paraît libre.
+<!-- L'exclusion de la queue à l'étape 4 est écrite même si l'étape 6 garantit qu'une pomme
+     n'apparaît jamais sur une case occupée : la règle ne doit pas dépendre d'une garantie posée
+     ailleurs. -->
+
+**Grille pleine = victoire.** Après l'étape 6, si `longueur == Grille.NombreDeCases`, il n'existe
+plus de case libre : la partie s'arrête en **victoire**, soit 312 pommes sur la grille par défaut.
+Même écran, même place et même relance à une touche que la mort (§2), avec un libellé distinct.
+Cet état n'est pas un ornement : sans lui, le tirage part sur `[0, 0)` et casse ou boucle. Il est
+hors de portée humaine <!-- à mesurer : score médian réel --> et doit néanmoins être écrit.
+
+**Aléa reproductible.** Le tirage consomme un générateur **explicite, propre à la partie**, semé par
+un entier. La graine se règle **sans recompiler**, par le même fichier de tuning que la cadence et la
+grille ; absente, elle est dérivée de l'horloge et **journalisée au démarrage** pour rester rejouable.
+À graine et suite d'appuis identiques, une partie se rejoue à l'identique — c'est la condition du
+banc apparié réclamé en §4.1 et §4.3, pas un confort de développement.
+
+⚠ **Ni `UnityEngine.Random` ni `System.Random`** : le premier est un état global partagé et
+indisponible dans `Rules/` ; la suite du second **n'est pas contractuellement stable** d'un runtime à
+l'autre, et un banc dont les pommes changent entre `dotnet test`, le build bureau et le build WebGL
+ne compare plus rien. Le générateur est écrit dans `Rules/`, son algorithme est le nôtre.
+
+⚠ **Rien d'autre que la pomme ne tire dans ce générateur.** Un effet visuel qui y puiserait un
+nombre décalerait toute la suite et casserait l'appariement, sans qu'aucun test ne tombe. Tout autre
+besoin d'aléa (cosmétique, audio) prend une instance séparée.
+
+Règles pressenties : `Assets/Scripts/Rules/Pomme.cs` (tirage par énumération) et
+`Assets/Scripts/Rules/Aleatoire.cs` (générateur semé). La résolution du tick appartient à la règle
+qui fait déjà avancer le serpent (`Assets/Scripts/Rules/Serpent.cs`, en cours d'écriture), pas à
+`Pomme.cs` : la pomme répond « où » et « combien », jamais « quand ».
+
+### 4.5 Le score et le record
+
+**Le score compte les pommes mangées de la partie en cours, +1 par pomme, rien d'autre** : ni temps,
+ni bonus de rapidité, ni longueur. La longueur vaut `3 + score` — l'afficher aussi n'ajouterait
+qu'un second nombre à lire pour la même information. Un score pondéré est écarté (§7) : il
+introduirait une pression de temps invisible et une mort attribuable à « trop lent » plutôt qu'à un
+virage (§2).
+
+**Score et record affichés en permanence**, hors de l'aire de jeu (bandeau et marges du §4.3), pas
+seulement à la mort. Un objectif qu'on ne découvre qu'une fois perdu ne se vise pas : c'est le record
+lu pendant la partie qui transforme la relance en « battre 14 ». Le placement exact et la typographie
+sont un brief à ouvrir dans `docs/ART.md`. <!-- à demander au directeur-artistique -->
+
+**Le record est le plus haut score jamais atteint, et il monte pendant la partie**, dès que le score
+courant le dépasse — pas à la mort. Le score est monotone croissant : attendre la fin ferait afficher
+un record inférieur au score courant, ce qui se lit comme un bug, et perdrait le record d'un onglet
+fermé en cours de partie.
+
+⚠ **Quand le record vient d'être battu, score et record sont le même nombre** — deux valeurs égales
+côte à côte se lisent comme un défaut d'affichage. L'écran de fin doit le dire explicitement
+(mention « nouveau record »), sinon le seul moment gratifiant du jeu passe pour un bug. Brief à
+ouvrir dans `docs/ART.md`. <!-- à demander au directeur-artistique -->
+
+**Persistance** : le record survit à la fermeture du jeu, stocké côté moteur sous une clé nommée
+(`PlayerPrefs`, adaptateur dans `Gameplay/` — `Rules/` reste sans dépendance moteur). ⚠ En WebGL le
+stockage est lié à l'origine du site et **peut disparaître** (navigation privée, purge du
+navigateur) : c'est du meilleur effort. Un record illisible ou absent repart de zéro **sans erreur
+bloquante** — le jeu ne doit jamais refuser de démarrer pour un compteur.
+
+Règles pressenties : `Assets/Scripts/Rules/Score.cs` — comptage, comparaison au record, prédicat
+« record battu ». La lecture/écriture persistante et l'affichage vivent hors de `Rules/`.
+
 ## 5. Progression et difficulté
 
 <!--
@@ -253,6 +360,45 @@ test des signes.
 > direction a été refusée) et le retour unique incluant le doublon (bruit à chaque tick d'un joueur
 > qui va tout droit) — détail et raisons dans `docs/ART.md` §6, qui tient l'historique des
 > décisions visuelles comme cette section tient celles de design.
+
+> **Tirage de la pomme par rejet (« tirer une case au hasard, retirer tant qu'elle est occupée »).**
+> Écarté au design, **aucune partie jouée**. Le coût du tirage croît avec le remplissage et n'a
+> **aucune borne** : sur une grille presque pleine le jeu se fige, sans exception ni log — un défaut
+> qui n'apparaît qu'en toute fin de partie longue, donc jamais pendant les tests. L'énumération
+> (§4.4) coûte au plus 315 cases, toujours. À rouvrir **seulement** si un profilage WebGL montre que
+> l'énumération pèse, et alors en hybride **borné** (N rejets puis repli sur l'énumération), jamais
+> en rejet nu. <!-- à mesurer : coût réel du parcours, en WebGL -->
+
+> **Contraindre l'apparition de la pomme (distance minimale à la tête, interdiction dans le
+> prolongement immédiat).** Écarté au design. Une pomme ne peut ni bloquer ni tuer, et manger n'est
+> jamais obligatoire (§4.4) : aucune position ne rend une mort non imputable, la contrainte ne
+> protégerait donc de rien. Elle retirerait seulement des tirages *favorables* et changerait le
+> nombre de cases éligibles, rendant chaque banc plus lourd à décrire. À rouvrir si le
+> `game-tester` rapporte que les pommes offertes à une ou deux cases dévaluent le score — c'est du
+> ressenti, aucun banc ne le tranche.
+
+> **Plusieurs pommes simultanées.** Écartées au design. Une contrainte se juge à ce qu'elle *donne*
+> : deux pommes ne raccourcissent pas seulement le trajet, elles offrent une **cible de secours**
+> quand la première devient inatteignable — le joueur y gagne plus qu'il n'y perd. Elles diluent
+> aussi la décision « par où passer », qui est le verbe du §1. À rouvrir si le `TEST_REPORT` montre
+> que le trajet entre deux pommes est ressenti comme du temps mort.
+
+> **Pomme à durée de vie limitée (elle disparaît et réapparaît ailleurs).** Écartée au design. C'est
+> un aléa hostile : le joueur s'engage dans un couloir pour une cible qui s'évapore, et la mort qui
+> suit n'est plus imputable à son virage mais à un minuteur qu'il ne contrôle pas (§2). C'est aussi
+> un mur de patience déguisé. Non rouverte pour la 0.1.
+
+> **`UnityEngine.Random` ou `System.Random` pour le tirage de la pomme.** Écartés au design. Le
+> premier est un état global partagé, indisponible dans `Rules/`. Le second **ne garantit pas** la
+> même suite d'un runtime à l'autre : un banc apparié dont les pommes diffèrent entre `dotnet test`,
+> le build bureau et le build WebGL ne compare plus rien, et l'écart serait attribué au réglage
+> testé. À rouvrir si .NET publie un contrat de stabilité de séquence — pas avant.
+
+> **Score pondéré (bonus de rapidité, points liés au temps ou à la longueur).** Écarté au design.
+> Il ajoute une pression de temps que rien n'affiche, et fait basculer l'explication de la défaite
+> de « j'aurais dû passer par la droite » (§2) vers « j'ai été trop lent ». La longueur, elle, vaut
+> déjà `3 + score` : ce serait le même nombre affiché deux fois. À rouvrir si le score brut se
+> révèle ne donner aucune raison de relancer une fois le record posé.
 
 > **Manette et tactile.** *Reportés, pas écartés* — voir §3. Chaque périphérique est un chemin de
 > plus à rejouer à chaque build, pour un jeu web joué au clavier. À rouvrir sur retour de joueurs
