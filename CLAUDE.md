@@ -13,6 +13,9 @@ par session.
 - **Design complet → `docs/GDD.md`** : le consulter avant toute tâche de design ou d'implémentation,
   et le tenir à jour à chaque décision. Pour le **remplir** (il démarre à l'état de squelette) →
   skill **`/rediger-le-gdd`**.
+- **Identité visuelle → `docs/ART.md`** : palette, typo, règles d'accessibilité et briefs tranchés.
+  Le consulter avant de produire un asset ou une UI ; le `directeur-artistique` l'écrit, le
+  `graphiste` l'exécute.
 - **Localiser du code** (système, écran, donnée, outil) → invoquer le skill **`/carte-projet`**
   plutôt que Glob/Grep à froid. Le maintenir à jour dans le même commit qu'un changement structurel.
 - **Avant de coder** dans un domaine → lire **`docs/PITFALLS_UNITY.md`**. Y ajouter tout nouveau

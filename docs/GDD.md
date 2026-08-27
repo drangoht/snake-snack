@@ -61,7 +61,14 @@ aucune erreur n'est levée, le jeu répond simplement à la mauvaise touche.
 - toute direction tapée pendant la pause.
 
 Invisible se lit inexistant : un appui ignoré sans retour à l'écran est lu comme un appui *raté* par
-le jeu. Le retour choisi reste à décider avec le directeur artistique — <!-- forme à définir -->.
+le jeu. **La forme du retour est tranchée → `docs/ART.md` §5** (arbitrage de l'auteur, 2026-08-27) :
+un chevron barré, orienté vers la direction refusée, ancré au bord de la case tête ; une ligne de
+texte sur l'écran de pause pour une direction tapée en pause. Le refus est un **état à échéance**,
+jamais une animation rejouée : marteler la touche prolonge l'affichage sans le faire clignoter.
+
+⚠ **Le doublon ne reçoit aucun retour** — retaper la direction déjà suivie n'est pas une erreur, et
+le serpent qui continue tout droit est déjà la confirmation. Le filtrage est **explicite** dans le
+code, pour qu'il ne se lise pas comme un oubli à corriger.
 
 ⚠ **Une capacité doit annoncer sa touche dans le jeu** (HUD, description, écran d'acquisition).
 
@@ -130,9 +137,11 @@ appliqué une règle.
 
 **Débordement** : file pleine, la nouvelle touche est **ignorée** — on n'écrase pas la plus ancienne.
 Écraser annulerait en silence un virage déjà tapé : le serpent raterait un virage parti des doigts du
-joueur. L'appui ignoré porte le même retour visible que le refus
-<!-- à confirmer au ressenti : en panique le joueur martèle, un retour qui clignote à chaque appui
-devient du bruit. Seul le game-tester peut trancher ça, pas un banc. -->
+joueur. L'appui ignoré porte le **même** retour visible qu'un demi-tour refusé — le chevron barré de
+`docs/ART.md` §5. À 125 ms par tick, rien ne permet d'enseigner la nuance entre « demi-tour » et
+« troisième virage de trop » : ce qui doit se lire, c'est que l'appui n'a pas compté.
+<!-- durées encore au jugé (250 ms d'affichage, 500 ms de prolongation) : seul le game-tester peut
+     les trancher au ressenti, aucun banc ne mesure ça. -->
 
 **Pourquoi 2, ni 1 ni 3** (raisonné, à confirmer en jeu). À 1, une chicane (est puis nord, tapée en
 moins d'un tick) perd sa seconde moitié : le joueur qui joue *plus vite* que la cadence est puni.
@@ -239,6 +248,11 @@ test des signes.
 > de case centrale exacte (§4.3) ; 576 cases au lieu de 315, soit une partie type qui double de durée
 > pour la même décision répétée ; et plus aucune marge où poser le score sans le superposer à l'aire
 > de jeu. À rouvrir si les premières parties se révèlent trop courtes ou trop serrées.
+
+> **Retour de refus : variantes écartées.** Le contour de case épaissi (ne dit pas *quelle*
+> direction a été refusée) et le retour unique incluant le doublon (bruit à chaque tick d'un joueur
+> qui va tout droit) — détail et raisons dans `docs/ART.md` §6, qui tient l'historique des
+> décisions visuelles comme cette section tient celles de design.
 
 > **Manette et tactile.** *Reportés, pas écartés* — voir §3. Chaque périphérique est un chemin de
 > plus à rejouer à chaque build, pour un jeu web joué au clavier. À rouvrir sur retour de joueurs
