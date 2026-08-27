@@ -199,7 +199,27 @@ qu'un demi-tour peut être refusé à l'empilage, exactement l'erreur que le con
 - `FileEntrees` reste une classe pure sans dépendance moteur (§4.2 du GDD) : c'est au
   `MonoBehaviour` de gameplay d'appeler `Notifier`, jamais à `FileEntrees` de connaître l'UI.
 
-### 5.6 Ce qui reste à confirmer séparément
+### 5.6 Ce que le jeu a démenti (constaté le 2026-08-27)
+
+> ⚠ **Le chevron d'un demi-tour tombe TOUJOURS sur le corps du serpent.** Ce n'est pas un cas
+> limite : un demi-tour vise, par définition, la case d'où le serpent vient — donc la case occupée
+> par son deuxième segment. Le pictogramme, ancré « au bord de la case tête, côté de la direction
+> refusée » (§5.4), se superpose donc systématiquement au corps. En niveaux de gris, gris clair sur
+> gris moyen, il devient difficile à lire au moment précis où il doit l'être.
+>
+> Le brief a été écrit sans que ce cas soit visualisé ; la capture `docs/verif_refus_demitour.png`
+> le montre. Le pictogramme **fonctionne** (position, orientation, échéance) — c'est son contraste
+> qui échoue. Trois pistes, non tranchées : contour sombre autour du pictogramme, décalage
+> perpendiculaire à la direction refusée, ou une couleur d'alerte réservée que la palette (§1)
+> devra prévoir. **À arbitrer par le directeur artistique**, et ce sera plus facile une fois la
+> palette posée.
+
+> **La barre d'interdiction est perpendiculaire à l'axe du chevron, pas diagonale.** Écart assumé au
+> §5.4, décidé à l'implémentation : à 45°, la barre tombe exactement parallèle à l'une des deux
+> branches du chevron et se lit comme une troisième branche. La grammaire « sens interdit » d'origine
+> est conservée, seule l'inclinaison change.
+
+### 5.7 Ce qui reste à confirmer séparément
 
 - **Palette** : ce brief ne fixe aucun code hexa. Le pictogramme et le texte de pause devront
   référencer `UiPalette` (§1) une fois posée ; en attendant, construire en niveaux de gris /
@@ -212,7 +232,7 @@ qu'un demi-tour peut être refusé à l'empilage, exactement l'erreur que le con
   recalculer une nouvelle.
 - Toutes les durées de §5.5 sont des points de départ, pas des valeurs mesurées.
 
-### 5.7 Interdits
+### 5.8 Interdits
 
 - Jamais de caractère flèche Unicode (`← → ↑ ↓`) dans un composant `Text` — perte silencieuse
   garantie en WebGL (`docs/PITFALLS_UNITY.md`). Tout symbole directionnel est un **sprite**.

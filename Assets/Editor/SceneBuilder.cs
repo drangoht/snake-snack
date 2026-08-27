@@ -6,6 +6,8 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.InputSystem.UI;
+using SnakeSnack.Gameplay;
+using SnakeSnack.UI;
 
 namespace SnakeSnack.EditorTools
 {
@@ -43,9 +45,7 @@ namespace SnakeSnack.EditorTools
             BuildStampCanvas();
 
             // ---- Le jeu commence ici -------------------------------------------------------
-            // Ajoute tes propres méthodes de construction (terrain, joueur, HUD, menus…). Garde-les
-            // courtes et nommées d'après ce qu'elles posent : c'est cette liste que l'on relit pour
-            // savoir de quoi la scène est faite.
+            BuildJeu();
             // ---------------------------------------------------------------------------------
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
@@ -55,14 +55,35 @@ namespace SnakeSnack.EditorTools
             Debug.Log($"Scene regeneree : {ScenePath}");
         }
 
+        /// <summary>
+        /// Pose l'unique objet de jeu. Tout le reste — aire, serpent, HUD — est construit au
+        /// démarrage par <see cref="JeuSnake"/> lui-même.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Rien n'est sérialisé dans la scène au-delà de ce composant : une référence sérialisée
+        /// perdue à la régénération ne lèverait rien, elle produirait seulement un écran incomplet.
+        /// </remarks>
+        static void BuildJeu()
+        {
+            var go = new GameObject("Jeu");
+            go.AddComponent<JeuSnake>();
+        }
+
+        /// <remarks>
+        /// ⚠ <c>orthographicSize = 360</c> — la moitié de la hauteur du cadre de référence 720 px :
+        /// une unité monde vaut alors <b>exactement un pixel</b> de ce cadre, ce que
+        /// <see cref="SnakeSnack.Rules.Plateau"/> suppose partout (tailles de case, ancrage du
+        /// pictogramme). Toute autre valeur afficherait un jeu « pas tout à fait à la bonne
+        /// échelle », sans qu'aucun calcul ne soit faux.
+        /// </remarks>
         static void BuildCamera()
         {
             var go = new GameObject("Main Camera");
             var camera = go.AddComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 5f;
+            camera.orthographicSize = 360f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.10f, 0.10f, 0.18f);
+            camera.backgroundColor = PaletteProvisoire.Fond;
             camera.transform.position = new Vector3(0f, 0f, -10f);
             go.tag = "MainCamera";
 

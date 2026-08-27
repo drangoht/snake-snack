@@ -70,6 +70,24 @@ page 404 déguisée.
 
 ## Entrées
 
+**⚠⚠ `ProjectSettings.asset` peut livrer `activeInputHandler: 0` — l'ANCIEN Input Manager.** Dans ce
+mode, le package Input System est désactivé : **`Keyboard.current` vaut `null`**, tout code d'entrée
+sort par sa garde, et le jeu tourne parfaitement — il ne répond simplement à aucune touche. Aucune
+erreur, aucun avertissement, rien dans le journal du player. Constaté le 2026-08-27 : le serpent
+s'affichait, le HUD s'affichait, et rien ne bougeait ; le premier soupçon est tombé à tort sur
+l'injection de touches, puis sur le rendu du pictogramme.
+
+Valeurs : `0` = ancien Input Manager, `1` = package Input System, `2` = les deux. Le projet exige
+`1` (CLAUDE.md : « Input System, jamais l'ancien Input Manager »).
+
+```powershell
+Select-String "activeInputHandler" ProjectSettings\ProjectSettings.asset   # doit rendre 1
+```
+
+⚠ Corollaire de méthode : **une touche sans effet et une touche jamais reçue produisent la même
+capture d'écran**. Avant de conclure qu'une règle ne s'affiche pas, prouver qu'une entrée *quelconque*
+atteint le jeu — ici, une direction valide qui met le serpent en marche.
+
 **⚠ `KeyCode` et `Key` désignent une POSITION sur un clavier QWERTY**, jamais le caractère imprimé.
 Sur un clavier AZERTY, `Key.A` / `Key.D` / `Key.W` placent les commandes sous les touches marquées
 **Q / D / Z**. C'est le résultat voulu, pas un bug. Corollaire : proscrire `A`, `Q`, `Z`, `W`, `M`
@@ -267,6 +285,16 @@ Voir le skill **`/verifier-en-jeu`** pour la procédure complète. Les pièges, 
 - **Le focus est LE point de blocage** : hors focus, Unity ne reçoit aucune touche et aucun mouvement
   de souris — le test ment en silence. `SetForegroundWindow` seul échoue depuis un shell non
   interactif ; seul un **vrai clic** donne le focus légitimement.
+- ⚠ **Même le vrai clic échoue depuis une session d'agent en arrière-plan** (constaté le
+  2026-08-27 : `tools/piloter_jeu.py` refusait de partir, « Impossible de donner le focus »). Le
+  contournement qui marche, dans cet ordre : `SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0)`,
+  un appui **ALT** enfoncé-relâché — qui fait entrer le processus dans la fenêtre d'autorisation de
+  Windows —, puis `AttachThreadInput` vers le thread de la fenêtre cible avant
+  `SetForegroundWindow`. Vérifier ensuite `GetForegroundWindow()`, sans quoi tout le reste ment.
+- ⚠ **`PrintWindow` tronque la capture dès que Windows applique une mise à l'échelle DPI** : il rend
+  en pixels logiques pendant que le jeu dessine en pixels physiques. On obtient le coin supérieur
+  gauche de la fenêtre, agrandi — ce qui ressemble à un problème de cadrage du jeu. Capturer l'écran
+  (`CopyFromScreen`) et recadrer sur `GetWindowRect`, après `SetProcessDPIAware()`.
 - **`keybd_event` doit porter le code de balayage** (Unity lit le raw input), et **les flèches
   exigent `KEYEVENTF_EXTENDEDKEY`** — sans lui, leur scan code est celui du pavé numérique et la
   touche est perdue en silence.

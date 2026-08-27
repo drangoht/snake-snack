@@ -65,15 +65,45 @@ et avec `ImplicitUsings`/`Nullable` activés contrairement à Unity. Voir `docs/
 
 ## §Gameplay — `Assets/Scripts/Gameplay/`
 
-<!-- Lister les MonoBehaviour et ce dont chacun est responsable. -->
+| Fichier | Responsabilité |
+|---|---|
+| `JeuSnake.cs` | **Le seul MonoBehaviour qui décide** : lit le clavier, fait tiquer la cadence, enchaîne les états. Ne porte aucune règle — tout est délégué à `Rules/` |
+| `EtatPartie.cs` | Les quatre états : `EnAttente`, `EnCours`, `EnPause`, `Mort` |
+| `VuePlateau.cs` | Dessine aire, traits, bordure, serpent (pool réutilisé) et chevron de refus |
+| `FormesPrimitives.cs` | Le carré blanc 1×1 px dont tout le rendu est fait — aucun asset importé |
+
+Le seul objet posé dans la scène est `Jeu` (voir `SceneBuilder.BuildJeu`) ; `VuePlateau` et `HudJeu`
+sont ajoutés au démarrage par `JeuSnake`, pour qu'aucune référence sérialisée ne puisse se perdre à
+la régénération de la scène.
 
 ## §UI — `Assets/Scripts/UI/`
 
-<!-- Lister les écrans et leur enchaînement. -->
+| Fichier | Responsabilité |
+|---|---|
+| `HudJeu.cs` | Construit et pilote les textes : état, commandes, écrans de pause et de mort, ligne « touche ignorée » |
+| `TextesUi.cs` | **Tous les libellés**, en un seul endroit. Aucun texte en dur ailleurs |
+| `PaletteProvisoire.cs` | Niveaux de gris **provisoires** — à remplacer par la palette de `docs/ART.md` §1 quand elle existera |
+| `BuildStampLabel.cs` | Tampon de version, sur son propre canevas |
+
+Il n'y a pas encore d'écrans distincts : pause et mort sont un voile et deux lignes de texte sur
+l'écran de jeu.
 
 ## §Data
 
-<!-- Où vivent les valeurs réglables : StreamingAssets/data/*.json, ScriptableObjects… -->
+| Où | Quoi |
+|---|---|
+| `Assets/StreamingAssets/reglages.json` | Cadence, plafond de rattrapage, dimensions de grille, profondeur de file, durées du retour de refus |
+| `Assets/Scripts/Rules/ReglagesJeu.cs` | Le schéma correspondant + `Valider()`, qui **corrige jamais en silence** |
+| `Assets/Scripts/Core/ChargeurReglages.cs` | La lecture côté moteur |
+
+⚠ Le fichier lu à l'exécution est celui **du build** (`Build/Windows/SnakeSnack_Data/StreamingAssets/`),
+pas celui d'`Assets/` : c'est ce qui permet de régler la cadence sans reconstruire. Un rebuild écrase
+le premier par le second.
+
+⚠ Champs en `camelCase` dans `ReglagesJeu` — `JsonUtility` associe les clés du JSON aux *champs* par
+leur nom exact. Les renommer en PascalCase ferait retomber chaque valeur sur son défaut, sans erreur.
+
+⚠ En WebGL, `StreamingAssets` est une URL : le chargeur n'y lit rien et rend les valeurs du GDD.
 
 ## §Outils — `tools/`
 
@@ -100,6 +130,7 @@ machine à l'autre. Tout passe par `environnement.ps1`.
 | Ce qui est réellement sorti | `docs/DEVLOG.md` |
 | Publier | `docs/RELEASE.md` + skill `/publier-itch` |
 | Le texte de la page store | `docs/ITCH_STORE_PAGE.md` |
+| L'identité visuelle, les briefs tranchés | `docs/ART.md` |
 
 ## Checklists de câblage
 

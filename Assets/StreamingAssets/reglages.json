@@ -1,0 +1,11 @@
+{
+  "ticksParSeconde": 8.0,
+  "plafondDeRattrapage": 1,
+  "largeurGrille": 21,
+  "hauteurGrille": 15,
+  "profondeurFile": 2,
+  "dureeAffichageRefusSecondes": 0.25,
+  "plafondProlongationRefusSecondes": 0.5,
+  "dureeTextePauseSecondes": 1.5,
+  "dureeFonduRefusSecondes": 0.06
+}
