@@ -1,0 +1,84 @@
+name: Tests unitaires
+
+# Les tests couvrent Assets/Scripts/Rules/ — de la logique pure sans dépendance moteur, compilée
+# directement dans l'assembly de test (voir tests/SnakeSnack.Tests.csproj). Aucun moteur ni
+# build n'est nécessaire : un runner Linux suffit, et le job tourne en une poignée de secondes.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Une PR qui reçoit plusieurs pushes n'occupe qu'un runner : les runs précédents sont annulés.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: xUnit (net8.0)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer le SDK .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache des paquets NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('tests/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restaurer les dépendances
+        run: dotnet restore tests/SnakeSnack.Tests.csproj
+
+      - name: Compiler
+        run: dotnet build tests/SnakeSnack.Tests.csproj --configuration Release --no-restore
+
+      - name: Exécuter les tests
+        run: |
+          set -o pipefail
+          dotnet test tests/SnakeSnack.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=results.trx" \
+            --results-directory TestResults \
+            | tee test-output.txt
+
+      - name: Résumé
+        if: always()
+        run: |
+          {
+            echo "### Tests unitaires"
+            echo ""
+            if grep -qE '^\s*(Passed!|Reussi!)' test-output.txt 2>/dev/null; then
+              echo '```'
+              grep -E '^\s*(Passed!|Failed!|Reussi!|Echec)' test-output.txt
+              echo '```'
+            else
+              echo "Échec — voir le journal du job et l'artefact \`test-results\`."
+              echo ""
+              echo '```'
+              grep -E '^\s*(Failed|Echec|error)' test-output.txt | head -30 || true
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publier les résultats en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/
+          retention-days: 14
