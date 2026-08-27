@@ -69,6 +69,95 @@ le jeu. Le retour choisi reste à décider avec le directeur artistique — <!--
 <!-- Un titre de niveau 3 par système. Pour chacun : ce qu'il fait, ses valeurs, et la mesure ou
      l'observation qui les justifie. Les valeurs chiffrées vivent dans Assets/Scripts/Rules/. -->
 
+⚠ **Aucune valeur de cette section n'a encore été mesurée** — `docs/TEST_REPORT.md` ne contient
+aucune session au 2026-08-27. Chaque chiffre porte sa provenance entre parenthèses.
+
+### 4.1 Le pas de temps
+
+Le serpent avance d'**une case par tick**, jamais entre deux ticks : sa position est toujours sur la
+grille, et le tick est l'unité de tout ce qui se mesurera ensuite.
+
+**Cadence : 8 ticks/s, soit 125 ms par tick** (au jugé, à confirmer en jeu ; fourchette à essayer
+6 à 10 ticks/s <!-- à mesurer -->). La fenêtre d'entrée d'un virage vaut exactement un tick. À 125 ms
+elle est plus courte qu'un temps de réaction visuel simple (200–250 ms, ordre de grandeur admis,
+**non mesuré ici**) : on ne peut donc pas *réagir* à un mur qui arrive, il faut avoir décidé une case
+à l'avance. C'est la compétence visée — la file (§4.2) évite qu'une fenêtre si courte perde des appuis.
+
+**Cadence constante sur toute la partie.** La difficulté monte déjà seule : chaque pomme allonge le
+corps et réduit l'espace libre — c'est la règle du §1, lisible avant de lancer. Accélérer en plus
+serait un multiplicateur empilé dessus, et brouillerait l'attribution de la mort (§2) : le joueur ne
+saurait plus s'il a mal planifié ou si le jeu a dépassé ses doigts. (Alternative écartée : §7.)
+
+**Départ à l'arrêt** (§2) : le premier tick est déclenché par la première direction *acceptée*, pas
+par le chargement de la scène. Personne ne meurt pendant que le joueur lit l'écran.
+
+Règles pressenties : `Assets/Scripts/Rules/Cadence.cs`. La durée du tick se règle **sans recompiler**
+— c'est la valeur du jeu qui sera ré-essayée le plus souvent.
+
+### 4.2 La file d'entrées
+
+Toute touche directionnelle acceptée est **empilée dans une file FIFO de profondeur 2**. À chaque
+tick, le jeu dépile **une** entrée, la valide, l'applique ; file vide, il reconduit la direction
+courante.
+
+**Validation au tick, contre la direction effectivement appliquée au tick précédent** — jamais au
+moment de l'appui, jamais contre la dernière touche tapée. Le contre-exemple qui l'impose : serpent
+vers l'est, le joueur tape Nord puis Sud dans le même tick. Ni l'un ni l'autre n'est un demi-tour de
+*l'est* ; validés à l'appui, ils passent tous les deux et le tick suivant applique Sud sur un serpent
+parti au nord — il se mange la nuque. Validé au tick, Sud est comparé au Nord réellement appliqué,
+reconnu comme demi-tour, refusé.
+
+**Refus** : l'entrée refusée est jetée (elle ne bloque pas la file) et le tick reconduit la direction
+courante. Le refus **se voit** (§3), sinon le joueur lit « le jeu a raté ma touche » là où le jeu a
+appliqué une règle.
+
+**Débordement** : file pleine, la nouvelle touche est **ignorée** — on n'écrase pas la plus ancienne.
+Écraser annulerait en silence un virage déjà tapé : le serpent raterait un virage parti des doigts du
+joueur. L'appui ignoré porte le même retour visible que le refus
+<!-- à confirmer au ressenti : en panique le joueur martèle, un retour qui clignote à chaque appui
+devient du bruit. Seul le game-tester peut trancher ça, pas un banc. -->
+
+**Pourquoi 2, ni 1 ni 3** (raisonné, à confirmer en jeu). À 1, une chicane (est puis nord, tapée en
+moins d'un tick) perd sa seconde moitié : le joueur qui joue *plus vite* que la cadence est puni.
+À 3, le serpent exécute une trajectoire décidée 375 ms plus tôt dans une grille qui a changé, et la
+mort cesse d'être imputable au dernier virage lu à l'écran (§2). 2 couvre le virage en L d'un seul
+geste, soit 250 ms à 8 ticks/s — **profondeur et cadence sont liées** : revoir l'une si l'autre bouge.
+
+**Purges** : la file est vidée à l'entrée en pause et à la mort. Reprendre doit rendre l'état visible
+à l'écran, pas exécuter un virage tapé avant la pause. Une direction tapée pendant la pause n'est pas
+empilée (§3). Un appui identique à la dernière direction déjà en file (ou à la direction courante si
+la file est vide) n'est pas empilé non plus : il ne changerait rien et consommerait une place.
+
+Règles pressenties : `Assets/Scripts/Rules/FileEntrees.cs` — logique pure, testable sans moteur. Le
+contre-exemple Nord/Sud ci-dessus est le premier test à écrire.
+
+### 4.3 La grille
+
+**21 × 15 cases, cellules carrées** (315 cases, au jugé). Dimensions **impaires sur les deux axes** :
+il existe une case centrale exacte, condition pour que le serpent apparaisse « au centre » (§2) sans
+décalage d'une demi-case.
+
+**Pose de départ** : tête sur la case centrale `(10, 7)` en indices 0, corps en `(9, 7)` et `(8, 7)`,
+**longueur 3** (repris du §2), **orientation est**, à l'arrêt. Le serpent est immobile mais
+**orienté** : la règle de demi-tour s'applique donc dès le premier appui, et le joueur qui tape Ouest
+voit le refus avant même que la partie démarre — la règle s'enseigne d'elle-même, sans didacticiel.
+
+**Ce que 315 cases impliquent** (déduit, non mesuré) : le serpent occupe 1 % de la grille au départ ;
+il lui faut ~75 pommes pour en occuper le quart, seuil où l'on *suppose* la navigation étouffante.
+<!-- à mesurer : à quel score le joueur cesse-t-il de foncer pour commencer à tracer un chemin ? -->
+
+**Durée d'une partie type** (déduit de la cadence §4.1, non mesuré) : sur une grille W×H, la distance
+de Manhattan moyenne entre deux cases tirées au hasard vaut ≈ (W+H)/3, soit 12 cases ici — environ
+1,5 s par pomme à 8 ticks/s, détours non comptés. Une partie de 25 pommes tient sous la minute :
+c'est la durée que suppose la relance à une touche du §2.
+
+**Lisibilité** (calculé) : dans un cadre web 1280×720 avec un bandeau de HUD d'environ 60 px, la case
+fait `min(1280/21, 660/15)` = 44 px. La grille occupe 924 px de large et laisse ~178 px de marge de
+chaque côté — de quoi poser score et record **hors de l'aire de jeu**, sans recouvrement de calques.
+
+Règles pressenties : `Assets/Scripts/Rules/Grille.cs` — dimensions, case centrale, pose initiale et
+test « case hors grille » (le mur mortel du §2). Dimensions réglables **sans recompiler**.
+
 ## 5. Progression et difficulté
 
 <!--
@@ -104,6 +193,24 @@ test des signes.
 > **Snacks à effets distincts, bonus temporaires.** Écartés au pitch (§1). Ils déplacent la décision
 > « par où passer » vers « atteindre le bon objet », et la mort cesse d'être attribuable à un virage.
 > Le jeu retenu est le Snake canonique : l'enjeu est la sensation, pas l'ajout de mécaniques.
+
+> **Cadence qui accélère avec la longueur (le Snake Nokia).** Écartée pour la 0.1, **décidée au
+> design, aucune partie jouée** : c'est un multiplicateur, pas une règle nommée — le joueur ne peut
+> pas la lire avant de lancer. Elle s'empile sur une difficulté qui monte déjà seule (§4.1), elle
+> brouille l'attribution de la mort (§2 : mal planifié, ou dépassé par la cadence ?), et elle rend le
+> tick — l'unité de mesure — variable, donc deux parties incomparables au banc. À rouvrir **une fois
+> le banc apparié disponible**, pas avant : c'est précisément le genre de réglage qu'une partie
+> isolée ne tranche pas.
+
+> **File d'entrées de profondeur 1 (une seule direction retenue).** Écartée au design. Elle perd la
+> seconde moitié de toute chicane tapée en moins d'un tick, c'est-à-dire qu'elle punit le joueur qui
+> joue *plus vite* que la cadence, et la perte est invisible (§3). C'est l'origine habituelle du
+> « ce Snake rate mes virages ». Voir §4.2.
+
+> **Grille 32 × 18 remplissant le 16:9 sans marges.** Écartée au design : dimensions paires, donc pas
+> de case centrale exacte (§4.3) ; 576 cases au lieu de 315, soit une partie type qui double de durée
+> pour la même décision répétée ; et plus aucune marge où poser le score sans le superposer à l'aire
+> de jeu. À rouvrir si les premières parties se révèlent trop courtes ou trop serrées.
 
 > **Manette et tactile.** *Reportés, pas écartés* — voir §3. Chaque périphérique est un chemin de
 > plus à rejouer à chaque build, pour un jeu web joué au clavier. À rouvrir sur retour de joueurs
