@@ -186,6 +186,16 @@ c'est la durée que suppose la relance à une touche du §2.
 fait `min(1280/21, 660/15)` = 44 px. La grille occupe 924 px de large et laisse ~178 px de marge de
 chaque côté — de quoi poser score et record **hors de l'aire de jeu**, sans recouvrement de calques.
 
+⚠ **Constaté en jeu le 2026-08-28 : il n'y a de marge qu'en HAUT et sur les CÔTÉS, pas en bas.**
+Les 60 px de bandeau sont pris entièrement en haut, donc l'aire de jeu touche le bord bas du cadre.
+Le rappel des commandes, ancré en bas, **chevauche la dernière ligne de cases** et se fait rogner par
+le bord de l'écran — les jambages des lettres sont coupés sur toute capture. Le score et le record
+du §4.5 n'en souffrent pas (ils sont dans le bandeau du haut), mais la ligne des commandes contredit
+la phrase ci-dessus. Trois issues, aucune tranchée : réserver un bandeau bas (la case retombe à
+`min(1280/21, 600/15)` = 40 px, la grille rétrécit), déplacer le rappel dans une marge latérale, ou
+l'accepter par-dessus l'aire en le remontant de quelques pixels.
+<!-- à trancher : c'est un arbitrage de mise en page, pas un bug de code. -->
+
 **Bornes de la grille réglable** (déduites de la pose de départ, non issues d'un choix de design) :
 largeur ≥ 5 et hauteur ≥ 3 — trois segments alignés depuis la colonne centrale, plus une ligne
 au-dessus et une en dessous pour qu'un virage existe. Les dimensions paires sont **refusées à la
