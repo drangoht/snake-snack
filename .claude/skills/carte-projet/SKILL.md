@@ -45,7 +45,23 @@ docs/                         GDD, pièges, rapports de test, devlog — voir §
 Logique pure, sans dépendance moteur, **testée**. C'est ici que vit toute règle chiffrée du jeu.
 
 <!-- Lister ici chaque classe et ce qu'elle décide. Une ligne par règle. -->
-- `ExempleRegle` — gabarit à supprimer.
+
+| Fichier | Ce qu'il décide | Tests |
+|---|---|---|
+| `Direction.cs` | Enum `Direction` (Nord/Est/Sud/Ouest) + `Directions` : opposé, **demi-tour**, pas d'une case. ⚠ Nord = Y croissant | via les 3 autres |
+| `Case.cs` | Coordonnée entière de grille. ⚠ Existe **parce que `Vector2Int` vient d'UnityEngine** | `GrilleTests` |
+| `Cadence.cs` | Pas de temps (GDD §4.1) : 8 ticks/s par défaut, surchargeable ; fourchette conseillée 6–10 ; `CadenceEffective` **ignore la longueur** (cadence constante, §7) ; découpe temps → ticks avec report du reliquat | `tests/CadenceTests.cs` |
+| `FileEntrees.cs` | File d'entrées (GDD §4.2) : FIFO profondeur 2, une entrée par tick, **demi-tour validé au tick** contre la direction appliquée au tick précédent, débordement ignoré, doublon refusé, purge pause/mort. ⚠ **Seule classe à état** de `Rules/` | `tests/FileEntreesTests.cs` |
+| `Grille.cs` | Aire de jeu (GDD §4.3) : 21 × 15 réglables, **dimensions paires refusées** (case centrale exacte), pose de départ (10,7)/(9,7)/(8,7) vers l'est, `EstHorsGrille` = le mur mortel du §2 | `tests/GrilleTests.cs` |
+| `EXEMPLE_Regle.cs` | Gabarit — à supprimer quand `Rules/` sera bien peuplé. |  |
+
+⚠ Le refus d'une entrée (`ResultatEmpilage`, `ResultatTick.DemiTourRefuse`) est **rendu à
+l'appelant**, jamais avalé : le §3 exige que le refus se voie à l'écran. Le câblage moteur de ce
+retour visuel reste **à faire** (`Gameplay/` et `UI/` sont vides au 2026-08-27).
+
+⚠ `tests/SnakeSnack.Tests.csproj` compile `..\Assets\Scripts\Rules\*.cs` — glob **non récursif**,
+et avec `ImplicitUsings`/`Nullable` activés contrairement à Unity. Voir `docs/PITFALLS_UNITY.md`
+§ « Logique pure et tests hors moteur » avant d'ajouter un fichier ici.
 
 ## §Gameplay — `Assets/Scripts/Gameplay/`
 
