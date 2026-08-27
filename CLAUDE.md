@@ -30,7 +30,7 @@ par session.
 
 **Phase 0 — mise en place** (démarrée le 2026-08-27)
 
-- [ ] Premier build : `& "tools/build.ps1" -Lancer` — il importe le projet (~20 min) et génère
+- [x] Premier build : `& "tools/build.ps1" -Lancer` — il importe le projet (~20 min) et génère
       `Library/` + `ProjectSettings/`. Rien à ouvrir dans Unity Hub.
 - [ ] Remplir `docs/GDD.md` — skill **`/rediger-le-gdd`** : pitch, boucle de jeu et commandes
       avant la première ligne de code ; le reste s'écrit système par système.

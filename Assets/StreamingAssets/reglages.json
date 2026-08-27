@@ -4,6 +4,7 @@
   "largeurGrille": 21,
   "hauteurGrille": 15,
   "profondeurFile": 2,
+  "graine": 0,
   "dureeAffichageRefusSecondes": 0.25,
   "plafondProlongationRefusSecondes": 0.5,
   "dureeTextePauseSecondes": 1.5,

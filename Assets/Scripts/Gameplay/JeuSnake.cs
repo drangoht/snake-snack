@@ -1,3 +1,4 @@
+using System;
 using SnakeSnack.Core;
 using SnakeSnack.Rules;
 using SnakeSnack.UI;
@@ -37,6 +38,25 @@ namespace SnakeSnack.Gameplay
         private VuePlateau _vue;
         private HudJeu _hud;
 
+        /// <summary>Le générateur de la partie en cours. ⚠ Rien d'autre que la pomme n'y tire (§4.4).</summary>
+        private Aleatoire _alea;
+
+        /// <summary>
+        /// Le générateur qui fabrique les graines des parties, quand aucune n'est fixée.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Instance séparée, et c'est une règle du §4.4</b> : puiser une graine dans
+        /// <see cref="_alea"/> décalerait la suite des pommes de la partie en cours. Il sert aussi à
+        /// éviter un piège plus discret — deux parties relancées coup sur coup tireraient la même
+        /// graine si celle-ci venait directement de l'horloge, dont la résolution réelle sous Windows
+        /// est d'environ 15 ms. Le joueur qui appuie deux fois sur Espace rejouerait alors les mêmes
+        /// pommes, sans que rien ne l'explique.
+        /// </remarks>
+        private Aleatoire _grainesDeSession;
+
+        /// <summary>Case de la pomme. Il y en a une <b>à tout instant</b> pendant une partie (§4.4).</summary>
+        private Case _pomme;
+
         private EtatRetourAEcheance _refusPictogramme;
         private EtatRetourAEcheance _refusTextePause;
         private Direction _directionRefusee;
@@ -67,6 +87,10 @@ namespace SnakeSnack.Gameplay
             _vue.Construire(_plateau);
 
             _hud = gameObject.AddComponent<HudJeu>();
+
+            // La graine de session vient de l'horloge : c'est le seul aléa non reproductible du jeu,
+            // et il ne sert qu'à ce que deux sessions ne commencent pas sur les mêmes pommes.
+            _grainesDeSession = new Aleatoire((ulong)DateTime.UtcNow.Ticks);
 
             PoseInitiale pose = _grille.PoseDeDepart();
             _serpent = new Serpent(pose.Segments);
@@ -118,7 +142,7 @@ namespace SnakeSnack.Gameplay
                 BasculerLaPause();
             }
 
-            if (clavier.spaceKey.wasPressedThisFrame && _etat == EtatPartie.Mort)
+            if (clavier.spaceKey.wasPressedThisFrame && PartieTerminee)
             {
                 NouvellePartie();
             }
@@ -163,10 +187,19 @@ namespace SnakeSnack.Gameplay
             return false;
         }
 
+        /// <summary>
+        /// Fin de partie, mort ou victoire : même écran, même place, même relance à une touche
+        /// (§4.4). Les deux états ne se distinguent que par leur libellé.
+        /// </summary>
+        private bool PartieTerminee
+        {
+            get { return _etat == EtatPartie.Mort || _etat == EtatPartie.Victoire; }
+        }
+
         /// <summary>Une direction tapée par le joueur, quel que soit l'état de la partie.</summary>
         private void Demander(Direction direction)
         {
-            if (_etat == EtatPartie.Mort)
+            if (PartieTerminee)
             {
                 // Seul Espace relance (§2) : une direction ne doit pas redémarrer par surprise.
                 return;
@@ -217,6 +250,15 @@ namespace SnakeSnack.Gameplay
             }
         }
 
+        /// <summary>
+        /// Un tick, dans l'ordre exact du GDD §4.4.
+        /// </summary>
+        /// <remarks>
+        /// Les étapes 1 à 5 (direction, mur, morsure, déplacement, croissance) appartiennent à
+        /// <see cref="Serpent.Avancer(Direction, Grille, Case?, out bool)"/> ; seule l'étape 6 —
+        /// remplacer la pomme, ou constater la grille pleine — vit ici, parce qu'elle touche à
+        /// l'état de la partie et au rendu.
+        /// </remarks>
         private void JouerUnTick()
         {
             ResultatTick tick = _file.Tick();
@@ -226,7 +268,8 @@ namespace SnakeSnack.Gameplay
                 SignalerRefus(MotifRefus.DemiTour, tick.DirectionRefusee);
             }
 
-            ResultatDeplacement resultat = _serpent.Avancer(tick.DirectionAppliquee, _grille);
+            bool mange;
+            ResultatDeplacement resultat = _serpent.Avancer(tick.DirectionAppliquee, _grille, _pomme, out mange);
 
             if (resultat != ResultatDeplacement.Avance)
             {
@@ -235,6 +278,27 @@ namespace SnakeSnack.Gameplay
             }
 
             _vue.DessinerSerpent(_serpent.Segments);
+
+            if (!mange)
+            {
+                return;
+            }
+
+            // Étape 6 — la victoire se teste AVANT le tirage : sans case libre, le tirage n'a
+            // aucune valeur à rendre et lèverait, au dernier tick de la partie parfaite.
+            if (Pomme.GrillePleine(_grille, _serpent.Longueur))
+            {
+                Gagner();
+                return;
+            }
+
+            // ⚠ Tirée sur l'état FINAL du tick (§4.4) : le serpent vient de s'allonger, et une
+            // pomme placée avant cette croissance pourrait tomber sur la case que la tête occupe.
+            // Elle est posée dans le tick même où l'ancienne a été mangée — aucune image ne
+            // s'affiche sans pomme, une grille vide se lisant comme un bug et non comme une
+            // transition.
+            _pomme = Pomme.Tirer(_grille, _serpent.Segments, _alea);
+            _vue.DessinerPomme(_pomme);
         }
 
         /// <summary>Route un refus vers son registre visuel (<c>docs/ART.md</c> §5.2).</summary>
@@ -308,6 +372,24 @@ namespace SnakeSnack.Gameplay
             _vue.DessinerSerpent(_serpent.Segments);
         }
 
+        /// <summary>
+        /// Grille pleine (GDD §4.4). Hors de portée humaine, écrit quand même.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ La pomme est <b>masquée</b> ici, et c'est le seul endroit du jeu où elle disparaît :
+        /// il n'existe plus une seule case libre où la poser. La laisser affichée montrerait une
+        /// pomme posée sur le serpent.
+        /// </remarks>
+        private void Gagner()
+        {
+            // Même purge que la mort : la partie est finie, aucun virage tapé après ne doit
+            // survivre jusqu'à la partie suivante.
+            _file.Mourir();
+            _etat = EtatPartie.Victoire;
+            _hud.Afficher(_etat);
+            _vue.MasquerPomme();
+        }
+
         private void NouvellePartie()
         {
             PoseInitiale pose = _grille.PoseDeDepart();
@@ -321,10 +403,40 @@ namespace SnakeSnack.Gameplay
             _refusPictogramme.Eteindre();
             _refusTextePause.Eteindre();
 
+            SemerLAleatoire();
+
+            // ⚠ La pomme est posée AVANT le premier appui (§4.4) : le départ est à l'arrêt, le
+            // joueur regarde l'écran et choisit sa direction. Sans pomme à viser, ce choix serait
+            // aveugle.
+            _pomme = Pomme.Tirer(_grille, _serpent.Segments, _alea);
+
             _vue.DessinerSerpent(_serpent.Segments);
+            _vue.DessinerPomme(_pomme);
             _vue.MasquerRefus();
             _hud.Afficher(_etat);
             _hud.AfficherRefusEnPause(false);
+        }
+
+        /// <summary>
+        /// Donne à la partie son générateur de pommes (GDD §4.4, « Aléa reproductible »).
+        /// </summary>
+        /// <remarks>
+        /// Graine fixée dans le JSON de tuning : <b>toutes</b> les parties rejouent la même suite de
+        /// pommes — c'est le mode banc, pas un mode de jeu. Graine laissée à zéro : chaque partie en
+        /// reçoit une neuve.
+        ///
+        /// <para>⚠ <b>Journalisée à chaque partie, y compris quand elle vient de la session</b> :
+        /// une graine non écrite quelque part rend la partie irrejouable, et c'est précisément la
+        /// partie remarquable — celle qu'on veut rejouer — qui serait perdue.</para>
+        /// </remarks>
+        private void SemerLAleatoire()
+        {
+            ulong graine = _reglages.graine != ReglagesJeu.GraineDeLHorloge
+                ? (ulong)_reglages.graine
+                : _grainesDeSession.Suivant();
+
+            _alea = new Aleatoire(graine);
+            Debug.Log("[pomme] graine de la partie : " + graine);
         }
     }
 }

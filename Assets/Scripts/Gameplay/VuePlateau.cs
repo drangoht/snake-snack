@@ -26,6 +26,7 @@ namespace SnakeSnack.Gameplay
         private Transform _racineSegments;
         private Transform _chevron;
         private SpriteRenderer[] _barresChevron;
+        private SpriteRenderer _pomme;
 
         /// <summary>Construit l'aire de jeu. À appeler une fois, avant tout dessin.</summary>
         public void Construire(Plateau plateau)
@@ -36,11 +37,63 @@ namespace SnakeSnack.Gameplay
             ConstruireTraitsDeGrille();
             ConstruireBordure();
 
+            ConstruirePomme();
+
             var racine = new GameObject("Segments");
             racine.transform.SetParent(transform, false);
             _racineSegments = racine.transform;
 
             ConstruireChevron();
+        }
+
+        /// <summary>
+        /// La pomme : un carré tourné à 45°, donc un <b>losange</b>.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>La forme porte l'information, pas la couleur</b> (<c>docs/ART.md</c> §4, et le §5.6
+        /// qui impose de construire en niveaux de gris tant que la palette n'est pas tranchée) : le
+        /// serpent est fait de carrés pleins qui remplissent presque la case, la pomme est un
+        /// losange plus petit et centré. Un joueur qui ne distingue pas deux gris voisins la trouve
+        /// quand même. Le jour où la palette arrive, la lisibilité ne repose donc pas dessus.
+        ///
+        /// <para>La diagonale du losange vaut 0,72 case ; le côté du carré à tourner est cette
+        /// diagonale divisée par racine de 2. Poser directement 0,72 en côté donnerait un losange
+        /// qui déborde de sa case et vient toucher ses voisines.</para>
+        /// </remarks>
+        private void ConstruirePomme()
+        {
+            _pomme = FormesPrimitives.Rectangle(transform, "Pomme", PaletteProvisoire.Pomme, 5);
+
+            float cote = (float)(_plateau.TailleCase * 0.72 / Mathf.Sqrt(2f));
+            _pomme.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            _pomme.transform.localScale = new Vector3(cote, cote, 1f);
+            _pomme.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Pose la pomme sur sa case (GDD §4.4).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Aucune image ne doit s'afficher sans pomme</b> (§4.4) : elle est remplacée dans le
+        /// tick même où elle est mangée. Une grille vide, même une fraction de seconde, se lit comme
+        /// un bug et non comme une transition — d'où le fait que cette méthode ne masque jamais,
+        /// elle déplace.
+        /// </remarks>
+        public void DessinerPomme(Case caseDeLaPomme)
+        {
+            PointPlateau centre = _plateau.CentreDeLaCase(caseDeLaPomme);
+
+            // ⚠ La position seule est écrite : l'échelle a été posée à la construction, et la
+            // réécrire ici avec `Poser` effacerait la rotation à 45° — le losange redeviendrait un
+            // carré, indiscernable d'un segment de serpent.
+            _pomme.transform.localPosition = new Vector3((float)centre.X, (float)centre.Y, 0f);
+            _pomme.gameObject.SetActive(true);
+        }
+
+        /// <summary>Retire la pomme de l'écran — uniquement à la victoire, quand il n'y en a plus.</summary>
+        public void MasquerPomme()
+        {
+            _pomme.gameObject.SetActive(false);
         }
 
         /// <summary>Place un rectangle, en pixels du cadre de référence.</summary>

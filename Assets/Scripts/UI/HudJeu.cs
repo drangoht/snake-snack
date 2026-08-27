@@ -136,6 +136,13 @@ namespace SnakeSnack.UI
                     Fin(true, TextesUi.TitrePause, TextesUi.SousTitrePause);
                     break;
 
+                case EtatPartie.Victoire:
+                    // ⚠ Cas écrit explicitement : sans lui, la victoire tombe dans le `default` et
+                    // le joueur qui vient de remplir la grille lit « PERDU ». Rien ne le signalerait.
+                    _etat.text = TextesUi.EtatVictoire;
+                    Fin(true, TextesUi.TitreVictoire, TextesUi.SousTitreVictoire);
+                    break;
+
                 default:
                     _etat.text = TextesUi.EtatMort;
                     Fin(true, TextesUi.TitreMort, TextesUi.SousTitreMort);

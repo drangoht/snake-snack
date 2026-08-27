@@ -56,12 +56,26 @@ namespace SnakeSnack.UI
 
         /// <summary>
         /// Message de mort. ⚠ Le GDD §2 prévoit « score et record affichés sur place » : ils
-        /// <b>manquent</b> ici, et c'est attendu — sans pomme, il n'y a ni croissance ni score dans
-        /// ce lot. À compléter quand la pomme sera spécifiée.
+        /// <b>manquent</b> encore ici. La pomme fait bien grandir le serpent, mais le comptage,
+        /// l'affichage permanent et le record du §4.5 sont un lot à part — c'est là que ces deux
+        /// nombres arriveront, avec la mention « nouveau record ».
         /// </summary>
         public const string TitreMort = "PERDU";
 
         /// <summary>Relance à une touche, zéro attente (GDD §2).</summary>
         public const string SousTitreMort = "Espace pour rejouer";
+
+        /// <summary>Bandeau, grille remplie (GDD §4.4).</summary>
+        public const string EtatVictoire = "Grille remplie";
+
+        /// <summary>
+        /// Titre de la victoire. Libellé <b>distinct</b> de celui de la mort (§4.4) : même écran,
+        /// même place, même relance — mais rien ne doit laisser croire qu'une partie parfaite a mal
+        /// fini.
+        /// </summary>
+        public const string TitreVictoire = "GAGNE";
+
+        /// <summary>Sous-titre de la victoire : le serpent occupe toute la grille.</summary>
+        public const string SousTitreVictoire = "Plus une seule case libre - Espace pour rejouer";
     }
 }

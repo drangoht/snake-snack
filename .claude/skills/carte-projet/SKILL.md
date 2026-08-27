@@ -53,11 +53,24 @@ Logique pure, sans dépendance moteur, **testée**. C'est ici que vit toute règ
 | `Cadence.cs` | Pas de temps (GDD §4.1) : 8 ticks/s par défaut, surchargeable ; fourchette conseillée 6–10 ; `CadenceEffective` **ignore la longueur** (cadence constante, §7) ; découpe temps → ticks avec report du reliquat, **plafonnée à 1 tick par image** (retard jeté, §4.1) | `tests/CadenceTests.cs` |
 | `FileEntrees.cs` | File d'entrées (GDD §4.2) : FIFO profondeur 2, une entrée par tick, **demi-tour validé au tick** contre la direction appliquée au tick précédent, débordement ignoré, doublon refusé, purge pause/mort. ⚠ **Seule classe à état** de `Rules/` | `tests/FileEntreesTests.cs` |
 | `Grille.cs` | Aire de jeu (GDD §4.3) : 21 × 15 réglables, **dimensions paires refusées** (case centrale exacte), pose de départ (10,7)/(9,7)/(8,7) vers l'est, `EstHorsGrille` = le mur mortel du §2 | `tests/GrilleTests.cs` |
+| `Serpent.cs` | Le corps et **la résolution d'un tick** (GDD §4.4) : mur → croissance → morsure → déplacement, dans cet ordre. ⚠ La queue est exclue des obstacles **seulement si on ne mange pas** ; un pas mortel ne bouge pas le serpent et ne mange pas | `tests/SerpentTests.cs` |
+| `Pomme.cs` | Où poser la pomme (GDD §4.4) : cases libres, **tirage par énumération** (X croissant dans Y croissant), `GrillePleine` = la victoire. ⚠ Répond « où » et « combien », jamais « quand » | `tests/PommeTests.cs` |
+| `Aleatoire.cs` | Le générateur semé des pommes — **SplitMix64 écrit ici** (§4.4). ⚠ Ni `UnityEngine.Random` (état global) ni `System.Random` (suite non stable d'un runtime à l'autre) | `tests/AleatoireTests.cs` |
+| `Plateau.cs` | Mise en page de l'aire (GDD §4.3) : taille de case déduite du cadre 1280×720 bandeau déduit, centre de chaque case, ancrage du pictogramme de refus. ⚠ Unité = **pixel du cadre de référence** | `tests/PlateauTests.cs` |
+| `Demarrage.cs` | Le départ à l'arrêt (§4.1) : quelle première direction lance la partie, laquelle est refusée | `tests/DemarrageTests.cs` |
+| `RetourRefus.cs` | Registre visuel d'un refus (ART §5) : pictogramme, texte de pause, ou silence ; échéances et opacité du retour | `tests/RetourRefusTests.cs` |
+| `ReglagesJeu.cs` | Schéma du JSON de tuning + `Valider()`. Voir §Data | `tests/ReglagesJeuTests.cs` |
 | `EXEMPLE_Regle.cs` | Gabarit — à supprimer quand `Rules/` sera bien peuplé. |  |
 
 ⚠ Le refus d'une entrée (`ResultatEmpilage`, `ResultatTick.DemiTourRefuse`) est **rendu à
 l'appelant**, jamais avalé : le §3 exige que le refus se voie à l'écran. Le câblage moteur de ce
-retour visuel reste **à faire** (`Gameplay/` et `UI/` sont vides au 2026-08-27), tout comme la **pause à la perte de focus** (`Application.focusChanged`) que suppose le plafond de rattrapage de `Cadence`, et le **démarrage à l'arrêt** (§4.1 : le premier tick est déclenché par la première direction *applicable*, ce qui se décide avec `Directions.EstDemiTour` côté moteur, pas dans `FileEntrees`).
+retour est fait (`JeuSnake.SignalerRefus` → `VuePlateau.AfficherRefus`), tout comme la pause à la
+perte de focus et le démarrage à l'arrêt.
+
+⚠ **Le seul aléa du jeu passe par `Aleatoire`, et l'instance de la partie ne sert qu'à la pomme**
+(§4.4). Un effet visuel ou audio qui y puiserait un nombre décalerait toute la suite des pommes et
+casserait l'appariement d'un banc, **sans qu'aucun test ne tombe**. Tout autre besoin prend sa propre
+instance — voir `JeuSnake._grainesDeSession`, qui en est le premier exemple.
 
 ⚠ `tests/SnakeSnack.Tests.csproj` compile `..\Assets\Scripts\Rules\*.cs` — glob **non récursif**,
 et avec `ImplicitUsings`/`Nullable` activés contrairement à Unity. Voir `docs/PITFALLS_UNITY.md`
@@ -68,8 +81,8 @@ et avec `ImplicitUsings`/`Nullable` activés contrairement à Unity. Voir `docs/
 | Fichier | Responsabilité |
 |---|---|
 | `JeuSnake.cs` | **Le seul MonoBehaviour qui décide** : lit le clavier, fait tiquer la cadence, enchaîne les états. Ne porte aucune règle — tout est délégué à `Rules/` |
-| `EtatPartie.cs` | Les quatre états : `EnAttente`, `EnCours`, `EnPause`, `Mort` |
-| `VuePlateau.cs` | Dessine aire, traits, bordure, serpent (pool réutilisé) et chevron de refus |
+| `EtatPartie.cs` | Les cinq états : `EnAttente`, `EnCours`, `EnPause`, `Mort`, `Victoire` (grille pleine, §4.4) |
+| `VuePlateau.cs` | Dessine aire, traits, bordure, serpent (pool réutilisé), **pomme** (losange, forme distincte des carrés du serpent) et chevron de refus |
 | `FormesPrimitives.cs` | Le carré blanc 1×1 px dont tout le rendu est fait — aucun asset importé |
 
 Le seul objet posé dans la scène est `Jeu` (voir `SceneBuilder.BuildJeu`) ; `VuePlateau` et `HudJeu`
@@ -92,7 +105,7 @@ l'écran de jeu.
 
 | Où | Quoi |
 |---|---|
-| `Assets/StreamingAssets/reglages.json` | Cadence, plafond de rattrapage, dimensions de grille, profondeur de file, durées du retour de refus |
+| `Assets/StreamingAssets/reglages.json` | Cadence, plafond de rattrapage, dimensions de grille, profondeur de file, durées du retour de refus, **graine des pommes** (`0` = une neuve à chaque partie ; toute autre valeur = mode banc, mêmes pommes à chaque partie) |
 | `Assets/Scripts/Rules/ReglagesJeu.cs` | Le schéma correspondant + `Valider()`, qui **corrige jamais en silence** |
 | `Assets/Scripts/Core/ChargeurReglages.cs` | La lecture côté moteur |
 

@@ -44,6 +44,14 @@ namespace SnakeSnack.UI
         /// <summary>Tête du serpent — plus claire, ET plus grosse (l'information n'est jamais portée par la seule couleur).</summary>
         public static readonly Color TeteSerpent = Gris(0.94f);
 
+        /// <summary>
+        /// La pomme. ⚠ Elle se distingue du serpent par sa <b>forme</b> (un losange, contre des
+        /// carrés) et par sa <b>taille</b> avant de se distinguer par son gris : c'est la règle de
+        /// l'ART §4, et le seul moyen qu'un joueur daltonien la trouve quand la palette réelle
+        /// remplacera ces gris.
+        /// </summary>
+        public static readonly Color Pomme = Gris(0.80f);
+
         /// <summary>Pictogramme de refus : le signal le plus clair de l'écran, il doit primer.</summary>
         public static readonly Color Pictogramme = Gris(1.00f);
 

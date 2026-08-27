@@ -1,6 +1,6 @@
 namespace SnakeSnack.Gameplay
 {
-    /// <summary>Les quatre états d'une partie (GDD §2 et §4.1).</summary>
+    /// <summary>Les cinq états d'une partie (GDD §2, §4.1 et §4.4).</summary>
     public enum EtatPartie
     {
         /// <summary>
@@ -20,6 +20,18 @@ namespace SnakeSnack.Gameplay
         EnPause,
 
         /// <summary>Mort contre un mur ou contre son propre corps. Espace relance (§2).</summary>
-        Mort
+        Mort,
+
+        /// <summary>
+        /// Le serpent remplit la grille : plus une case libre, donc plus de pomme à poser (§4.4).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Cet état est hors de portée humaine</b> — 312 pommes sur la grille par défaut — et
+        /// doit néanmoins exister. Sans lui, le tirage de la pomme part sur un intervalle vide au
+        /// dernier tick de la partie parfaite : le jeu casse ou se fige, précisément dans la seule
+        /// situation qu'aucune session de test n'atteindra jamais. Même écran et même relance à une
+        /// touche que la mort, avec un libellé distinct.
+        /// </remarks>
+        Victoire
     }
 }
