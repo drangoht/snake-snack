@@ -60,6 +60,7 @@ Logique pure, sans dépendance moteur, **testée**. C'est ici que vit toute règ
 | `Demarrage.cs` | Le départ à l'arrêt (§4.1) : quelle première direction lance la partie, laquelle est refusée | `tests/DemarrageTests.cs` |
 | `RetourRefus.cs` | Registre visuel d'un refus (ART §5) : pictogramme, texte de pause, ou silence ; échéances et opacité du retour | `tests/RetourRefusTests.cs` |
 | `ReglagesJeu.cs` | Schéma du JSON de tuning + `Valider()`. Voir §Data | `tests/ReglagesJeuTests.cs` |
+| `Score.cs` | Score et record (GDD §4.5) : +1 par pomme, **record qui monte pendant la partie**, prédicat « record battu » jugé contre le record d'AVANT la partie (égaler ne bat pas), normalisation d'un record abîmé, et `longueur == 3 + score` | `tests/ScoreTests.cs` |
 | `EXEMPLE_Regle.cs` | Gabarit — à supprimer quand `Rules/` sera bien peuplé. |  |
 
 ⚠ Le refus d'une entrée (`ResultatEmpilage`, `ResultatTick.DemiTourRefuse`) est **rendu à
@@ -84,6 +85,7 @@ et avec `ImplicitUsings`/`Nullable` activés contrairement à Unity. Voir `docs/
 | `EtatPartie.cs` | Les cinq états : `EnAttente`, `EnCours`, `EnPause`, `Mort`, `Victoire` (grille pleine, §4.4) |
 | `VuePlateau.cs` | Dessine aire, traits, bordure, serpent (pool réutilisé), **pomme** (losange, forme distincte des carrés du serpent) et chevron de refus |
 | `FormesPrimitives.cs` | Le carré blanc 1×1 px dont tout le rendu est fait — aucun asset importé |
+| `RecordPersistant.cs` | Le record entre deux sessions (`PlayerPrefs`, clé `snakesnack.record`). ⚠ **Meilleur effort** : lecture impossible → zéro, écriture impossible → journal, jamais d'erreur bloquante. `Save()` explicite, sinon l'onglet fermé perd le record |
 
 Le seul objet posé dans la scène est `Jeu` (voir `SceneBuilder.BuildJeu`) ; `VuePlateau` et `HudJeu`
 sont ajoutés au démarrage par `JeuSnake`, pour qu'aucune référence sérialisée ne puisse se perdre à
@@ -93,7 +95,7 @@ la régénération de la scène.
 
 | Fichier | Responsabilité |
 |---|---|
-| `HudJeu.cs` | Construit et pilote les textes : état, commandes, écrans de pause et de mort, ligne « touche ignorée » |
+| `HudJeu.cs` | Construit et pilote les textes : état, commandes, **score et record permanents** (bandeau du haut, §4.5), écrans de pause et de mort avec leur récapitulatif, ligne « touche ignorée » |
 | `TextesUi.cs` | **Tous les libellés**, en un seul endroit. Aucun texte en dur ailleurs |
 | `PaletteProvisoire.cs` | Niveaux de gris **provisoires** — à remplacer par la palette de `docs/ART.md` §1 quand elle existera |
 | `BuildStampLabel.cs` | Tampon de version, sur son propre canevas |

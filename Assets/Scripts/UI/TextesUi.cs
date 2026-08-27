@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace SnakeSnack.UI
 {
     /// <summary>
@@ -55,10 +57,8 @@ namespace SnakeSnack.UI
         public const string RefusEnPause = "Touche ignorée - le jeu est en pause";
 
         /// <summary>
-        /// Message de mort. ⚠ Le GDD §2 prévoit « score et record affichés sur place » : ils
-        /// <b>manquent</b> encore ici. La pomme fait bien grandir le serpent, mais le comptage,
-        /// l'affichage permanent et le record du §4.5 sont un lot à part — c'est là que ces deux
-        /// nombres arriveront, avec la mention « nouveau record ».
+        /// Message de mort. Le GDD §2 veut « score et record affichés sur place » : ils le sont, par
+        /// le récapitulatif de <see cref="RecapitulatifDeFin"/> posé juste sous ce titre.
         /// </summary>
         public const string TitreMort = "PERDU";
 
@@ -77,5 +77,37 @@ namespace SnakeSnack.UI
 
         /// <summary>Sous-titre de la victoire : le serpent occupe toute la grille.</summary>
         public const string SousTitreVictoire = "Plus une seule case libre - Espace pour rejouer";
+
+        /// <summary>Bandeau, score de la partie en cours (GDD §4.5).</summary>
+        public static string LigneScore(int points)
+        {
+            return "Score " + points.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Bandeau, record de toutes les parties (GDD §4.5).</summary>
+        public static string LigneRecord(int record)
+        {
+            return "Record " + record.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Le récapitulatif de l'écran de fin, mort ou victoire.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>La mention « nouveau record » n'est pas un ornement</b> (GDD §4.5) : quand le record
+        /// vient d'être battu, score et record portent le <b>même nombre</b>, et deux valeurs
+        /// identiques côte à côte se lisent comme un défaut d'affichage. Sans cette phrase, le seul
+        /// moment gratifiant du jeu passe pour un bug. On n'affiche alors qu'un seul nombre : le
+        /// répéter sous deux étiquettes serait exactement la confusion qu'on cherche à lever.
+        /// </remarks>
+        public static string RecapitulatifDeFin(int points, int record, bool recordBattu)
+        {
+            if (recordBattu)
+            {
+                return "Nouveau record : " + points.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return LigneScore(points) + "   -   " + LigneRecord(record);
+        }
     }
 }

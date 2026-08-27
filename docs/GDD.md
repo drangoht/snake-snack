@@ -289,9 +289,9 @@ dépôt). La résolution du tick appartient à la règle qui fait déjà avancer
 jamais « quand ». Seule l'étape 6 — remplacer la pomme ou constater la grille pleine — vit dans le
 câblage moteur (`JeuSnake.JouerUnTick`), parce qu'elle touche à l'état de la partie et au rendu.
 
-⚠ **Le score du §4.5 n'est pas encore compté** : la pomme allonge bien le serpent, mais rien
-n'affiche ni ne persiste de nombre. La longueur vaut `3 + score`, donc l'information *existe* à
-l'écran — elle n'est simplement pas lisible comme un score.
+Le score du §4.5 est **compté depuis le 2026-08-28** : l'étape 6 incrémente avant de tirer la
+nouvelle pomme, et avant de constater la grille pleine — la pomme qui remplit la grille a été
+mangée, l'écran de victoire doit afficher le score qui l'inclut.
 
 ### 4.5 Le score et le record
 
@@ -322,8 +322,32 @@ stockage est lié à l'origine du site et **peut disparaître** (navigation priv
 navigateur) : c'est du meilleur effort. Un record illisible ou absent repart de zéro **sans erreur
 bloquante** — le jeu ne doit jamais refuser de démarrer pour un compteur.
 
-Règles pressenties : `Assets/Scripts/Rules/Score.cs` — comptage, comparaison au record, prédicat
-« record battu ». La lecture/écriture persistante et l'affichage vivent hors de `Rules/`.
+**Égaler son record ne le bat pas** (précisé à l'implémentation, 2026-08-28). Le prédicat compare le
+score au record **d'avant la partie**, jamais au record courant — celui-ci vient d'être relevé par le
+score lui-même, les comparer donnerait toujours faux. Conséquence assumée : le joueur qui refait
+exactement son meilleur score voit bien deux nombres identiques *sans* mention « nouveau record ». Ce
+n'est pas le défaut d'affichage que la mention existe pour lever : il n'a rien battu.
+
+**Le record est écrit au tick où il monte**, pas à la mort (précisé à l'implémentation, 2026-08-28).
+C'est la conséquence directe de « il monte pendant la partie » : un onglet fermé en cours de partie
+doit garder le record atteint. Le comptage signale lui-même les ticks où le record change, ce qui
+évite d'écrire le stockage à chaque pomme de chaque partie.
+
+**Placement retenu, provisoire** (2026-08-28) : score **à gauche** du bandeau du haut en texte
+principal, record **à droite** en texte secondaire, l'état restant au centre. La hiérarchie se lit
+sans lire les étiquettes : c'est le score courant que le joueur suit. À la mort, un **récapitulatif**
+s'ajoute entre le titre et « Espace pour rejouer » — les deux nombres sont déjà dans le bandeau, mais
+faire remonter le regard tout en haut au moment où l'on décide de rejouer, c'est le perdre. Quand le
+record vient d'être battu, ce récapitulatif n'affiche **qu'un seul nombre** (« Nouveau record : 12 »)
+plutôt que le même deux fois sous deux étiquettes. ⚠ Ce placement est une décision de développement
+faute de brief : le §1 de `docs/ART.md` (palette, typo) est toujours vide, et tout est en gris.
+<!-- à demander au directeur-artistique : le brief de ces deux nombres reste ouvert. -->
+
+Règles **écrites** (2026-08-28) : `Assets/Scripts/Rules/Score.cs` — comptage, montée du record,
+prédicat « record battu », normalisation d'un record abîmé, et l'égalité `longueur == 3 + score` que
+`tests/ScoreTests.cs` vérifie sur le vrai serpent plutôt qu'en commentaire. La lecture/écriture
+persistante vit dans `Assets/Scripts/Gameplay/RecordPersistant.cs` (meilleur effort, jamais
+bloquant), l'affichage dans `Assets/Scripts/UI/HudJeu.cs`.
 
 ## 5. Progression et difficulté
 

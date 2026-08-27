@@ -12,7 +12,7 @@ namespace SnakeSnack.Gameplay
     /// </summary>
     /// <remarks>
     /// ⚠ <b>Aucune règle n'est décidée ici.</b> La cadence, la file, le demi-tour, le démarrage, la
-    /// mort et la mise en page viennent tous de <c>Rules/</c>, testés sans moteur. Ce composant ne
+    /// mort, le score et la mise en page viennent tous de <c>Rules/</c>, testés sans moteur. Ce composant ne
     /// fait que trois choses qu'une classe pure ne peut pas faire : lire un clavier, mesurer le
     /// temps, poser des objets à l'écran. Toute règle qui remonterait ici deviendrait une seconde
     /// vérité, et c'est elle qui finirait par diverger.
@@ -57,6 +57,18 @@ namespace SnakeSnack.Gameplay
         /// <summary>Case de la pomme. Il y en a une <b>à tout instant</b> pendant une partie (§4.4).</summary>
         private Case _pomme;
 
+        /// <summary>
+        /// Score de la partie et record de toutes les parties (§4.5).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Construit une seule fois, à l'ouverture du jeu</b>, et jamais remplacé à la relance :
+        /// c'est lui qui porte le record entre deux parties. Le remplacer par un neuf à chaque
+        /// nouvelle partie relirait le stockage à chaque mort — et surtout, ferait repartir le
+        /// record à sa valeur écrite, perdant celui d'une partie en cours dont l'écriture aurait
+        /// échoué.
+        /// </remarks>
+        private Score _score;
+
         private EtatRetourAEcheance _refusPictogramme;
         private EtatRetourAEcheance _refusTextePause;
         private Direction _directionRefusee;
@@ -87,6 +99,10 @@ namespace SnakeSnack.Gameplay
             _vue.Construire(_plateau);
 
             _hud = gameObject.AddComponent<HudJeu>();
+
+            // Le record vient du stockage du moteur ; tout ce qui se décide à son sujet appartient
+            // à Score (§4.5). Un record absent ou abîmé vaut zéro et ne bloque rien.
+            _score = new Score(RecordPersistant.Lire());
 
             // La graine de session vient de l'horloge : c'est le seul aléa non reproductible du jeu,
             // et il ne sert qu'à ce que deux sessions ne commencent pas sur les mêmes pommes.
@@ -284,8 +300,21 @@ namespace SnakeSnack.Gameplay
                 return;
             }
 
-            // Étape 6 — la victoire se teste AVANT le tirage : sans case libre, le tirage n'a
-            // aucune valeur à rendre et lèverait, au dernier tick de la partie parfaite.
+            // Étape 6 — le score d'abord (§4.4 : « score +1, puis tirer la nouvelle pomme »). Compté
+            // même quand cette pomme est celle qui remplit la grille : elle a été mangée, l'écran de
+            // victoire doit afficher le score qui l'inclut.
+            if (_score.CompterUnePomme())
+            {
+                // ⚠ Écrit ICI, au tick où le record monte, et pas à la mort : le §4.5 veut que le
+                // record survive à un onglet fermé en cours de partie. Le signal rendu par
+                // CompterUnePomme évite d'écrire le stockage à chaque pomme de chaque partie.
+                RecordPersistant.Ecrire(_score.Record);
+            }
+
+            _hud.AfficherScore(_score.Points, _score.Record, _score.RecordBattu);
+
+            // La victoire se teste AVANT le tirage : sans case libre, le tirage n'a aucune valeur à
+            // rendre et lèverait, au dernier tick de la partie parfaite.
             if (Pomme.GrillePleine(_grille, _serpent.Longueur))
             {
                 Gagner();
@@ -397,6 +426,10 @@ namespace SnakeSnack.Gameplay
             _serpent.Reinitialiser(pose.Segments);
             _file.Reinitialiser(pose.Orientation);
 
+            // Le score repart de zéro, le record survit — et « record battu » redevient faux, sans
+            // quoi la mention resterait affichée sur l'écran de fin de la partie suivante.
+            _score.NouvellePartie();
+
             _tempsAccumule = 0.0;
             _etat = EtatPartie.EnAttente;
 
@@ -413,6 +446,11 @@ namespace SnakeSnack.Gameplay
             _vue.DessinerSerpent(_serpent.Segments);
             _vue.DessinerPomme(_pomme);
             _vue.MasquerRefus();
+
+            // ⚠ Les nombres AVANT l'état : Afficher() compose le récapitulatif de fin à partir des
+            // derniers nombres reçus. Dans l'autre ordre, l'écran de mort porterait le score de la
+            // partie précédente pendant une image.
+            _hud.AfficherScore(_score.Points, _score.Record, _score.RecordBattu);
             _hud.Afficher(_etat);
             _hud.AfficherRefusEnPause(false);
         }
