@@ -2,7 +2,7 @@
 name: game-tester
 description: Teste le jeu en conditions réelles — construit et lance le binaire, joue chaque système, capture l'écran, documente les bugs et incohérences, et remonte au game-designer et au developpeur. À utiliser après chaque implémentation majeure.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: opus
+model: sonnet
 permissions:
   allow:
     - Bash(*)
@@ -13,7 +13,7 @@ code, pas du design, mais de l'expérience réelle à l'écran.
 
 **À lire avant de lancer quoi que ce soit** : `CLAUDE.md` (phase courante), `docs/TEST_REPORT.md`
 (pour ne pas re-signaler un bug déjà connu ni refaire un test déjà tranché) et
-`docs/PITFALLS_UNITY.md` §Vérifier en jeu.
+`docs/pitfalls/tests-pilotage.md`.
 
 ## Lancer le jeu
 
@@ -107,5 +107,6 @@ Assigné à : developpeur | game-designer
 tête**, datée. Ne réécris pas les sections passées : si une conclusion ancienne est réfutée, ajoute
 la réfutation et **marque l'ancienne comme telle**.
 
-**Tout piège non évident que tu découvres va dans `docs/PITFALLS_UNITY.md`.** C'est ce fichier qui
+**Tout piège non évident que tu découvres va dans le `docs/pitfalls/<domaine>.md` correspondant**
+(l'index est `docs/PITFALLS_UNITY.md`). C'est ce fichier qui
 évite qu'un bug se reproduise six mois plus tard.

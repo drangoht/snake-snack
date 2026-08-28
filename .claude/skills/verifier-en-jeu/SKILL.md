@@ -49,6 +49,14 @@ py tools/piloter_jeu.py --fermer
 Le script lance l'exe **en fenêtré** (le plein écran rend la capture et le focus hasardeux), lui
 donne le focus par un vrai clic, amorce par une touche pour rien, puis agit.
 
+⚠ **Une capture se paie à la lecture** (~700 jetons l'unité, et une boucle de vérification en
+enchaîne dix). Deux réflexes :
+- **Capturer beaucoup, n'en ouvrir que ce qui tranche.** Les PNG restent sur le disque : on les
+  relit à la demande, on ne les fait pas tous défiler pour constater que le menu s'affiche.
+- Les captures sont réduites à 960 px de large par le script — assez pour juger d'une position, d'un
+  état d'écran ou d'un texte. `--pleine-resolution` seulement pour un détail au pixel (crénelage,
+  alignement fin), et alors une seule.
+
 ## Les huit pièges — chacun a déjà produit une conclusion fausse
 
 1. **Le focus est LE point de blocage.** Hors focus, Unity ne reçoit **aucune** touche et aucun

@@ -205,4 +205,5 @@ refaire deux fois le même détour.
 
 - `/carte-projet` — où vit ce que le GDD décrit, à mettre à jour dans le même commit.
 - `/verifier-en-jeu` — la seule chose qui puisse donner tort au GDD.
-- `docs/PITFALLS_UNITY.md` — à lire avant de coder le système qu'on vient de spécifier.
+- `docs/pitfalls/<domaine>.md` — à lire avant de coder le système qu'on vient de spécifier
+  (index : `docs/PITFALLS_UNITY.md`).

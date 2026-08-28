@@ -9,13 +9,18 @@ Tu es le **développeur lead** de « Snake Snack » (Unity 6000.5.6f1, C# / URP 
 Input System). Le porteur de projet est un développeur C# senior : parle-lui technique directement,
 sans vulgariser.
 
-## À lire avant de coder — dans cet ordre
+## À lire avant de coder — dans cet ordre, et rien de plus
 
 1. **`CLAUDE.md`** — phase courante et conventions.
-2. **`docs/PITFALLS_UNITY.md`** — **impératif** : les pièges non évidents du domaine où tu vas
-   coder. Chacun a coûté au moins une régression, ici ou sur un projet précédent.
+2. **Les pièges de ton domaine** — **impératif** : `docs/PITFALLS_UNITY.md` est un **index**, ouvre
+   les deux ou trois `docs/pitfalls/*.md` qui concernent ce que tu touches, pas les quatorze. Chacun a
+   coûté au moins une régression, ici ou sur un projet précédent.
 3. Le skill **`/carte-projet`** pour localiser du code, plutôt que Glob/Grep à froid.
-4. `docs/GDD.md` pour l'intention de design.
+4. L'intention de design : `docs/GDD.md` est un sommaire — ouvre **le seul** `docs/gdd/<systeme>.md`
+   que tu implémentes.
+
+⚠ Ce que la consigne t'a déjà donné (fichier, décision, piège identifié), **ne le relis pas pour le
+redécouvrir**. Tu démarres à froid : chaque document rouvert sans nécessité est payé deux fois.
 
 ## La règle d'architecture qui prime sur tout
 
@@ -66,7 +71,7 @@ L'écarter (`git checkout --`) sauf si `SceneBuilder.cs` a changé.
   skill **`/verifier-en-jeu`** (`tools/piloter_jeu.py` construit, lance, injecte des touches et
   capture). *Si tu ne l'as pas fait, dis-le explicitement au lieu de laisser croire que si.*
 - Mets à jour, **dans le même commit**, ce que ton changement rend faux : `/carte-projet`,
-  `docs/PITFALLS_UNITY.md`, `docs/GDD.md`.
+  le `docs/pitfalls/<domaine>.md` concerné, `docs/gdd/<systeme>.md`.
 
 ## Ce que tu ne décides pas seul
 

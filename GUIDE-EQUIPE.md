@@ -2,13 +2,31 @@
 
 Comment sont organisés les agents et les skills du projet, et quand invoquer lequel.
 
+## D'abord : déléguer a un prix
+
+Un agent **démarre à froid**. Il ne sait rien de la session en cours : il relit `CLAUDE.md`, le GDD,
+la carte, les pièges — de l'ordre de **8 000 jetons avant sa première action**, souvent les mêmes
+documents qu'on vient de lire soi-même.
+
+**Déléguer quand la tâche est dans sa spécialité *et* assez grosse pour amortir ça** : concevoir ou
+équilibrer un système, une passe de test complète, une release, une production d'assets. **Faire
+soi-même** : une correction de dix lignes, une question, une lecture, un renommage, un test unitaire
+à rejouer.
+
+Et quand on délègue : **écrire dans la consigne ce qu'on sait déjà** — les fichiers concernés, la
+décision prise, le piège identifié, le message d'erreur exact. Un agent à qui l'on donne son point de
+départ ne le redécouvre pas.
+
+⚠ La chaîne complète ci-dessous (« Comment un chantier s'enchaîne ») vaut pour un **chantier**. La
+dérouler pour un ajustement de valeur coûte cinq démarrages à froid pour trois lignes changées.
+
 ## Les 9 agents (`.claude/agents/`)
 
 | Agent | Quand l'invoquer | Modèle |
 |---|---|---|
 | **`developpeur`** | Code, architecture, build, tests | opus |
 | **`game-designer`** | Design, équilibrage, valeurs de tuning, scope | opus |
-| **`game-tester`** | Après toute implémentation majeure — joue et documente | opus |
+| **`game-tester`** | Après toute implémentation majeure — joue et documente | sonnet |
 | **`release-manager`** | Publier une version de bout en bout + rédiger le devlog | sonnet |
 | **`directeur-artistique`** | Identité visuelle, cohérence, briefs graphiques | sonnet |
 | **`graphiste`** | Sprites, VFX, icônes — via les générateurs Python | sonnet |
@@ -57,9 +75,9 @@ joué, et le testeur n'a rien senti.
 | Question | Document |
 |---|---|
 | Phase courante, conventions | `CLAUDE.md` (chargé automatiquement) |
-| *Pourquoi* le jeu est réglé ainsi | `docs/GDD.md` — le remplir : `/rediger-le-gdd` |
+| *Pourquoi* le jeu est réglé ainsi | `docs/GDD.md` (sommaire) → `docs/gdd/<systeme>.md` — le remplir : `/rediger-le-gdd` |
 | *Où* se trouve quoi | skill `/carte-projet` |
-| Quels pièges guettent | `docs/PITFALLS_UNITY.md` |
+| Quels pièges guettent | `docs/pitfalls/<domaine>.md` (index : `docs/PITFALLS_UNITY.md`) |
 | Ce qui a été testé | `docs/TEST_REPORT.md` |
 | Ce qui est réellement sorti | `docs/DEVLOG.md` |
 | Publier | `docs/RELEASE.md` + `/publier-itch` |

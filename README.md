@@ -42,7 +42,7 @@ Assets/
 tests/               xUnit sur Assets/Scripts/Rules/ — aucun moteur requis
 tools/               build.ps1 · configurer.ps1 · environnement.ps1 · release_itch.ps1
                      serve_web.py · piloter_jeu.py
-docs/                GDD · PITFALLS_UNITY · RELEASE · DEVLOG · TEST_REPORT · ITCH_STORE_PAGE
+docs/                GDD (+ gdd/) · PITFALLS_UNITY (+ pitfalls/) · RELEASE · DEVLOG · TEST_REPORT
 .claude/             9 agents · 3 skills · 2 hooks
 ```
 
@@ -88,7 +88,7 @@ l'autre, et lancé par `&` en PowerShell il rend la main **immédiatement sans r
 
 Les trois réflexes qui comptent :
 - **`/carte-projet`** avant d'explorer le code ;
-- **`docs/PITFALLS_UNITY.md`** avant de coder dans un domaine ;
+- **`docs/pitfalls/<domaine>.md`** avant de coder dans ce domaine (index : `docs/PITFALLS_UNITY.md`) ;
 - **`/verifier-en-jeu`** avant d'écrire « ça devrait marcher ».
 
 ## Publier

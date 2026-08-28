@@ -12,7 +12,7 @@ namespace SnakeSnack.UI
     /// littéraux disséminés dans des <c>MonoBehaviour</c>.
     ///
     /// <para>⚠ <b>Aucun symbole hors ASCII autre que les accents français.</b> Interdits explicites
-    /// de <c>docs/ART.md</c> §5.7 et de <c>docs/PITFALLS_UNITY.md</c> : les flèches Unicode
+    /// de <c>docs/ART.md</c> §5.7 et de <c>docs/pitfalls/polices-texte.md</c> : les flèches Unicode
     /// (← → ↑ ↓) sont perdues <b>en silence</b> par un build WebGL, sans carré blanc ni
     /// avertissement. Tout symbole directionnel est un <b>sprite</b>, jamais un caractère. Le tiret
     /// cadratin (—) est proscrit pour la même raison : un tiret simple le remplace partout.</para>
@@ -40,7 +40,7 @@ namespace SnakeSnack.UI
 
         /// <summary>
         /// Rappel permanent des commandes (GDD §3, et le piège « invisible se lit inexistant » de
-        /// <c>docs/PITFALLS_UNITY.md</c> : une capacité qui n'annonce pas sa touche n'existe pas
+        /// <c>docs/pitfalls/interface.md</c> : une capacité qui n'annonce pas sa touche n'existe pas
         /// pour le joueur).
         /// </summary>
         public const string RappelDesCommandes = "Fleches ou ZQSD : diriger   -   Echap : pause   -   Espace : relancer";
