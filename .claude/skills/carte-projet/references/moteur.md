@@ -21,6 +21,7 @@ la régénération de la scène.
 | `HudJeu.cs` | Construit et pilote les textes : état, commandes, **score et record permanents** (bandeau du haut, §4.5), écrans de pause et de mort avec leur récapitulatif, ligne « touche ignorée » |
 | `TextesUi.cs` | **Tous les libellés**, en un seul endroit. Aucun texte en dur ailleurs |
 | `UiPalette.cs` | Les **12 rôles de couleur** de `docs/ART.md` §1. ⚠ Le seul endroit du dépôt où une couleur est écrite en dur |
+| `Assets/Resources/Polices/` | Les deux graisses Nunito (SemiBold, ExtraBold) + `OFL.txt`. ⚠ **Produites** par `tools/generer_polices.py`, chargées PAR CHEMIN (`Resources.Load`) — le HUD n'a aucune référence sérialisée |
 | `BuildStampLabel.cs` | Tampon de version, sur son propre canevas |
 
 Il n'y a pas encore d'écrans distincts : pause et mort sont un voile et deux lignes de texte sur

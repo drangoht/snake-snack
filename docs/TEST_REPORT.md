@@ -8,6 +8,84 @@ datée, avec la version testée.
 > de valeur que la correction. C'est ce fichier qui évite de re-signaler un bug connu et de refaire
 > un test déjà tranché.
 
+## Session du 2026-08-28 (2) — v1.0-a735c8d+ (builds Windows ET web)
+
+**Portée** : la typographie d'`ART.md` §2 réellement câblée (famille, graisses, tailles), et le
+correctif de BUG-002. **Première session à vérifier dans un navigateur**, ce que la précédente
+n'avait pas fait. **Non testé** : l'écran de mort et la victoire, la page itch, le tactile, une
+fenêtre de navigateur étroite (les tailles du §2.3 sont calées sur 1280×720 et *rétrécissent* en
+dessous — jamais mesuré ailleurs qu'en plein cadre).
+
+**Méthode** : `tools/generer_polices.py`, puis `tools/build.ps1` et `tools/build.ps1 -Target web`.
+Windows : `tools/piloter_jeu.py --touches "haut,echap,bas"`. Web : `tools/serve_web.py --port 8099`
+et un script jetable qui lance Chrome sur l'URL, **clique dans le canevas**, injecte les mêmes
+touches et capture la fenêtre. Captures : `docs/verif-police-attente.png`,
+`docs/verif-police-pause.png`, `docs/verif-web-accents.png`.
+
+**Le point de méthode qui compte** : la valeur attendue a été écrite avant la capture, en rangées de
+pixels. Le canevas de 720 px se projette sur les rangées client 38..757 ; la boîte du rappel des
+commandes, haute de 24 px et ancrée à 14 px du bas, a donc son bas en rangée **755** — prédiction :
+« aucun pixel de texte sous 755, le jambage du `g` descend jusqu'à ~754 ». Mesuré : corps du texte
+jusqu'à 749, jambages sur 750-753, **rien en 754**. Avant correctif, le texte s'arrêtait net en 756,
+tronqué par le bord.
+
+### Ce qui fonctionne
+- **Nunito est à l'écran**, dans ses deux graisses : le bandeau (`Score` / `Record` / état) et les
+  titres sont visiblement plus gras que le rappel des commandes et les sous-titres. La hiérarchie
+  se lit **sans lire les mots**, ce qui est tout l'objet du §2.2.
+- **BUG-002 corrigé** : jambages de `g`, `p`, `q` entiers, mesure ci-dessus à l'appui.
+- **Les accents survivent au WebGL.** « Touche ignorée » s'affiche avec son `é` **dans Chrome**, sur
+  le build web servi en local. C'est la seule vérification qui compte pour ce piège : sur le bureau,
+  un glyphe manquant est masqué par le repli sur les polices système, en silence.
+- La `cmap` du fichier **instancié** (pas de l'amont) porte les **125 caractères exigés** — ASCII
+  32-126 plus les 30 accents français — sur 938 glyphes. Le générateur refuse d'écrire s'il en
+  manque un.
+- Import Unity propre : `TrueTypeFontImporter`, `includeFontData: 1`, 129,6 ko embarqués par
+  graisse. **0 avertissement, 0 erreur** de compilation sur les deux builds. `dotnet test` : 157.
+- Le scénario complet passe **à l'identique** dans le navigateur : démarrage sur la première
+  direction, pause, ligne de refus. Aucune divergence bureau / web constatée.
+
+### [BUG-001] — RÉSOLU (ouvert dans la session précédente)
+Résolution retenue par l'auteur : **instancier** Nunito plutôt que changer de famille.
+`tools/generer_polices.py` fige `wght=600` et `wght=800` avec `fontTools.varLib.instancer` et écrit
+`Assets/Resources/Polices/`. Le piège documenté vise l'import d'un fichier *variable* dans Unity ;
+une instance extraite est un `.ttf` statique ordinaire. Licence vérifiée avant de nommer les
+fichiers : Nunito ne déclare **aucun Reserved Font Name**, le nom est donc conservé légalement
+(`docs/CREDITS.md`). ⚠ Le constat de la session précédente **reste vrai et ne doit pas être effacé** :
+`google/fonts` ne publie aucune graisse statique de Nunito, et l'amont ne les construit pas.
+
+### [BUG-002] — RÉSOLU (ouvert dans la session précédente)
+Ancrage du `RappelDesCommandes` remonté de 10 à 14 px : la boîte de 24 px tient entière, avec 2 px de
+reste. ⚠ **Ce correctif ne referme pas l'arbitrage de fond** : il n'y a toujours **aucune marge sous
+l'aire de jeu**, la ligne se lit toujours par-dessus la dernière rangée de cases et contre la bordure
+ambre. `docs/gdd/grille.md` reste ouvert chez `game-designer` — ni la grille ni le gabarit du §3
+n'ont été touchés.
+
+### [BUG-003] Le tampon de build est à 14 px, sous le plancher de 18 px
+Sévérité : Cosmétique
+Contexte : `SceneBuilder.cs`, tampon de version en bas à droite, présent sur tous les écrans.
+Observé / Attendu : il est construit à 14 px sur la police intégrée `LegacyRuntime.ttf`, alors que
+`ART.md` §2.5 interdit « un texte en dessous de 18 px à la résolution de référence » et que tout le
+reste du HUD est passé à Nunito.
+Hypothèse : le tampon a été écrit avant le brief, et il est volontairement discret — le relever à
+18 px et le passer en Nunito le rendrait plus voyant qu'on ne le souhaite peut-être.
+Assigné à : `directeur-artistique` (soit le tampon sort du périmètre du §2 et le brief doit le dire,
+soit il s'y plie). **Non modifié** : c'est un arbitrage de discrétion, pas une correction technique.
+
+### Ressenti
+**Nunito tient ce que le brief lui demandait.** À 18 px, le rappel des commandes reste confortable là
+où la police intégrée devenait sèche ; à 56 px, « PAUSE » en ExtraBold est franchement plus présent
+qu'avant, sans devenir enfantin. Le pari « ronde mais sobre » est gagné sur un écran de bureau.
+
+**Ce dont je n'ai aucune preuve** : le rendu sur la fenêtre réduite d'une page itch. Toutes les
+mesures de cette session sont prises en plein cadre 1280×720, et le §2.3 dit explicitement que ces
+corps *rétrécissent* en dessous. Le plancher de 18 px a été posé pour ça, mais il n'a jamais été
+regardé à l'échelle où il compte. C'est le premier test à faire après la mise en ligne de la 0.1.0.
+
+**Le chevron de refus** reste ce que la session précédente en disait : une tache blanche de
+12 × 24 px, lisible comme « quelque chose a été refusé », pas comme « cette direction-là ». Reporté
+après la 0.1.0 par décision de l'auteur — aucun travail engagé dessus.
+
 ## Session du 2026-08-28 — v1.0-b5fa662+ (build Windows)
 
 **Portée** : la palette d'`ART.md` §1 câblée dans `UiPalette.cs`, et les tailles de texte du §2.3

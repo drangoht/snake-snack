@@ -37,3 +37,13 @@ ressemble à un fichier téléchargé.
 absentes par retard de publication, mais jamais construites** — inutile d'aller les chercher
 ailleurs, de chercher une release, ou d'attendre. Vérifier les deux : le listing du dossier dit
 l'état, `upstream_info.md` dit s'il changera.
+
+**Ce qui marche, et qui n'oblige pas à changer de famille** : **instancier** le variable à un poids
+fixe (`fontTools.varLib.instancer`, `updateFontNames=True`). Le produit est un `.ttf` **statique
+ordinaire** — Unity l'importe en `TrueTypeFontImporter` comme n'importe quel autre, et l'interdit
+« jamais un fichier variable importé comme s'il fixait un poids » ne le vise pas : le poids est figé
+dans le fichier, pas choisi au runtime. Fait ici par `tools/generer_polices.py` (Nunito 600 / 800).
+⚠ Deux contrôles qui ne lèvent rien si on les saute : la **table `cmap` du fichier instancié** (c'est
+lui qui est importé, pas l'amont), et le **Reserved Font Name** dans l'`OFL.txt` — s'il y en a un, la
+version modifiée ne peut **pas** garder le nom de la famille, et rien dans l'outillage ne le
+signalera.

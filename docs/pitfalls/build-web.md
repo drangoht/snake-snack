@@ -45,3 +45,12 @@ annoncerait à tous les joueurs Windows une mise à jour qui n'existe pas.
 **⚠ Unity dépose un dossier `Data/` (code Burst) à la RACINE du projet** lors d'un build WebGL, hors
 de tout dossier de build. Artefact — ignoré par git.
 
+
+**⚠ Un build web modifie `ProjectSettings/ProjectSettings.asset` — et rien ne le restaure.**
+Constaté le 2026-08-28, au premier build web du projet. `BuildTools` pose les réglages WebGL
+(`webGLTemplate: PROJECT:SnakeSnack`, format de compression, taille de tas, `defaultScreenWidthWeb`)
+directement dans les réglages de projet **versionnés**, et le script de build ne les remet pas
+ensuite. Le dépôt ressort donc modifié après un `-Target web`, exactement comme la scène — à ceci
+près que **la scène, on l'écarte, et ces réglages-là, non** : ce sont les vrais réglages web du
+projet, et les perdre ferait sortir le prochain build avec le gabarit par défaut d'Unity. Les
+committer une fois, puis ne plus s'en étonner.

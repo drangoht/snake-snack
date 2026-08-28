@@ -43,3 +43,20 @@ Voir le skill **`/verifier-en-jeu`** pour la procédure complète. Les pièges, 
   `Assets/Editor` appelé par `-executeMethod` logge les bornes à deux pixels près. C'est ce qui a
   rattrapé une zone trois fois trop large dont la formule se relisait parfaitement.
 
+
+**⚠ Dans un navigateur, le focus de la FENÊTRE ne suffit pas : c'est le CANEVAS qui doit l'avoir.**
+Constaté le 2026-08-28 en pilotant le build web dans Chrome. `donner_le_focus()` rend `True` — la
+fenêtre est bien au premier plan — et les touches partent quand même à la page, pas au jeu : rien
+ne bouge, aucune erreur. Il faut un **vrai clic au centre du canevas** en plus
+(`_mettre_au_premier_plan_par_clic`).
+⚠ Et surtout **pas l'amorce Tab** du pilote bureau : dans un navigateur, Tab **déplace le focus**
+d'un élément à l'autre, donc l'amorce fait exactement le contraire de ce qu'on lui demande. Le clic
+sert alors des deux : il donne le premier plan ET le focus clavier au canevas.
+
+**⚠ Un scénario de touches peut « réussir » en produisant un tout autre état.** `--touches
+"echap,haut"` devait donner un écran de pause : la capture montrait un serpent en pleine course.
+Échap ne met en pause que depuis `EnCours` — avant le premier appui le jeu est `EnAttente`, la touche
+n'y fait rien, et c'est `haut` qui a lancé la partie. Aucune erreur nulle part : le script a fait son
+travail, le jeu aussi, et la capture racontait autre chose que le test. **Écrire l'état attendu avant
+de lancer le scénario, et le relire sur la capture** — ici, le bandeau disait « Pause » ou ne le
+disait pas.

@@ -36,11 +36,11 @@ tels quels (`/255` → `Color`), aucune reconversion linéaire à faire à la ma
 
 ## 2. Typographie
 
-⛔ **BLOQUÉ au 2026-08-28 : Nunito n'existe qu'en fichier VARIABLE.** `ofl/nunito` de `google/fonts`
-ne publie aucun `static/`, et l'amont porte `buildStatic: false` — la condition à laquelle
-[`art/typographie.md`](art/typographie.md) §2.2 subordonnait cette famille n'est pas remplie. **Le
-HUD reste sur la police intégrée** (`LegacyRuntime.ttf`) ; seules les **tailles** du §2.3 sont
-câblées. Une famille de remplacement reste à trancher (`docs/TEST_REPORT.md`, BUG-001).
+⚠ **Nunito n'existe qu'en fichier VARIABLE chez `google/fonts`** (aucun `static/`, amont en
+`buildStatic: false`). Décision de l'auteur, 2026-08-28 : **on l'instancie** plutôt que de changer de
+famille. `tools/generer_polices.py` fige `wght=600` et `wght=800` avec `fontTools.varLib.instancer`
+et écrit `Assets/Resources/Polices/` — les deux `.ttf` du dépôt ne se retéléchargent pas à la main.
+Nunito ne déclare **aucun Reserved Font Name**, le nom est donc conservé (`docs/CREDITS.md`).
 
 **Famille retenue : Nunito** (SIL OFL), deux graisses seulement — **SemiBold** pour le texte
 secondaire, **ExtraBold** pour les titres et les nombres du HUD. Corps relevé de deux points par

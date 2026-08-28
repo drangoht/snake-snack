@@ -24,16 +24,19 @@ chaque côté — de quoi poser score et record **hors de l'aire de jeu**, sans 
 
 ⚠ **Constaté en jeu le 2026-08-28 : il n'y a de marge qu'en HAUT et sur les CÔTÉS, pas en bas.**
 Les 60 px de bandeau sont pris entièrement en haut, donc l'aire de jeu touche le bord bas du cadre.
-Le rappel des commandes, ancré en bas, **chevauche la dernière ligne de cases** et se fait rogner par
-le bord de l'écran — les jambages des lettres sont coupés sur toute capture. Le score et le record
+Le rappel des commandes, ancré en bas, **chevauche la dernière ligne de cases**.
+(Le rognage des jambages qui l'accompagnait a été corrigé le 2026-08-28 en remontant l'ancrage de 10
+à 14 px — c'était l'ancrage, pas la marge. Le chevauchement, lui, reste entier.) Le score et le record
 du §4.5 n'en souffrent pas (ils sont dans le bandeau du haut), mais la ligne des commandes contredit
 la phrase ci-dessus. Trois issues, aucune tranchée : réserver un bandeau bas (la case retombe à
 `min(1280/21, 600/15)` = 40 px, la grille rétrécit), déplacer le rappel dans une marge latérale, ou
 l'accepter par-dessus l'aire en le remontant de quelques pixels.
 <!-- à trancher : c'est un arbitrage de mise en page, pas un bug de code. -->
-Mesuré le 2026-08-28 sur build Windows : la boîte du rappel est ancrée à 10 px du bas et haute de
-24 px, son bas tombe donc **2 px sous le bord** — la coupe ne vient pas du corps du texte (elle
-existait déjà à 15 px, elle existe à 18 px depuis `ART.md` §2.3), mais de l'ancrage.
+Mesuré le 2026-08-28 sur build Windows : la boîte du rappel était ancrée à 10 px du bas et haute de
+24 px, son bas tombait donc **2 px sous le bord** — la coupe ne venait pas du corps du texte (elle
+existait déjà à 15 px), mais de l'ancrage. **Corrigé** : 14 px, la boîte tient entière, les jambages
+sont complets (revérifié à la capture). ⚠ Ce correctif ne referme PAS cet arbitrage : il n'y a
+toujours aucune marge sous l'aire de jeu, et le texte se lit toujours par-dessus les cases.
 
 **Bornes de la grille réglable** (déduites de la pose de départ, non issues d'un choix de design) :
 largeur ≥ 5 et hauteur ≥ 3 — trois segments alignés depuis la colonne centrale, plus une ligne

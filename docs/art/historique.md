@@ -7,6 +7,20 @@ décision.
 <!-- Une entrée par brief tranché, dans l'ordre chronologique. Garder les variantes écartées et
      leur raison plutôt que les effacer — voir la convention du GDD. -->
 
+- **2026-08-28 — Typographie, méthode d'obtention (§2.2). Famille CONSERVÉE, obtention changée.**
+  Le pari du brief est perdu : Nunito **n'a pas** de graisses statiques chez `google/fonts` (aucun
+  `static/`, amont en `buildStatic: false`), exactement le motif qui avait fait écarter Fredoka —
+  appliqué à la remplaçante. Deux issues étaient possibles : changer encore de famille, ou instancier
+  le variable. **L'auteur a tranché pour l'instanciation** : le piège documenté vise l'import d'un
+  fichier variable dans Unity, pas une instance extraite, qui est un `.ttf` statique ordinaire. Le
+  raisonnement du brief (une ronde sobre, ni géométrique ni bulleuse) n'avait aucune raison d'être
+  refait pour un obstacle d'outillage. Changer de famille aurait été **écarté** pour cela : on aurait
+  rejoué un choix esthétique validé pour contourner un problème de distribution.
+  Conséquence versée au dépôt : `tools/generer_polices.py` (générateur versionné, sha256 de l'amont
+  épinglé, contrôle `cmap` bloquant), `Assets/Resources/Polices/` (deux `.ttf` + `OFL.txt`),
+  `docs/CREDITS.md`. Nunito ne déclarant **aucun Reserved Font Name**, le nom est conservé.
+  Vérifié en jeu **et dans le navigateur** (`docs/TEST_REPORT.md`, 2026-08-28).
+
 - **2026-08-28 — Typographie (§2).** Famille **Nunito** (SIL OFL) retenue, deux graisses (SemiBold /
   ExtraBold), corps relevé de deux points, plancher 18 px. Variante **Fredoka** écartée : la famille
   n'existe plus qu'en fichier variable dans le dépôt `google/fonts` au moment de l'écriture de ce
