@@ -151,3 +151,15 @@ if ($Lancer -or $Capture) {
         Write-Host "AVERTISSEMENT : piloter_jeu.py a rendu $LASTEXITCODE - lire sa sortie ci-dessus." -ForegroundColor Yellow
     }
 }
+
+# --- Code retour explicite -----------------------------------------------------------
+# ⚠ SANS CE `exit 0`, UN BUILD REUSSI EST LU COMME UN ECHEC PAR L'APPELANT.
+# Ce script verifie la reussite par `$proc.ExitCode` et par la ligne de confirmation du journal --
+# mais `Start-Process -PassThru -Wait` NE MET PAS A JOUR `$LASTEXITCODE`. Sans sortie explicite,
+# `$LASTEXITCODE` garde la valeur du dernier executable natif appele avant (git, py...), et
+# `release_itch.ps1`, qui teste `$LASTEXITCODE` apres `& build.ps1`, echoue sur un build parfait.
+# Constate le 2026-08-28 : le journal disait « Build web OK : v0.1.0-891ab4c », la ligne suivante
+# « ERREUR : Build web echoue ».
+# Un avertissement de `piloter_jeu.py` ci-dessus ne remet pas le BUILD en cause : il a deja ete
+# valide plus haut, et c'est le build que ce code retour annonce.
+exit 0

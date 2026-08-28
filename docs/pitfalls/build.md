@@ -44,3 +44,20 @@ les suivants sont rapides. Prévoir le timeout en conséquence.
 (`git checkout --`) **sauf si `SceneBuilder.cs` a changé**. Sans l'exclusion correspondante dans
 `BuildTools.HasLocalChanges`, tout build se déclarerait issu d'un arbre modifié.
 
+
+**⚠ `Start-Process -PassThru -Wait` NE MET PAS À JOUR `$LASTEXITCODE`.** Constaté le 2026-08-28, à
+la première tentative de publication. `build.ps1` lance Unity par `Start-Process` (obligatoire :
+lancé par `&`, Unity rend la main immédiatement sans rien faire) et vérifie correctement
+`$proc.ExitCode`. Mais il ne se terminait par **aucun `exit` explicite** : à la sortie du script,
+`$LASTEXITCODE` valait encore le code du dernier exécutable *natif* appelé avant — git, `py`… —
+et `release_itch.ps1`, qui teste `$LASTEXITCODE` après `& build.ps1`, refusait de publier un build
+parfaitement valide. Les deux lignes se suivaient dans la même sortie :
+
+```
+Build web OK : v0.1.0-891ab4c  ->  C:\CODE\JEUX\snake-snack\Build\Web
+ERREUR : Build web echoue - voir Logs\build-web.log
+```
+
+Le journal invoqué ne contenait évidemment aucune erreur, ce qui est le plus coûteux : on cherche le
+défaut dans le build. Parade : **tout script PowerShell dont un autre lit le code retour se termine
+par un `exit` explicite.** Ne jamais déduire d'un `$LASTEXITCODE` qu'aucun natif n'a positionné.
