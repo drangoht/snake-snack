@@ -18,13 +18,22 @@ Menu ». Il aurait mis un choix — donc une hésitation — exactement là où 
 | Menu, panneau ouvert | Échap, Entrée, Espace, ou clic | referme le panneau |
 | Écran de mort ou de victoire | Espace | **partie immédiate**, inchangé |
 | Écran de mort ou de victoire | Échap | retour au menu |
-| Partie en cours | Échap | pause, inchangé — **pas** de retour au menu |
+| Partie en cours | Échap | pause, inchangé |
+| Écran de pause | Retour arrière | retour au menu, la partie est abandonnée |
 
-⚠ **Depuis une partie en cours, il n'y a aucun chemin vers le menu** : il faut finir la partie.
-C'est une conséquence acceptée, pas un oubli — Échap est déjà la pause (§3), et lui donner un second
-sens (appui long, double appui) ferait payer à toutes les parties le confort d'un aller-retour rare.
-<!-- à rouvrir si un testeur bute dessus : le candidat serait une entrée « Menu » sur l'écran de
-     pause, qui est déjà un écran d'arrêt. -->
+**Le retour au menu depuis une partie passe par la pause**, sur **Retour arrière** (arbitrage de
+l'auteur, 2026-08-28). L'écran de pause est déjà un écran d'arrêt : y abandonner la partie est une
+décision, pas un réflexe, et rien n'est mis sur le chemin de la boucle qui tourne.
+
+⚠ **Pourquoi pas une autre touche.** Échap est la bascule de pause : lui donner un second sens
+(appui long, double appui) ferait payer à toutes les parties le confort d'un aller-retour rare. Le
+« M » de Menu se déclare `Key.Semicolon` sur un clavier français — le piège que le §3 proscrit. Et
+Tab sert d'amorce à `tools/piloter_jeu.py`, qui exige une touche que le jeu ignore.
+
+⚠ **Aucune confirmation n'est demandée**, et c'est délibéré : une partie de Snake dure moins d'une
+minute (§4.3), le score est déjà au bandeau, et le record est écrit **au tick où il monte** (§4.5) —
+il n'y a donc rien à perdre qu'une partie en cours, dont l'abandon vient d'être demandé
+explicitement depuis un écran arrêté.
 
 ## Les entrées
 

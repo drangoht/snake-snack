@@ -56,7 +56,7 @@ joueur : d'où l'absence d'aléa hostile dans tout le jeu.
 | Tourner (4 directions) | Flèches **ou** ZQSD | — pas en 0.1 | — pas en 0.1 |
 | Pause / reprise | Échap | — pas en 0.1 | — pas en 0.1 |
 | Relancer après la mort | Espace | — pas en 0.1 | — pas en 0.1 |
-| Revenir au menu (écran de fin) | Échap | — pas en 0.1 | — pas en 0.1 |
+| Revenir au menu | Échap (écran de fin) **ou** Retour arrière (pause) | — pas en 0.1 | — pas en 0.1 |
 | Naviguer le menu (§4.6) | Flèches ou ZQSD, Entrée ou Espace | — pas en 0.1 | souris : survol et clic |
 
 Manette et tactile sont **décidés vides**, pas oubliés : le jeu se joue au clavier sur la page itch,

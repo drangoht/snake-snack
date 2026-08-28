@@ -67,6 +67,7 @@ TOUCHES = {
     "espace":  (0x20, 0x39, False),
     "echap":   (0x1B, 0x01, False),
     "tab":     (0x09, 0x0F, False),
+    "retour":  (0x08, 0x0E, False),   # Retour arriere : le menu depuis l'ecran de pause (GDD §4.6)
     "gauche":  (0x25, 0x4B, True),
     "haut":    (0x26, 0x48, True),
     "droite":  (0x27, 0x4D, True),

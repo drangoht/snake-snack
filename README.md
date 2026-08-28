@@ -11,9 +11,11 @@ comment jouer, crédits, quitter), navigable au clavier comme à la souris. Rest
 une première version publiée : la sensation (retours, « juicy »), les assets graphiques, les effets
 sonores et la musique.
 
-> Ce dépôt est né du gabarit `unity-game-template`. Les fichiers `.claude/`, `docs/PITFALLS_UNITY.md`
-> et `tools/` en viennent : ils portent l'expérience de projets précédents. **Les corriger ici quand
-> le projet leur donne tort**, et remonter au gabarit ce qui est généralisable.
+> Ce dépôt est né du gabarit
+> **[unity-game-template-with-claude](https://github.com/drangoht/unity-game-template-with-claude)**.
+> Les fichiers `.claude/`, `docs/PITFALLS_UNITY.md` et `tools/` en viennent : ils portent
+> l'expérience de projets précédents. **Les corriger ici quand le projet leur donne tort**, et
+> remonter au gabarit ce qui est généralisable.
 
 ## Démarrer
 

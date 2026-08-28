@@ -264,6 +264,19 @@ namespace SnakeSnack.Gameplay
                 BasculerLaPause();
             }
 
+            // ⚠ Retour arrière, et uniquement pendant la PAUSE (GDD §4.6). Trois raisons pour cette
+            // touche-là : Échap est déjà la bascule de pause et lui donner un second sens (appui
+            // long, double appui) ferait payer toutes les parties pour un aller-retour rare ; le M
+            // de « Menu » se déclarerait `Key.Semicolon` sur un clavier français, piège que le GDD
+            // §3 proscrit ; et Tab sert d'amorce à `tools/piloter_jeu.py`, qui exige une touche que
+            // le jeu ignore. Depuis un écran de pause — déjà un écran d'arrêt — abandonner la partie
+            // est une décision, pas un réflexe.
+            if (clavier.backspaceKey.wasPressedThisFrame && _etat == EtatPartie.EnPause)
+            {
+                RevenirAuMenu();
+                return;
+            }
+
             if (clavier.spaceKey.wasPressedThisFrame && PartieTerminee)
             {
                 NouvellePartie();

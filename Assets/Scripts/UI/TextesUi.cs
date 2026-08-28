@@ -129,8 +129,16 @@ namespace SnakeSnack.UI
         /// <summary>Titre de l'écran de pause.</summary>
         public const string TitrePause = "PAUSE";
 
-        /// <summary>Sous-titre de l'écran de pause.</summary>
-        public const string SousTitrePause = "Échap pour reprendre";
+        /// <summary>
+        /// Sous-titre de l'écran de pause.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Retour arrière est annoncé ici, et nulle part ailleurs</b> : c'est le seul chemin du
+        /// jeu vers le menu depuis une partie en cours (GDD §4.6). Une touche qui ne s'annonce pas
+        /// n'existe pas pour le joueur (<c>docs/pitfalls/interface.md</c>) — et celle-ci ne peut
+        /// s'annoncer que sur l'écran de pause, puisqu'elle n'agit que là.
+        /// </remarks>
+        public const string SousTitrePause = "Échap pour reprendre   -   Retour arrière pour le menu";
 
         /// <summary>
         /// La ligne de refus de l'écran de pause (<c>docs/ART.md</c> §5.4, mot pour mot).

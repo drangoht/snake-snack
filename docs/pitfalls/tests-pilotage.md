@@ -79,3 +79,10 @@ py -c "import ctypes; ctypes.windll.user32.SetCursorPos(1890, 12)"
 capture a échoué : le jeu s'est fermé (ou minimisé) pendant le scénario. Lire
 `Build/Windows/player.log` — une fermeture propre s'y voit sans aucune exception, et c'est
 justement ce qui la rend trompeuse.
+
+**⚠ Entre deux invocations de `piloter_jeu.py`, le jeu continue de tourner** — prise de focus,
+amorce et sortie du script coûtent facilement deux secondes, soit une quinzaine de ticks à 8/s. Un
+scénario écrit en une commande par touche laisse donc au serpent le temps de traverser la grille et
+de mourir : le 2026-08-28, un `echap` censé mettre en pause est arrivé sur l'écran de mort, et la
+capture montrait le menu au lieu de l'écran de pause. **Tout enchaînement qui suppose une continuité
+tient dans UN seul `--touches "a,b,c"`.**
