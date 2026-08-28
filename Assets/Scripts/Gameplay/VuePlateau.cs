@@ -62,7 +62,7 @@ namespace SnakeSnack.Gameplay
         /// </remarks>
         private void ConstruirePomme()
         {
-            _pomme = FormesPrimitives.Rectangle(transform, "Pomme", PaletteProvisoire.Pomme, 5);
+            _pomme = FormesPrimitives.Rectangle(transform, "Pomme", UiPalette.Pomme, 5);
 
             float cote = (float)(_plateau.TailleCase * 0.72 / Mathf.Sqrt(2f));
             _pomme.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
@@ -105,7 +105,7 @@ namespace SnakeSnack.Gameplay
 
         private void ConstruireAire()
         {
-            var fond = FormesPrimitives.Rectangle(transform, "Aire", PaletteProvisoire.AireDeJeu, -100);
+            var fond = FormesPrimitives.Rectangle(transform, "Aire", UiPalette.AireDeJeu, -100);
             Poser(fond, 0.0, _plateau.DecalageVerticalAire, _plateau.LargeurAire, _plateau.HauteurAire);
         }
 
@@ -123,13 +123,13 @@ namespace SnakeSnack.Gameplay
 
             for (int x = 1; x < _plateau.Grille.Largeur; x++)
             {
-                var trait = FormesPrimitives.Rectangle(racine.transform, "TraitV" + x, PaletteProvisoire.TraitDeGrille, -90);
+                var trait = FormesPrimitives.Rectangle(racine.transform, "TraitV" + x, UiPalette.TraitDeGrille, -90);
                 Poser(trait, gauche + (x * _plateau.TailleCase), _plateau.DecalageVerticalAire, 1.0, _plateau.HauteurAire);
             }
 
             for (int y = 1; y < _plateau.Grille.Hauteur; y++)
             {
-                var trait = FormesPrimitives.Rectangle(racine.transform, "TraitH" + y, PaletteProvisoire.TraitDeGrille, -90);
+                var trait = FormesPrimitives.Rectangle(racine.transform, "TraitH" + y, UiPalette.TraitDeGrille, -90);
                 Poser(trait, 0.0, bas + (y * _plateau.TailleCase), _plateau.LargeurAire, 1.0);
             }
         }
@@ -148,16 +148,16 @@ namespace SnakeSnack.Gameplay
             double demiHauteur = _plateau.HauteurAire / 2.0;
             const double epaisseur = 3.0;
 
-            var haut = FormesPrimitives.Rectangle(racine.transform, "Haut", PaletteProvisoire.BordureAire, -80);
+            var haut = FormesPrimitives.Rectangle(racine.transform, "Haut", UiPalette.BordureAire, -80);
             Poser(haut, 0.0, centreY + demiHauteur, _plateau.LargeurAire + (2 * epaisseur), epaisseur);
 
-            var bas = FormesPrimitives.Rectangle(racine.transform, "Bas", PaletteProvisoire.BordureAire, -80);
+            var bas = FormesPrimitives.Rectangle(racine.transform, "Bas", UiPalette.BordureAire, -80);
             Poser(bas, 0.0, centreY - demiHauteur, _plateau.LargeurAire + (2 * epaisseur), epaisseur);
 
-            var gauche = FormesPrimitives.Rectangle(racine.transform, "Gauche", PaletteProvisoire.BordureAire, -80);
+            var gauche = FormesPrimitives.Rectangle(racine.transform, "Gauche", UiPalette.BordureAire, -80);
             Poser(gauche, -demiLargeur, centreY, epaisseur, _plateau.HauteurAire);
 
-            var droite = FormesPrimitives.Rectangle(racine.transform, "Droite", PaletteProvisoire.BordureAire, -80);
+            var droite = FormesPrimitives.Rectangle(racine.transform, "Droite", UiPalette.BordureAire, -80);
             Poser(droite, demiLargeur, centreY, epaisseur, _plateau.HauteurAire);
         }
 
@@ -181,17 +181,17 @@ namespace SnakeSnack.Gameplay
             float epaisseur = Mathf.Max(2f, (float)(taille * 0.20));
             float branche = (float)(taille * 0.62);
 
-            var gauche = FormesPrimitives.Rectangle(_chevron, "BrancheGauche", PaletteProvisoire.Pictogramme, 50);
+            var gauche = FormesPrimitives.Rectangle(_chevron, "BrancheGauche", UiPalette.Pictogramme, 50);
             gauche.transform.localPosition = new Vector3((float)(-taille * 0.20), (float)(-taille * 0.08), 0f);
             gauche.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
             gauche.transform.localScale = new Vector3(branche, epaisseur, 1f);
 
-            var droite = FormesPrimitives.Rectangle(_chevron, "BrancheDroite", PaletteProvisoire.Pictogramme, 50);
+            var droite = FormesPrimitives.Rectangle(_chevron, "BrancheDroite", UiPalette.Pictogramme, 50);
             droite.transform.localPosition = new Vector3((float)(taille * 0.20), (float)(-taille * 0.08), 0f);
             droite.transform.localRotation = Quaternion.Euler(0f, 0f, -45f);
             droite.transform.localScale = new Vector3(branche, epaisseur, 1f);
 
-            var barre = FormesPrimitives.Rectangle(_chevron, "Barre", PaletteProvisoire.Pictogramme, 51);
+            var barre = FormesPrimitives.Rectangle(_chevron, "Barre", UiPalette.Pictogramme, 51);
             barre.transform.localPosition = new Vector3(0f, (float)(-taille * 0.08), 0f);
             barre.transform.localScale = new Vector3((float)(taille * 1.10), epaisseur, 1f);
 
@@ -205,7 +205,7 @@ namespace SnakeSnack.Gameplay
             while (_segments.Count < segments.Count)
             {
                 _segments.Add(FormesPrimitives.Rectangle(
-                    _racineSegments, "Segment" + _segments.Count, PaletteProvisoire.CorpsSerpent, 10));
+                    _racineSegments, "Segment" + _segments.Count, UiPalette.CorpsSerpent, 10));
             }
 
             // Un segment de trop est masqué, jamais détruit : le pool resservira à la partie suivante.
@@ -220,7 +220,7 @@ namespace SnakeSnack.Gameplay
             {
                 SpriteRenderer rendu = _segments[i];
                 rendu.gameObject.SetActive(true);
-                rendu.color = i == 0 ? PaletteProvisoire.TeteSerpent : PaletteProvisoire.CorpsSerpent;
+                rendu.color = i == 0 ? UiPalette.TeteSerpent : UiPalette.CorpsSerpent;
                 rendu.sortingOrder = i == 0 ? 11 : 10;
 
                 PointPlateau centre = _plateau.CentreDeLaCase(segments[i]);
@@ -237,7 +237,7 @@ namespace SnakeSnack.Gameplay
 
             for (int i = 0; i < _barresChevron.Length; i++)
             {
-                Color couleur = PaletteProvisoire.Pictogramme;
+                Color couleur = UiPalette.Pictogramme;
                 couleur.a = opacite;
                 _barresChevron[i].color = couleur;
             }

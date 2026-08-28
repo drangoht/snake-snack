@@ -14,12 +14,12 @@ bleutée : rien n'y attire l'œil, pour que les quatre couleurs chaudes se voien
 Ce parti pris ne change *aucune* forme, *aucune* position, *aucune* taille déjà posées ailleurs
 (§5.4, §5.6) — il colore un système déjà validé en niveaux de gris, il ne le redessine pas.
 
-## 1.2 Les 12 rôles — couverture exacte de `PaletteProvisoire.cs`
+## 1.2 Les 12 rôles — couverture exacte de `UiPalette.cs`
 
 Douze rôles nommés existaient déjà, en gris, dans `Assets/Scripts/UI/PaletteProvisoire.cs`. Cette
-palette **couvre exactement ces douze rôles, sous les mêmes noms** — aucun ajouté, aucun retiré. Le
-fichier n'a qu'à être renommé `UiPalette` et ses corps de méthode remplacés ; aucun appelant ne
-change.
+palette **couvre exactement ces douze rôles, sous les mêmes noms** — aucun ajouté, aucun retiré.
+**Câblé le 2026-08-28** : le fichier est renommé `Assets/Scripts/UI/UiPalette.cs` (avec son `.meta`,
+donc le même GUID) et ses valeurs remplacées ; aucun appelant n'a changé, seulement le nom du type.
 
 | Rôle | Gris provisoire | Couleur retenue | Pourquoi cette couleur |
 |---|---|---|---|
@@ -65,9 +65,14 @@ posé ci-dessous.
 
 - **Le projet est en espace colorimétrique Gamma** (`ProjectSettings.asset` :
   `m_ActiveColorSpace: 0`). Les codes hexa ci-dessus se posent **tels quels** (`#RRGGBB` → `/255` →
-  `Color`) : aucune reconversion linéaire à faire à la main, exactement comme le fait déjà
-  `PaletteProvisoire.Gris()`. Si le projet passe un jour en Linear, cette page devra être rouverte —
-  jusque-là, ne pas « corriger » ces valeurs par anticipation.
+  `Color`) : aucune reconversion linéaire à faire à la main. Si le projet passe un jour en Linear,
+  cette page devra être rouverte — jusque-là, ne pas « corriger » ces valeurs par anticipation.
+  ⚠ **Vérifié sur build Windows le 2026-08-28** : les rôles posés sur un `Image`/`Text` uGUI et sur
+  le fond de caméra ressortent **au pixel exact** ; ceux posés sur un `SpriteRenderer` (bordure,
+  corps, tête, pomme, pictogramme) ressortent **1 à 2 unités plus sombres** sur R et G (`#E3A23A`
+  lu `#E1A13A`, `#4E9358` lu `#4E9158`). L'écart est inférieur à 1 % et déplace les ratios de moins
+  de 0,15 — il ne justifie aucune retouche, mais il explique qu'une mesure prise sur capture ne
+  retombe pas exactement sur la colonne du §1.3.
 - **Jamais de couleur en dur ailleurs que dans `UiPalette.cs`.** Un sprite, un shader, un composant
   `Image`/`Text` référencent le rôle nommé, jamais un `#RRGGBB` recopié.
 - **`Fond` n'est jamais `#000000` pur** (§1.5, variante écartée) : un noir strict s'écrase sur les
@@ -85,6 +90,11 @@ posé ci-dessous.
   — mais je n'ai **aucune vérification en conditions réelles** (simulateur de daltonisme ou retour
   d'un joueur concerné). À confirmer par `game-tester`, capture à l'appui, avant de considérer le
   sujet clos.
+  **Première indication, 2026-08-28** (`docs/TEST_REPORT.md`) : simulation deutéranope (Viénot 1999)
+  appliquée à une capture du build. Pomme et corps virent tous deux à un olive proche, et l'ambre de
+  la bordure les rejoint — la teinte ne sépare plus rien, seules la forme et la taille tiennent, et
+  elles tiennent. Ce n'est qu'une transformation de matrice sur une capture : elle ne remplace ni un
+  simulateur validé ni un joueur concerné, et le point reste ouvert.
 - **La marge basse absente** (`docs/gdd/grille.md`, constaté 2026-08-28) reste un arbitrage de mise
   en page, pas un sujet de palette — mais elle change le fond réel sous `TexteSecondaire`
   (`RappelDesCommandes`). Le ratio tient dans les deux cas (§1.3), donc cette palette n'a pas besoin

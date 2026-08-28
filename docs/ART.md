@@ -36,6 +36,12 @@ tels quels (`/255` → `Color`), aucune reconversion linéaire à faire à la ma
 
 ## 2. Typographie
 
+⛔ **BLOQUÉ au 2026-08-28 : Nunito n'existe qu'en fichier VARIABLE.** `ofl/nunito` de `google/fonts`
+ne publie aucun `static/`, et l'amont porte `buildStatic: false` — la condition à laquelle
+[`art/typographie.md`](art/typographie.md) §2.2 subordonnait cette famille n'est pas remplie. **Le
+HUD reste sur la police intégrée** (`LegacyRuntime.ttf`) ; seules les **tailles** du §2.3 sont
+câblées. Une famille de remplacement reste à trancher (`docs/TEST_REPORT.md`, BUG-001).
+
 **Famille retenue : Nunito** (SIL OFL), deux graisses seulement — **SemiBold** pour le texte
 secondaire, **ExtraBold** pour les titres et les nombres du HUD. Corps relevé de deux points par
 rapport aux tailles actuelles du code (plancher : 18 px à la résolution de référence 1280×720),

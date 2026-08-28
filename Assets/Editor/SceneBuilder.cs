@@ -83,7 +83,7 @@ namespace SnakeSnack.EditorTools
             camera.orthographic = true;
             camera.orthographicSize = 360f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = PaletteProvisoire.Fond;
+            camera.backgroundColor = UiPalette.Fond;
             camera.transform.position = new Vector3(0f, 0f, -10f);
             go.tag = "MainCamera";
 

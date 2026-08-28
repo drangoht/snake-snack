@@ -31,6 +31,9 @@ la phrase ci-dessus. Trois issues, aucune tranchée : réserver un bandeau bas (
 `min(1280/21, 600/15)` = 40 px, la grille rétrécit), déplacer le rappel dans une marge latérale, ou
 l'accepter par-dessus l'aire en le remontant de quelques pixels.
 <!-- à trancher : c'est un arbitrage de mise en page, pas un bug de code. -->
+Mesuré le 2026-08-28 sur build Windows : la boîte du rappel est ancrée à 10 px du bas et haute de
+24 px, son bas tombe donc **2 px sous le bord** — la coupe ne vient pas du corps du texte (elle
+existait déjà à 15 px, elle existe à 18 px depuis `ART.md` §2.3), mais de l'ancrage.
 
 **Bornes de la grille réglable** (déduites de la pose de départ, non issues d'un choix de design) :
 largeur ≥ 5 et hauteur ≥ 3 — trois segments alignés depuis la colonne centrale, plus une ligne

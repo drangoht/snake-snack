@@ -66,13 +66,18 @@ namespace SnakeSnack.UI
 
             canvasGo.AddComponent<GraphicRaycaster>();
 
+            // ⚠ Les corps ci-dessous sont ceux de docs/ART.md §2.3, relevés de deux points. Le
+            // CanvasScaler ci-dessus les exprime en pixels du cadre 1280x720 : sur la fenêtre plus
+            // petite d'une page itch ils RÉTRÉCISSENT proportionnellement, ce qui est l'inverse
+            // d'une marge de sécurité. Plancher absolu : 18 px ici, sous quoi le downscale rend le
+            // texte illisible avant même le poids de la police.
             _voile = ConstruireVoile(canvasGo.transform);
 
-            _etat = ConstruireTexte(canvasGo.transform, "Etat", 22, TextAnchor.MiddleCenter,
-                PaletteProvisoire.TexteHud, new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(900f, 40f));
+            _etat = ConstruireTexte(canvasGo.transform, "Etat", 24, TextAnchor.MiddleCenter,
+                UiPalette.TexteHud, new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(900f, 40f));
 
-            _commandes = ConstruireTexte(canvasGo.transform, "Commandes", 15, TextAnchor.LowerCenter,
-                PaletteProvisoire.TexteSecondaire, new Vector2(0.5f, 0f), new Vector2(0f, 10f), new Vector2(1100f, 24f));
+            _commandes = ConstruireTexte(canvasGo.transform, "Commandes", 18, TextAnchor.LowerCenter,
+                UiPalette.TexteSecondaire, new Vector2(0.5f, 0f), new Vector2(0f, 10f), new Vector2(1100f, 24f));
             _commandes.text = TextesUi.RappelDesCommandes;
 
             // Score à gauche, record à droite, dans le bandeau du haut : hors de l'aire de jeu
@@ -80,36 +85,36 @@ namespace SnakeSnack.UI
             // fois perdu ne se vise pas — c'est le record lu pendant la partie qui transforme la
             // relance en « battre 14 ». Le rect est décalé d'une demi-largeur parce que le pivot est
             // au centre : le bord du texte tombe alors à MargeLaterale du bord de l'écran.
-            _score = ConstruireTexte(canvasGo.transform, "Score", 22, TextAnchor.MiddleLeft,
-                PaletteProvisoire.TexteHud, new Vector2(0f, 1f),
+            _score = ConstruireTexte(canvasGo.transform, "Score", 24, TextAnchor.MiddleLeft,
+                UiPalette.TexteHud, new Vector2(0f, 1f),
                 new Vector2(MargeLaterale + (LargeurNombre / 2f), -30f), new Vector2(LargeurNombre, 40f));
 
             // Record en texte secondaire : même place, même taille, mais c'est le score courant que
             // le joueur suit pendant la partie. La hiérarchie se lit sans lire les deux étiquettes.
-            _record = ConstruireTexte(canvasGo.transform, "Record", 22, TextAnchor.MiddleRight,
-                PaletteProvisoire.TexteSecondaire, new Vector2(1f, 1f),
+            _record = ConstruireTexte(canvasGo.transform, "Record", 24, TextAnchor.MiddleRight,
+                UiPalette.TexteSecondaire, new Vector2(1f, 1f),
                 new Vector2(-MargeLaterale - (LargeurNombre / 2f), -30f), new Vector2(LargeurNombre, 40f));
 
             AfficherScore(0, 0, false);
 
-            _titre = ConstruireTexte(canvasGo.transform, "Titre", 54, TextAnchor.MiddleCenter,
-                PaletteProvisoire.TexteHud, new Vector2(0.5f, 0.5f), new Vector2(0f, 40f), new Vector2(900f, 80f));
+            _titre = ConstruireTexte(canvasGo.transform, "Titre", 56, TextAnchor.MiddleCenter,
+                UiPalette.TexteHud, new Vector2(0.5f, 0.5f), new Vector2(0f, 40f), new Vector2(900f, 80f));
 
             // Entre le titre et la relance : le GDD §2 veut score et record « affichés sur place »
             // à la mort. Ils sont déjà dans le bandeau, mais faire remonter le regard tout en haut
             // au moment où l'on décide de rejouer, c'est le perdre.
-            _recapFin = ConstruireTexte(canvasGo.transform, "RecapFin", 24, TextAnchor.MiddleCenter,
-                PaletteProvisoire.TexteHud, new Vector2(0.5f, 0.5f), new Vector2(0f, -15f), new Vector2(900f, 34f));
+            _recapFin = ConstruireTexte(canvasGo.transform, "RecapFin", 26, TextAnchor.MiddleCenter,
+                UiPalette.TexteHud, new Vector2(0.5f, 0.5f), new Vector2(0f, -15f), new Vector2(900f, 34f));
 
-            _sousTitre = ConstruireTexte(canvasGo.transform, "SousTitre", 20, TextAnchor.MiddleCenter,
-                PaletteProvisoire.TexteSecondaire, new Vector2(0.5f, 0.5f), new Vector2(0f, -52f), new Vector2(900f, 30f));
+            _sousTitre = ConstruireTexte(canvasGo.transform, "SousTitre", 22, TextAnchor.MiddleCenter,
+                UiPalette.TexteSecondaire, new Vector2(0.5f, 0.5f), new Vector2(0f, -52f), new Vector2(900f, 30f));
 
             // ⚠ Sous le sous-titre, et pas à la place du récapitulatif : les deux ne s'affichent
             // jamais ensemble (l'un en pause, l'autre à la fin), mais deux textes qui se disputent
             // la même position finissent par se superposer le jour où cette exclusion cesse d'être
             // vraie.
-            _refusEnPause = ConstruireTexte(canvasGo.transform, "RefusEnPause", 18, TextAnchor.MiddleCenter,
-                PaletteProvisoire.TexteHud, new Vector2(0.5f, 0.5f), new Vector2(0f, -95f), new Vector2(900f, 28f));
+            _refusEnPause = ConstruireTexte(canvasGo.transform, "RefusEnPause", 20, TextAnchor.MiddleCenter,
+                UiPalette.TexteHud, new Vector2(0.5f, 0.5f), new Vector2(0f, -95f), new Vector2(900f, 28f));
             _refusEnPause.text = TextesUi.RefusEnPause;
             _refusEnPause.gameObject.SetActive(false);
         }
@@ -120,7 +125,7 @@ namespace SnakeSnack.UI
             go.transform.SetParent(parent, false);
 
             var image = go.AddComponent<Image>();
-            image.color = PaletteProvisoire.VoileDePause;
+            image.color = UiPalette.VoileDePause;
             image.raycastTarget = false;
 
             var rect = go.GetComponent<RectTransform>();
@@ -141,8 +146,11 @@ namespace SnakeSnack.UI
             go.transform.SetParent(parent, false);
 
             var texte = go.AddComponent<Text>();
-            // Police intégrée : aucun asset de police n'existe encore (docs/ART.md §2). Sans police,
-            // un Text ne dessine rien du tout, en silence.
+            // ⚠ Police intégrée, encore : docs/ART.md §2 tranche Nunito SemiBold/ExtraBold, mais
+            // google/fonts ne publie Nunito qu'en fichier VARIABLE (`buildStatic: false` en amont) —
+            // aucun `static/Nunito-SemiBold.ttf` à importer, et le brief §2.2 interdit d'improviser
+            // une instance. Tant que la famille n'est pas rouverte, seules les TAILLES du §2.3 sont
+            // câblées. Sans police, un Text ne dessine rien du tout, en silence.
             texte.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             texte.fontSize = taille;
             texte.alignment = alignement;

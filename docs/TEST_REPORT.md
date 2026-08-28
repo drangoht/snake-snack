@@ -8,6 +8,99 @@ datée, avec la version testée.
 > de valeur que la correction. C'est ce fichier qui évite de re-signaler un bug connu et de refaire
 > un test déjà tranché.
 
+## Session du 2026-08-28 — v1.0-b5fa662+ (build Windows)
+
+**Portée** : la palette d'`ART.md` §1 câblée dans `UiPalette.cs`, et les tailles de texte du §2.3
+câblées dans `HudJeu`. Deux affirmations de doc à confirmer sur un vrai build : le pictogramme de
+refus posé sur le corps du serpent (`art/retour-refus.md` §5.6) et la pomme rendue lisible par le
+rouge (session du 2026-08-27 ci-dessous). **Non testé** : les graisses de police (Nunito bloquée,
+voir plus bas), le build web et la page itch, l'écran de pause, l'écran de mort, la victoire.
+
+**Méthode** : `tools/build.ps1`, puis `tools/piloter_jeu.py --lancer --attendre 6 --touches gauche
+--pleine-resolution`. Captures : `docs/verif-palette-attente.png` (écran d'attente) et
+`docs/verif-refus-chevron.png` (demi-tour refusé). Le pictogramme ne vit que **250 ms** : impossible
+à saisir avec l'outil, qui attend 0,25 s après une touche puis capture. `dureeAffichageRefusSecondes`
+et `plafondProlongationRefusSecondes` ont donc été portées à **6 s** dans
+`Build/Windows/SnakeSnack_Data/StreamingAssets/reglages.json` (le fichier du build, pas celui
+d'`Assets/`), et les valeurs par défaut remises après coup. Le pictogramme est alors capturé **sur
+son plateau d'opacité**, à 1,0 — donc au meilleur de sa lisibilité, ce qui est le bon cadre pour
+juger d'un contraste, pas de la fugacité.
+
+**Le point de méthode qui compte** : les couleurs attendues et la position du chevron ont été
+**écrites avant la première capture** (0,75 case à l'ouest du centre de la tête, donc sur le premier
+segment de corps). Le chevron mesuré est centré en x = 617,5 px pour un centre de tête à 650 px et
+une case de 45 px : 650 − 0,75 × 44 = 617. Ce n'est donc pas « un pictogramme est apparu quelque
+part » qui est constaté.
+
+### Ce qui fonctionne
+- **Les 12 rôles sont à l'écran, et les ratios du brief se retrouvent à la mesure** (WCAG calculé sur
+  les pixels de la capture, pas sur les codes hexa) : pomme/tête **3,35** (brief 3,36) ·
+  tête/corps **3,17** (3,15) · bordure/aire **7,94** (8,06) · texteHud/fond **16,40** (16,40) ·
+  texteSecondaire/fond **6,13** (6,13) · pictogramme/corps **3,81** (3,72) · pictogramme/aire
+  **17,82** (17,80). Aucun écart au-delà de l'arrondi.
+- **Le §5.6 est clos : le blanc pur suffit.** Le chevron tombe bien sur le corps vert, en
+  `#FFFFFF` plein (154 pixels blancs purs mesurés, aucune atténuation), et il se voit immédiatement.
+  Le repli « contour sombre » n'est pas nécessaire et n'a pas été appliqué.
+- **La pomme ne se confond plus avec la tête** : de 1,41 : 1 en gris (session précédente) à
+  **3,35 : 1**. C'est le seul objet rouge de l'écran ; l'œil va dessus sans le chercher.
+- Le demi-tour tapé avant le départ **ne lance pas la partie** (GDD §4.1) : le bandeau affiche
+  toujours « Une direction pour commencer » et le serpent n'a pas bougé d'un pixel entre les deux
+  captures.
+- Les rôles posés sur un `Image`/`Text` uGUI et sur le fond de caméra sortent **au pixel exact** ;
+  ceux posés sur un `SpriteRenderer` sortent 1 à 2 unités plus sombres sur R et G (reporté dans
+  `art/palette.md` §1.4 — sous 1 %, sans conséquence).
+- Build sans erreur ni avertissement nouveau ; `dotnet test` : **157 verts**.
+
+### [BUG-001] Nunito n'existe qu'en fichier variable : la typographie ne peut pas être câblée
+Sévérité : Majeur (bloque la moitié d'`ART.md` §2)
+Contexte : import de police, avant tout téléchargement.
+Reproduction : `GET https://api.github.com/repos/google/fonts/contents/ofl/nunito` — aucun dossier
+`static/`, seulement `Nunito[wght].ttf` et `Nunito-Italic[wght].ttf`. Et
+`ofl/nunito/upstream_info.md` note `buildStatic: false` dans le `config.yaml` amont : les statiques
+ne sont pas en retard de publication, elles ne sont **jamais construites**.
+Observé / Attendu : attendu `static/Nunito-SemiBold.ttf` et `static/Nunito-ExtraBold.ttf` ; obtenu
+deux fichiers variables. C'est la condition même à laquelle le brief §2.2 subordonnait Nunito, et
+exactement ce qui avait fait écarter Fredoka.
+Hypothèse : aucune — l'amont le déclare.
+Conséquence : le HUD reste sur `LegacyRuntime.ttf`. **Rien n'a été improvisé** (ni instance du
+variable, ni sous-ensemble de poids). Les **tailles** du §2.3 sont câblées, les **graisses** non.
+La table `cmap` n'a pas été sondée : aucun fichier n'a été récupéré.
+Assigné à : `directeur-artistique` (choisir une famille dont `static/` est listé, ou trancher
+explicitement l'usage d'une instance statique extraite du variable).
+
+### [BUG-002] Les jambages du rappel des commandes sont coupés par le bord bas
+Sévérité : Cosmétique
+Contexte : écran de jeu, en permanence. Déjà décrit dans `docs/gdd/grille.md` (marge basse absente) —
+cette session le **mesure** au lieu de le constater.
+Reproduction : lancer le jeu, regarder « diriger », « Echap », « pause » en bas de l'écran.
+Observé / Attendu : la boîte du texte est ancrée à 10 px du bas et haute de 24 px, son bas tombe donc
+**2 px sous le bord de l'écran** ; les jambages de `g`, `p`, `q` sont tronqués, et la ligne chevauche
+la bordure ambre de l'aire, qui occupe la toute dernière rangée de pixels.
+Hypothèse : ce n'est pas le corps du texte qui coupe — la coupe existait à 15 px et existe à 18 px
+depuis `ART.md` §2.3 — c'est l'ancrage, et la marge basse que la mise en page n'a pas réservée.
+Assigné à : `game-designer` (l'arbitrage de `docs/gdd/grille.md` est toujours ouvert : bandeau bas,
+rappel en marge latérale, ou acceptation en remontant le texte).
+
+### Ressenti
+**La pomme.** Sa taille (0,72 case) n'est **plus** un problème maintenant que la couleur porte :
+le losange rouge est le seul objet chaud sur un fond froid, on le trouve sans balayer la grille. Ce
+qui gênait était la valeur voisine de la tête, pas les dimensions. Je ne recommande pas de
+l'agrandir : la grossir la rapprocherait d'une case pleine et affaiblirait la différence de
+silhouette, qui est justement ce qui la sauve en daltonisme.
+
+**Le pictogramme de refus.** La couleur est réglée, la **forme** ne l'est pas. À une demi-case
+(`Plateau.TailleMaximalePictogramme`), le chevron barré occupe 12 × 24 px à l'écran : il se lit comme
+une **tache blanche** apparue sur le serpent, pas comme un chevron barré. Le signal « quelque chose a
+été refusé » passe donc, mais pas le « c'est *cette* direction ». Sur 250 ms de vie réelle, je doute
+qu'un joueur distingue jamais le dessin. C'est une question de forme et d'échelle, pas de palette :
+je ne l'ai pas touchée.
+
+**Daltonisme (§1.5 de `art/palette.md`).** Simulation deutéranope (Viénot 1999) appliquée à la
+capture : pomme, corps du serpent et bordure ambre virent tous à des olives proches — la teinte ne
+sépare plus rien. Restent la forme (losange isolé contre chaîne de carrés contre trait continu) et la
+clarté de la tête, et elles suffisent à jouer. Une matrice sur une capture n'est pas un joueur
+concerné : le point reste ouvert.
+
 ## Session du 2026-08-27 — v1.0-80a7645+ (build Windows)
 
 **Portée** : la pomme (GDD §4.4) — apparition avant le premier appui, tirage semé, croissance à la

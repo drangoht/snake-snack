@@ -25,3 +25,15 @@ lister le dossier avant de deviner l'URL
 `f89b`) : un vrai TTF commence par `00 01 00 00`, et un fichier de 39 Ko contenant du HTML est une
 page 404 déguisée.
 
+**⚠ « La famille existe sur Google Fonts » ne veut pas dire « une graisse statique existe ».**
+Constaté sur **Nunito** le 2026-08-28, après que le même piège avait fait écarter Fredoka :
+`ofl/nunito` ne contient que `Nunito[wght].ttf` et `Nunito-Italic[wght].ttf`, aucun dossier
+`static/`. Rien ne le signale — la famille s'affiche normalement sur fonts.google.com (le site sert
+le variable), et une URL `static/Nunito-SemiBold.ttf` devinée rend une page 404 de 39 Ko qui
+ressemble à un fichier téléchargé.
+
+**Ce qui tranche en une requête de plus** : `ofl/<famille>/upstream_info.md` cite le
+`sources/config.yaml` de l'amont. `buildStatic: false` y signifie que les statiques ne sont **pas
+absentes par retard de publication, mais jamais construites** — inutile d'aller les chercher
+ailleurs, de chercher une release, ou d'attendre. Vérifier les deux : le listing du dossier dit
+l'état, `upstream_info.md` dit s'il changera.

@@ -187,9 +187,18 @@ qu'un demi-tour peut être refusé à l'empilage, exactement l'erreur que le con
 > chevron sur le corps — passe de **3,04:1 à 3,72:1**, au-dessus du seuil WCAG 1.4.11 des objets
 > graphiques (3:1). Ni contour sombre ni décalage : les deux auraient modifié une forme et une
 > position déjà validées en jeu, pour un problème qui n'était que de couleur.
-> ⚠ **Constaté sur maquette au gabarit exact, pas encore sur un build** : à confirmer à la prochaine
-> capture d'un demi-tour refusé, une fois `UiPalette` câblée. Si le blanc pur suffit là aussi, ce
-> point est clos ; sinon, le contour sombre reste la piste de repli.
+> ✅ **Confirmé sur build Windows le 2026-08-28, ce point est CLOS**
+> (`docs/TEST_REPORT.md`, capture `docs/verif-refus-chevron.png`). Chevron mesuré à 617,5 px pour un
+> centre de tête à 650 px et une case de 44 px — il est bien sur le premier segment de corps, comme
+> annoncé. Blanc plein, aucune atténuation, ratio **mesuré 3,81:1** sur les pixels réels (le vert
+> sort 1 unité plus sombre en `SpriteRenderer`, ce qui aide). **Le contour sombre n'est pas
+> nécessaire** et n'a pas été appliqué.
+>
+> ⚠ **Ce qui reste ouvert n'est plus la couleur, c'est l'ÉCHELLE.** À une demi-case
+> (`Plateau.TailleMaximalePictogramme`), le chevron barré occupe **12 × 24 px** à l'écran : il se lit
+> comme une tache blanche apparue sur le serpent, pas comme un chevron barré — le « quelque chose a
+> été refusé » passe, le « c'est *cette* direction » non. Et il ne vit que 250 ms. Question de forme
+> et d'échelle, à arbitrer séparément ; rien n'a été touché.
 
 > **La barre d'interdiction est perpendiculaire à l'axe du chevron, pas diagonale.** Écart assumé au
 > §5.4, décidé à l'implémentation : à 45°, la barre tombe exactement parallèle à l'une des deux
