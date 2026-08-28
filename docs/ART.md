@@ -1,25 +1,53 @@
 # ART — Direction artistique de Snake Snack
 
-> Ce document accueille toute décision de direction artistique du projet. Il démarre avec un seul
-> brief rempli (§5 — le retour d'une entrée refusée) parce que c'est le seul trou qui bloquait
-> aujourd'hui l'UI. Les autres sections sont posées **vides et structurées**, pour que la suite
-> s'y range sans reprendre le plan à chaque fois — ne pas les remplir par anticipation.
+> Ce document accueille toute décision de direction artistique du projet. §1 (palette), §2
+> (typographie) et §5 (retour d'une entrée refusée) sont tranchés. §3 (grille de sprites et échelle)
+> reste **vide et structuré**, pour que la suite s'y range sans reprendre le plan à chaque fois — ne
+> pas le remplir par anticipation.
 
 ## 1. Palette
 
-<!-- À définir. Vit dans Assets/Scripts/UI/UiPalette.cs (ou équivalent) une fois posée — jamais de
-     couleur en dur ailleurs dans le code ou les générateurs. Tant que cette section est vide,
-     aucun brief de ce document ne doit référencer un code hexa : travailler en contraste de forme
-     et en valeurs relatives (clair/sombre), voir §5. -->
+**Parti pris** : un socle froid et presque noir (fond, aire, grille) sur lequel seules quatre
+couleurs chaudes portent une information de gameplay — le mur en ambre, la pomme en rouge, le
+serpent en vert, et un blanc pur réservé au signal qui doit toujours dominer (le pictogramme de
+refus). Raisonnement complet, ratios de contraste chiffrés et variantes écartées :
+[`art/palette.md`](art/palette.md).
+
+Vit dans `Assets/Scripts/UI/UiPalette.cs` (renommage de `PaletteProvisoire.cs`, même 12 rôles, aucun
+appelant à changer). **Jamais de couleur en dur ailleurs** dans le code ou les générateurs.
+
+| Rôle | Couleur |
+|---|---|
+| `Fond` | `#0A0E13` |
+| `AireDeJeu` | `#121821` |
+| `TraitDeGrille` | `#1C2530` |
+| `BordureAire` | `#E3A23A` |
+| `CorpsSerpent` | `#4E9358` |
+| `TeteSerpent` | `#D8F5C4` |
+| `Pomme` | `#E5473B` |
+| `Pictogramme` | `#FFFFFF` |
+| `TexteHud` | `#E7EDF2` |
+| `TexteSecondaire` | `#8792A0` |
+| `VoileDePause` | `#000000` à 62 % |
+| `TamponDeBuild` | `#FFFFFF` à 45 % |
+
+⚠ Projet en espace colorimétrique **Gamma** (`ProjectSettings.asset`) : ces codes hexa se posent
+tels quels (`/255` → `Color`), aucune reconversion linéaire à faire à la main.
 
 ## 2. Typographie
 
-<!-- À définir. Rappel du piège déjà payé (docs/pitfalls/polices-texte.md) : le repli d'Unity sur les
-     glyphes manquants n'existe QUE sur le bureau — un navigateur WebGL perd en silence tout
-     caractère absent de la police (flèches ← → ↑ ↓ en tête de liste). Conséquence pour tout texte
-     du jeu : n'écrire que des caractères que la police contient, et dessiner les symboles en
-     sprite. Vérifier la table `cmap` avant de faire confiance, et vérifier dans le navigateur, pas
-     au raisonnement. -->
+**Famille retenue : Nunito** (SIL OFL), deux graisses seulement — **SemiBold** pour le texte
+secondaire, **ExtraBold** pour les titres et les nombres du HUD. Corps relevé de deux points par
+rapport aux tailles actuelles du code (plancher : 18 px à la résolution de référence 1280×720),
+contours allégés — une police d'affichage ronde a le trait plus fin qu'Arial au même calibre.
+Raisonnement complet, tailles par texte, licence et procédure de récupération du `.ttf` statique :
+[`art/typographie.md`](art/typographie.md).
+
+⚠ Rappel du piège déjà payé (`docs/pitfalls/polices-texte.md`) : le repli d'Unity sur les glyphes
+manquants n'existe QUE sur le bureau — un navigateur WebGL perd en silence tout caractère absent de
+la police (flèches ← → ↑ ↓ en tête de liste). N'écrire que des caractères que la police contient, et
+dessiner les symboles en sprite. Vérifier la table `cmap` du fichier réellement importé avant de
+faire confiance, et vérifier dans le navigateur, pas au raisonnement.
 
 ## 3. Grille de sprites et échelle
 
@@ -46,7 +74,9 @@
 
 | Brief | Fichier | Statut |
 |---|---|---|
-| Le retour d'une entrée refusée (GDD §3, §4.2) | [`art/retour-refus.md`](art/retour-refus.md) | tranché, partiellement démenti en jeu le 2026-08-27 |
+| La palette (§1) | [`art/palette.md`](art/palette.md) | tranché le 2026-08-28 |
+| La typographie (§2) | [`art/typographie.md`](art/typographie.md) | tranché le 2026-08-28 |
+| Le retour d'une entrée refusée (GDD §3, §4.2) | [`art/retour-refus.md`](art/retour-refus.md) | tranché ; le démenti du 2026-08-27 (contraste du chevron) est levé par §1, à reconfirmer en jeu |
 
 ## 6. Historique des décisions
 

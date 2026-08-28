@@ -181,6 +181,16 @@ qu'un demi-tour peut être refusé à l'empilage, exactement l'erreur que le con
 > devra prévoir. **À arbitrer par le directeur artistique**, et ce sera plus facile une fois la
 > palette posée.
 
+> ✅ **Tranché le 2026-08-28 par la palette (ART §1), sans toucher aux formes.** C'est la troisième
+> piste qui l'emporte, et elle ne coûte rien : `Pictogramme` devient blanc pur `#FFFFFF`, valeur
+> **réservée à ce seul rôle**, et `CorpsSerpent` le vert moyen `#4E9358`. Le contraste du cas réel —
+> chevron sur le corps — passe de **3,04:1 à 3,72:1**, au-dessus du seuil WCAG 1.4.11 des objets
+> graphiques (3:1). Ni contour sombre ni décalage : les deux auraient modifié une forme et une
+> position déjà validées en jeu, pour un problème qui n'était que de couleur.
+> ⚠ **Constaté sur maquette au gabarit exact, pas encore sur un build** : à confirmer à la prochaine
+> capture d'un demi-tour refusé, une fois `UiPalette` câblée. Si le blanc pur suffit là aussi, ce
+> point est clos ; sinon, le contour sombre reste la piste de repli.
+
 > **La barre d'interdiction est perpendiculaire à l'axe du chevron, pas diagonale.** Écart assumé au
 > §5.4, décidé à l'implémentation : à 45°, la barre tombe exactement parallèle à l'une des deux
 > branches du chevron et se lit comme une troisième branche. La grammaire « sens interdit » d'origine
