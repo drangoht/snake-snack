@@ -43,13 +43,13 @@ namespace SnakeSnack.UI
         /// <c>docs/pitfalls/interface.md</c> : une capacité qui n'annonce pas sa touche n'existe pas
         /// pour le joueur).
         /// </summary>
-        public const string RappelDesCommandes = "Fleches ou ZQSD : diriger   -   Echap : pause   -   Espace : relancer";
+        public const string RappelDesCommandes = "Flèches ou ZQSD : diriger   -   Échap : pause   -   Espace : relancer";
 
         /// <summary>Titre de l'écran de pause.</summary>
         public const string TitrePause = "PAUSE";
 
         /// <summary>Sous-titre de l'écran de pause.</summary>
-        public const string SousTitrePause = "Echap pour reprendre";
+        public const string SousTitrePause = "Échap pour reprendre";
 
         /// <summary>
         /// La ligne de refus de l'écran de pause (<c>docs/ART.md</c> §5.4, mot pour mot).
@@ -73,7 +73,7 @@ namespace SnakeSnack.UI
         /// même place, même relance — mais rien ne doit laisser croire qu'une partie parfaite a mal
         /// fini.
         /// </summary>
-        public const string TitreVictoire = "GAGNE";
+        public const string TitreVictoire = "GAGNÉ";
 
         /// <summary>Sous-titre de la victoire : le serpent occupe toute la grille.</summary>
         public const string SousTitreVictoire = "Plus une seule case libre - Espace pour rejouer";
