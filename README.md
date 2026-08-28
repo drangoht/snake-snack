@@ -5,6 +5,12 @@ Le classique jeu de Snake
 Unity 6000.5.6f1 · C# · URP 2D · Input System · publié sur
 [itch.io](https://Drangoht.itch.io/snake-snack).
 
+**Où en est le jeu** (2026-08-28) : les mécaniques sont complètes — serpent, pomme, score, record
+persistant, pause, mort, refus du demi-tour — et le jeu s'ouvre sur un **menu principal** (jouer,
+comment jouer, crédits, quitter), navigable au clavier comme à la souris. Restent au programme avant
+une première version publiée : la sensation (retours, « juicy »), les assets graphiques, les effets
+sonores et la musique.
+
 > Ce dépôt est né du gabarit `unity-game-template`. Les fichiers `.claude/`, `docs/PITFALLS_UNITY.md`
 > et `tools/` en viennent : ils portent l'expérience de projets précédents. **Les corriger ici quand
 > le projet leur donne tort**, et remonter au gabarit ce qui est généralisable.
@@ -74,6 +80,8 @@ métadonnées Windows (qui décrivent le moteur) ne disent quelle version on reg
 | Lancer et capturer | `py tools/piloter_jeu.py --lancer --capture docs/x.png` |
 | Servir le build web | `py tools/serve_web.py` (⚠ **sans cache** — voir PITFALLS) |
 | Publier | `& "tools/release_itch.ps1" -Version X.Y.Z -DryRun` |
+| Régénérer les polices | `py tools/generer_polices.py` |
+| Régénérer l'illustration du menu | `py tools/generer_illustration_serpent.py --apercu` |
 | Dire où sont Unity et Python | `& "tools/configurer.ps1" -UnityPath "..."` |
 
 ⚠ **L'éditeur Unity doit être fermé** pour tout build en ligne de commande — `build.ps1` refuse de

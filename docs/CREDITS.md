@@ -4,6 +4,11 @@ Tout élément qui n'a pas été produit pour ce projet est listé ici, avec sa 
 qu'elle exige. ⚠ **Une entrée s'ajoute dans le commit qui introduit l'élément**, pas au moment de
 publier : une licence oubliée ne se voit qu'après la mise en ligne.
 
+⚠ **Ce fichier a un pendant EN JEU** : le menu principal (GDD §4.6) porte une entrée « Crédits »,
+dont le texte vit dans `TextesUi.CorpsCredits`. Une attribution ajoutée ici s'ajoute là aussi, dans
+le même commit — un texte de licence qui ne vit que dans le dépôt ne remplit pas l'obligation pour
+un joueur qui ne verra jamais le dépôt.
+
 ## Polices
 
 ### Nunito — SIL Open Font License 1.1

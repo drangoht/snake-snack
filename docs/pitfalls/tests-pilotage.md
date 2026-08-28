@@ -60,3 +60,22 @@ n'y fait rien, et c'est `haut` qui a lancé la partie. Aucune erreur nulle part 
 travail, le jeu aussi, et la capture racontait autre chose que le test. **Écrire l'état attendu avant
 de lancer le scénario, et le relire sur la capture** — ici, le bandeau disait « Pause » ou ne le
 disait pas.
+
+**⚠ Le clic de prise de focus de `piloter_jeu.py` est un VRAI clic dans le jeu.** Tant que le jeu
+n'avait aucune interface cliquable, il était sans conséquence ; depuis le menu du 2026-08-28, il
+peut activer ce qui se trouve au centre de la fenêtre. Le menu actuel y laisse un espace vide, mais
+tout écran qui poserait un bouton au centre serait déclenché par l'outil de vérification lui-même.
+
+**⚠ L'outil RESTAURE la position du curseur physique** après ce clic. Si la souris de la machine
+repose au-dessus d'une entrée de menu, elle en fait la sélection courante, et le scénario clavier
+qui suit valide une autre entrée que celle qu'on croyait. Écarter le curseur avant un scénario de
+menu :
+
+```
+py -c "import ctypes; ctypes.windll.user32.SetCursorPos(1890, 12)"
+```
+
+**⚠ « cannot write empty image » à la capture signifie que la fenêtre a disparu**, pas que la
+capture a échoué : le jeu s'est fermé (ou minimisé) pendant le scénario. Lire
+`Build/Windows/player.log` — une fermeture propre s'y voit sans aucune exception, et c'est
+justement ce qui la rend trompeuse.

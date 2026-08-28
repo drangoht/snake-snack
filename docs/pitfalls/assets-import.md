@@ -17,3 +17,13 @@ batchmode s'en charge, mais un éditeur ouvert peut servir l'ancienne version de
 Sur un fichier **nouveau** et ignoré par git, `AssetDatabase.ImportAsset` seul ne suffit pas : il
 faut d'abord un `AssetDatabase.Refresh()` pour que la base le découvre.
 
+
+**⚠ Un PNG déposé dans un projet en mode 3D est importé en TEXTURE, pas en sprite.**
+`ProjectSettings/EditorSettings.asset` porte `m_DefaultBehaviorMode: 0` (Mode3D) : le
+`textureType` par défaut d'une image importée est `Default`. `Resources.Load<Sprite>` rend alors
+**`null`** — exactement comme si le fichier n'existait pas — et l'`Image` reste vide sans qu'aucune
+erreur ne soit levée. Le cas est d'autant plus discret que le fichier est produit par un script et
+importé en batchmode : personne n'ouvre l'inspecteur pour le voir. Parade retenue le 2026-08-28 :
+`Assets/Editor/ImportIllustrations.cs`, un `AssetPostprocessor` qui impose `textureType = Sprite`
+sur tout `Resources/Illustrations/`. ⚠ Un `.meta` corrigé à la main n'aurait pas tenu : il est
+réécrit au réimport suivant. Vérification : `grep textureType` dans le `.meta` doit rendre `8`.

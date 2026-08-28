@@ -36,6 +36,10 @@ apparition au centre, trois segments à l'arrêt  →  orienter la tête ; le se
    →  Espace : nouvelle partie immédiate, sans menu ni écran intermédiaire
 ```
 
+⚠ **« Sans menu » vaut pour la relance, pas pour le lancement du jeu** : depuis le 2026-08-28, le jeu
+s'ouvre sur un menu principal (§4.6), et Échap y ramène **depuis l'écran de fin uniquement**. Espace
+relance toujours en une touche et zéro attente — c'est cette phrase-ci qui protège la boucle.
+
 **Les bords tuent, ils ne téléportent pas.** Une grille close se lit d'un coup d'œil dès la première
 seconde, et toute mort reste imputable à un virage — jamais à un serpent qui a « disparu quelque
 part ». (La téléportation a été envisagée puis écartée : voir §7.)
@@ -52,6 +56,8 @@ joueur : d'où l'absence d'aléa hostile dans tout le jeu.
 | Tourner (4 directions) | Flèches **ou** ZQSD | — pas en 0.1 | — pas en 0.1 |
 | Pause / reprise | Échap | — pas en 0.1 | — pas en 0.1 |
 | Relancer après la mort | Espace | — pas en 0.1 | — pas en 0.1 |
+| Revenir au menu (écran de fin) | Échap | — pas en 0.1 | — pas en 0.1 |
+| Naviguer le menu (§4.6) | Flèches ou ZQSD, Entrée ou Espace | — pas en 0.1 | souris : survol et clic |
 
 Manette et tactile sont **décidés vides**, pas oubliés : le jeu se joue au clavier sur la page itch,
 et chaque périphérique supplémentaire est un chemin à rejouer à chaque build. À rouvrir si des
@@ -89,6 +95,7 @@ code, pour qu'il ne se lise pas comme un oubli à corriger.
 | **4.3** La grille | [`gdd/grille.md`](gdd/grille.md) | 21 × 15 cases carrées, impaires sur les deux axes pour qu'une case centrale exacte existe. |
 | **4.4** La pomme | [`gdd/pomme.md`](gdd/pomme.md) | Une seule pomme à tout instant, posée avant le premier appui pour que le départ ait une cible. |
 | **4.5** Le score et le record | [`gdd/score-record.md`](gdd/score-record.md) | +1 par pomme, rien d'autre ; le record survit à la fermeture et se bat strictement. |
+| **4.6** Le menu principal | [`gdd/menu.md`](gdd/menu.md) | Le jeu s'ouvre sur un menu, mais rien ne s'interpose entre une mort et la partie suivante. |
 
 ## 5. Progression et difficulté
 
@@ -132,4 +139,5 @@ sans élément neuf** :
 - Pomme à durée de vie limitée (elle disparaît et réapparaît ailleurs)
 - `UnityEngine.Random` ou `System.Random` pour le tirage de la pomme
 - Score pondéré (bonus de rapidité, points liés au temps ou à la longueur)
+- Menu : écran de fin navigable, entrée « Réglages », record affiché au menu (détail dans [`gdd/menu.md`](gdd/menu.md))
 - Manette et tactile

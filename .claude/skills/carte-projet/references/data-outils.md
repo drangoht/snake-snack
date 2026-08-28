@@ -27,6 +27,7 @@ leur nom exact. Les renommer en PascalCase ferait retomber chaque valeur sur son
 | `release_itch.ps1` | Publie une version (build → butler push → commit). Skill `/publier-itch` |
 | `serve_web.py` | Sert `Build/Web` **sans cache navigateur** — indispensable après un rebuild |
 | `piloter_jeu.py` | Lance le build Windows, injecte des touches, capture la fenêtre |
+| `generer_illustration_serpent.py` | **Produit** `Assets/Resources/Illustrations/serpent-menu.png` (le serpent du menu). Lit la palette dans `UiPalette.cs`, ne recopie aucune couleur. `--apercu` l'écrit sur le fond réel du jeu |
 | `generer_polices.py` | **Produit** les deux `.ttf` de `Assets/Resources/Polices/` en instanciant le Nunito variable amont. `--verifier` revalide la `cmap` sans rien réécrire |
 
 ⚠ **Aucun chemin d'outil externe en dur nulle part** : `Unity.exe` n'est pas au même endroit d'une
