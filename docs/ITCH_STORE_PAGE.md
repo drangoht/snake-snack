@@ -20,26 +20,47 @@ Le classique jeu de Snake
 
 ## Description
 
-<!--
-Structure qui fonctionne, dans cet ordre :
+**Dirigez un serpent qui s'allonge à chaque bouchée, jusqu'à ce que son propre corps ne laisse plus
+de passage.**
 
-1. UNE PHRASE qui dit ce qu'on FAIT dans le jeu. Pas l'univers, pas le genre : le verbe.
-2. Un GIF ou une capture qui montre cette phrase.
-3. Les commandes — clavier ET tactile si le jeu se joue au doigt.
-4. Ce qu'il y a dedans, en liste courte.
-5. Crédits et licences.
--->
+Pas de twist, pas de bonus, pas d'ennemi : ce qui vous arrête, c'est votre propre queue. Les bords
+de la grille tuent — ils ne téléportent pas — donc chaque mort reste imputable à un virage, et il y
+a toujours une phrase en tête en relançant : « j'aurais dû passer par la droite ».
+
+Une partie se relance en **une touche et zéro attente**.
 
 ### Commandes
 
 | Action | Clavier | Tactile |
 |---|---|---|
-| | | |
+| Tourner (4 directions) | Flèches **ou** ZQSD | — pas en 0.1 |
+| Pause / reprise | Échap | — pas en 0.1 |
+| Relancer après la mort | Espace | — pas en 0.1 |
+| Revenir au menu | Échap (écran de fin) **ou** Retour arrière (pause) | — pas en 0.1 |
+| Naviguer le menu | Flèches ou ZQSD, Entrée ou Espace | souris : survol et clic |
+
+⚠ **Le jeu se joue au clavier** : il n'y a pas de commandes tactiles en 0.1.0, une souris ne suffit
+que pour le menu.
+
+### Ce qu'il y a dedans
+
+- Une grille close de 21 × 15 cases, une pomme à la fois, un point par pomme.
+- Un record qui survit à la fermeture du jeu, et qui se bat strictement.
+- Un menu principal : jouer, comment jouer, crédits.
+- Une pause, et un refus de demi-tour qui **se voit** plutôt que d'avaler l'appui en silence.
+
+**Ce qui n'y est pas encore** : aucun son ni aucune musique en 0.1.0, et les graphismes sont ceux
+d'une première version. C'est une base jouable, pas une version finie.
 
 ### Crédits
 
-<!-- Polices (SIL OFL, joindre OFL.txt), sons (CC0 / Kenney), musique et sa licence.
-     ⚠ Vérifier l'usage COMMERCIAL : certains plans gratuits de génération l'interdisent. -->
+- **Police Nunito** — Vernon Adams, Cyreal, Jacques Le Bailly.
+  `Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)`
+  Sous [SIL Open Font License 1.1](https://scripts.sil.org/OFL) ; instances statiques extraites pour
+  ce projet. Le texte intégral de la licence est embarqué dans le jeu (écran « Crédits »).
+- Tout le reste — code, illustrations, interface — est produit pour ce projet.
+- Fait avec Unity 6000.5.6f1 (URP 2D), à partir du gabarit
+  [unity-game-template-with-claude](https://github.com/drangoht/unity-game-template-with-claude).
 
 ---
 
@@ -48,9 +69,13 @@ Structure qui fonctionne, dans cet ordre :
 À vérifier à la main après chaque publication ; ils ont été faux pendant plusieurs versions sur un
 projet précédent.
 
-- [ ] **Kind of project** = HTML (sinon le build web se télécharge au lieu de se jouer)
-- [ ] Fichier coché **« This file will be played in the browser »**
-- [ ] **Mobile friendly** — décide seule de ce qu'itch propose à un visiteur sur téléphone
-- [ ] **Orientation** déclarée
+- [x] **Kind of project** = HTML (sinon le build web se télécharge au lieu de se jouer) — posé le 2026-08-28
+- [x] Fichier coché **« This file will be played in the browser »** — posé le 2026-08-28
+- [x] **Mobile friendly** — décide seule de ce qu'itch propose à un visiteur sur téléphone.
+      **Décoché** : le jeu n'a aucune commande tactile, l'annoncer jouable au doigt serait faux.
+- [ ] **Orientation** déclarée — sans objet tant que « mobile friendly » est décoché
 - [ ] Onglet **Classification** : genre, tags, **décompte de joueurs**, mode multijoueur
 - [ ] **Cover 630 × 500** — la seule image que voient les visiteurs qui n'ouvrent pas la page
+
+⚠ **Visibilité** : la page est en **Draft** depuis sa création (2026-08-28). Rien n'est public tant
+que l'auteur n'a pas cliqué « Publish » lui-même.
