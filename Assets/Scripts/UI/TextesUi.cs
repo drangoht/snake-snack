@@ -1,4 +1,5 @@
 using System.Globalization;
+using SnakeSnack.Rules;
 
 namespace SnakeSnack.UI
 {
@@ -23,6 +24,86 @@ namespace SnakeSnack.UI
     /// </remarks>
     public static class TextesUi
     {
+        // --- Menu principal (GDD §4.6) ---------------------------------------------------
+
+        /// <summary>Titre du jeu, sur le menu principal. Le même mot que la page itch.</summary>
+        public const string TitreDuJeu = "SNAKE SNACK";
+
+        /// <summary>
+        /// L'accroche sous le titre : le pitch du GDD §1 réduit à ce qui se lit en une seconde. Elle
+        /// dit la <b>conséquence</b> de manger, pas la commande — c'est la conséquence qui fait
+        /// comprendre pourquoi la partie finit toujours mal.
+        /// </summary>
+        public const string AccrocheMenu = "Il s'allonge à chaque bouchée.";
+
+        /// <summary>Rappel des touches du menu, en pied d'écran (« invisible se lit inexistant »).</summary>
+        public const string PiedDeMenu = "Flèches ou ZQSD pour choisir   -   Entrée ou Espace pour valider";
+
+        /// <summary>Le libellé d'une entrée du menu (GDD §4.6).</summary>
+        /// <remarks>
+        /// ⚠ Un <c>switch</c> exhaustif avec un défaut qui <b>se voit</b> : une entrée ajoutée à
+        /// <see cref="EntreeMenu"/> et oubliée ici s'afficherait sinon comme une ligne vide, et une
+        /// ligne vide dans un menu se lit comme un défaut d'affichage, pas comme un oubli de texte.
+        /// </remarks>
+        public static string LibelleEntree(EntreeMenu entree)
+        {
+            switch (entree)
+            {
+                case EntreeMenu.Jouer: return "Jouer";
+                case EntreeMenu.CommentJouer: return "Comment jouer";
+                case EntreeMenu.Credits: return "Crédits";
+                case EntreeMenu.Quitter: return "Quitter";
+                default: return "(entrée sans libellé : " + entree + ")";
+            }
+        }
+
+        /// <summary>Titre du panneau des commandes.</summary>
+        public const string TitreCommentJouer = "COMMENT JOUER";
+
+        /// <summary>
+        /// Le panneau des commandes : les touches du GDD §3, puis les deux règles qui tuent.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Aucune flèche Unicode (§5.7) : « Flèches » est écrit en toutes lettres. Et le refus du
+        /// demi-tour est annoncé <b>ici</b> plutôt que découvert en jeu — un joueur qui voit son
+        /// appui ignoré sans explication conclut que le jeu a raté sa touche.
+        /// </remarks>
+        public const string CorpsCommentJouer =
+            "Flèches ou ZQSD : diriger le serpent\n" +
+            "Échap : mettre en pause\n" +
+            "Espace : relancer une partie\n" +
+            "\n" +
+            "Le serpent avance seul, une case à la fois.\n" +
+            "Chaque pomme l'allonge d'un segment et vaut un point.\n" +
+            "\n" +
+            "Les bords tuent : ils ne téléportent pas, et se mordre le corps tue aussi.\n" +
+            "Le demi-tour instantané est refusé : un chevron barré le signale.";
+
+        /// <summary>Titre du panneau des crédits.</summary>
+        public const string TitreCredits = "CRÉDITS";
+
+        /// <summary>
+        /// Les crédits affichés en jeu.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Ce texte n'est pas décoratif : c'est une obligation de licence.</b> La SIL OFL 1.1
+        /// de Nunito exige l'attribution, et <c>docs/CREDITS.md</c> tient la liste de référence.
+        /// Toute ressource tierce ajoutée au jeu s'ajoute aux deux endroits, dans le même commit.
+        /// </remarks>
+        public const string CorpsCredits =
+            "Snake Snack - un jeu de Drangoht.\n" +
+            "\n" +
+            "Police : Nunito, par Vernon Adams, Cyreal et Jacques Le Bailly.\n" +
+            "SIL Open Font License 1.1.\n" +
+            "\n" +
+            "Illustration et interface produites pour ce jeu.\n" +
+            "Moteur : Unity.";
+
+        /// <summary>Pied des panneaux du menu.</summary>
+        public const string RetourPanneau = "Échap pour revenir";
+
+        // --- Jeu -------------------------------------------------------------------------
+
         /// <summary>
         /// Bandeau, avant le premier appui. Le §4.1 fait démarrer la partie sur la première
         /// direction applicable : le joueur doit savoir qu'on l'attend, sinon il croit à un gel.
@@ -63,7 +144,7 @@ namespace SnakeSnack.UI
         public const string TitreMort = "PERDU";
 
         /// <summary>Relance à une touche, zéro attente (GDD §2).</summary>
-        public const string SousTitreMort = "Espace pour rejouer";
+        public const string SousTitreMort = "Espace pour rejouer   -   Échap pour le menu";
 
         /// <summary>Bandeau, grille remplie (GDD §4.4).</summary>
         public const string EtatVictoire = "Grille remplie";
@@ -76,7 +157,7 @@ namespace SnakeSnack.UI
         public const string TitreVictoire = "GAGNÉ";
 
         /// <summary>Sous-titre de la victoire : le serpent occupe toute la grille.</summary>
-        public const string SousTitreVictoire = "Plus une seule case libre - Espace pour rejouer";
+        public const string SousTitreVictoire = "Plus une seule case libre - Espace pour rejouer   -   Échap pour le menu";
 
         /// <summary>Bandeau, score de la partie en cours (GDD §4.5).</summary>
         public static string LigneScore(int points)

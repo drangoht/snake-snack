@@ -38,6 +38,13 @@ namespace SnakeSnack.Gameplay
         private VuePlateau _vue;
         private HudJeu _hud;
 
+        /// <summary>
+        /// Le menu principal (GDD §4.6). ⚠ C'est LUI qui dit s'il occupe l'écran
+        /// (<see cref="EcranMenu.Actif"/>) : dupliquer ici un booléen « on est dans le menu »
+        /// créerait deux vérités, et c'est celle du fondu de sortie qui finirait par diverger.
+        /// </summary>
+        private EcranMenu _menu;
+
         /// <summary>Le générateur de la partie en cours. ⚠ Rien d'autre que la pomme n'y tire (§4.4).</summary>
         private Aleatoire _alea;
 
@@ -112,6 +119,43 @@ namespace SnakeSnack.Gameplay
             _serpent = new Serpent(pose.Segments);
             _file = new FileEntrees(pose.Orientation, _reglages.profondeurFile);
 
+            _menu = gameObject.AddComponent<EcranMenu>();
+            _menu.Validee += SurEntreeDeMenuValidee;
+
+            // ⚠ Aucune partie n'est préparée ici : `NouvellePartie` sème l'aléatoire et journalise
+            // la graine (§4.4). L'appeler au démarrage puis à nouveau sur « Jouer » écrirait deux
+            // graines dans le journal pour une seule partie jouée, et c'est la première — celle
+            // qu'on ne joue pas — qui serait lue en cas de rapport de bug.
+            RevenirAuMenu();
+        }
+
+        /// <summary>Le menu prend l'écran : le plateau et le HUD s'effacent d'un bloc.</summary>
+        private void RevenirAuMenu()
+        {
+            _vue.Montrer(false);
+            _hud.Montrer(false);
+            _menu.Ouvrir();
+        }
+
+        /// <summary>
+        /// Une entrée du menu qui engage l'application a été validée, fondu de sortie terminé.
+        /// </summary>
+        /// <remarks>
+        /// « Comment jouer » et « Crédits » n'arrivent jamais ici : ce sont des panneaux, et
+        /// <see cref="EcranMenu"/> les gère sans quitter le menu.
+        /// </remarks>
+        private void SurEntreeDeMenuValidee(EntreeMenu entree)
+        {
+            if (entree == EntreeMenu.Quitter)
+            {
+                // ⚠ Sans effet dans l'éditeur ET en WebGL — d'où l'absence de l'entrée sur le web
+                // (MenuPrincipal.Entrees). Sur le bureau, c'est bien le jeu qui se ferme.
+                Application.Quit();
+                return;
+            }
+
+            _vue.Montrer(true);
+            _hud.Montrer(true);
             NouvellePartie();
         }
 
@@ -140,9 +184,63 @@ namespace SnakeSnack.Gameplay
 
         private void Update()
         {
+            if (_menu.Actif)
+            {
+                // ⚠ Rien du jeu ne tourne tant que le menu est là, fondu de sortie compris : une
+                // direction tapée sur les dernières images du fondu se retrouverait empilée dans la
+                // file d'entrées et ferait démarrer la partie toute seule (§4.2).
+                LireEntreesDuMenu();
+                return;
+            }
+
             LireEntrees();
             AvancerLeTemps();
             RafraichirRetourDeRefus();
+        }
+
+        /// <summary>
+        /// Les touches du menu. Mêmes flèches et mêmes ZQSD que le jeu (GDD §3) : le joueur n'a pas
+        /// deux jeux de commandes à apprendre, et l'AZERTY se déclare ici aussi en <c>Key.W</c>.
+        /// </summary>
+        private void LireEntreesDuMenu()
+        {
+            Keyboard clavier = Keyboard.current;
+            if (clavier == null)
+            {
+                return;
+            }
+
+            if (clavier.escapeKey.wasPressedThisFrame)
+            {
+                _menu.Retour();
+            }
+
+            if (clavier.enterKey.wasPressedThisFrame
+                || clavier.numpadEnterKey.wasPressedThisFrame
+                || clavier.spaceKey.wasPressedThisFrame)
+            {
+                _menu.Valider();
+            }
+
+            if (Pressee(clavier, ToucheHaut))
+            {
+                _menu.Deplacer(Direction.Nord);
+            }
+
+            if (Pressee(clavier, ToucheBas))
+            {
+                _menu.Deplacer(Direction.Sud);
+            }
+
+            if (Pressee(clavier, ToucheGauche))
+            {
+                _menu.Deplacer(Direction.Ouest);
+            }
+
+            if (Pressee(clavier, ToucheDroite))
+            {
+                _menu.Deplacer(Direction.Est);
+            }
         }
 
         private void LireEntrees()
@@ -155,6 +253,14 @@ namespace SnakeSnack.Gameplay
 
             if (clavier.escapeKey.wasPressedThisFrame)
             {
+                if (PartieTerminee)
+                {
+                    // Le GDD §2 garde la relance à une touche (Espace, zéro attente) : Échap n'est
+                    // le chemin du menu QUE sur l'écran de fin, là où plus rien ne se joue.
+                    RevenirAuMenu();
+                    return;
+                }
+
                 BasculerLaPause();
             }
 

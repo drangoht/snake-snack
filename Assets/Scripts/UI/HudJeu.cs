@@ -37,6 +37,9 @@ namespace SnakeSnack.UI
         private Text _refusEnPause;
         private Image _voile;
 
+        /// <summary>Le canevas entier, masqué d'un bloc quand le menu prend l'écran (GDD §4.6).</summary>
+        private GameObject _canvas;
+
         // Les deux seules graisses du jeu (ART §2.2). SemiBold porte le texte secondaire et
         // permanent, ExtraBold les titres et les nombres — il n'y a pas de Regular : à ces tailles,
         // sur un rendu WebGL redimensionné, un trait fin de police ronde disparaît avant de se lire.
@@ -57,23 +60,13 @@ namespace SnakeSnack.UI
 
         private void Construire()
         {
-            _policeCourante = ChargerGraisse("Nunito-SemiBold");
-            _policeTitres = ChargerGraisse("Nunito-ExtraBold");
+            _policeCourante = PolicesUi.Charger(PolicesUi.Courante);
+            _policeTitres = PolicesUi.Charger(PolicesUi.Titres);
 
-            var canvasGo = new GameObject("Canvas HUD");
-            canvasGo.transform.SetParent(transform, false);
-
-            var canvas = canvasGo.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            // Sous le tampon de build (1000), au-dessus du monde : le HUD ne doit jamais masquer
-            // l'estampille qui identifie la version sur une capture d'écran.
-            canvas.sortingOrder = 100;
-
-            var scaler = canvasGo.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1280f, 720f);
-
-            canvasGo.AddComponent<GraphicRaycaster>();
+            // Sous le menu (200) et sous le tampon de build (1000), au-dessus du monde : le HUD ne
+            // doit masquer ni le menu ni l'estampille qui identifie la version sur une capture.
+            GameObject canvasGo = FabriqueUi.Canevas(transform, "Canvas HUD", 100).gameObject;
+            _canvas = canvasGo;
 
             // ⚠ Les corps ci-dessous sont ceux de docs/ART.md §2.3, relevés de deux points. Le
             // CanvasScaler ci-dessus les exprime en pixels du cadre 1280x720 : sur la fenêtre plus
@@ -135,79 +128,29 @@ namespace SnakeSnack.UI
 
         private static Image ConstruireVoile(Transform parent)
         {
-            var go = new GameObject("Voile");
-            go.transform.SetParent(parent, false);
-
-            var image = go.AddComponent<Image>();
-            image.color = UiPalette.VoileDePause;
-            image.raycastTarget = false;
-
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            go.SetActive(false);
-            return image;
-        }
-
-        /// <summary>
-        /// Charge une graisse depuis <c>Resources/Polices/</c>.
-        /// </summary>
-        /// <remarks>
-        /// ⚠ <b>Une police absente ne lève rien</b> : <c>Resources.Load</c> rend <c>null</c>, le
-        /// <c>Text</c> garde une police nulle et ne dessine simplement aucun pixel — pas de carré
-        /// blanc, pas d'exception, un HUD vide. D'où l'erreur explicite ET le repli sur la police
-        /// intégrée : un HUD moche se voit, un HUD vide se cherche pendant une heure.
-        ///
-        /// <para>Les deux <c>.ttf</c> sont <b>produits</b> par <c>tools/generer_polices.py</c> :
-        /// google/fonts ne publie Nunito qu'en fichier variable (<c>buildStatic: false</c> en amont),
-        /// le script en instancie <c>wght=600</c> et <c>wght=800</c>. Ils ne se retéléchargent
-        /// pas à la main.</para>
-        /// </remarks>
-        private static Font ChargerGraisse(string nom)
-        {
-            Font police = Resources.Load<Font>("Polices/" + nom);
-            if (police != null)
-            {
-                return police;
-            }
-
-            Debug.LogError("Police introuvable : Resources/Polices/" + nom
-                           + " — relancer « py tools/generer_polices.py ». Repli sur la police intégrée.");
-            return Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Image voile = FabriqueUi.Voile(parent, "Voile", UiPalette.VoileDePause);
+            voile.gameObject.SetActive(false);
+            return voile;
         }
 
         private static Text ConstruireTexte(
             Transform parent, string nom, Font police, int taille, TextAnchor alignement,
             Color couleur, Vector2 ancre, Vector2 position, Vector2 dimensions)
         {
-            var go = new GameObject(nom);
-            go.transform.SetParent(parent, false);
+            return FabriqueUi.Texte(parent, nom, police, taille, alignement, couleur, ancre, position, dimensions);
+        }
 
-            var texte = go.AddComponent<Text>();
-            texte.font = police;
-            // ⚠ Jamais de FontStyle.Bold par-dessus : la graisse vient du FICHIER (SemiBold ou
-            // ExtraBold). Le gras synthétique d'uGUI s'ajouterait au dessin déjà gras et boucherait
-            // les contre-formes rondes de Nunito — exactement ce que l'ART §2.4 interdit aux
-            // contours épais.
-            texte.fontStyle = FontStyle.Normal;
-            texte.fontSize = taille;
-            texte.alignment = alignement;
-            texte.color = couleur;
-            texte.raycastTarget = false;
-            texte.horizontalOverflow = HorizontalWrapMode.Overflow;
-            texte.verticalOverflow = VerticalWrapMode.Overflow;
-
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = ancre;
-            rect.anchorMax = ancre;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = position;
-            rect.sizeDelta = dimensions;
-
-            return texte;
+        /// <summary>
+        /// Montre ou masque tout le HUD.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Le canevas entier, et pas les textes un par un : le menu (GDD §4.6) prend l'écran en
+        /// entier, et un seul texte oublié — le rappel des commandes, le tampon du score — se
+        /// retrouverait posé par-dessus le titre du jeu.
+        /// </remarks>
+        public void Montrer(bool visible)
+        {
+            _canvas.SetActive(visible);
         }
 
         /// <summary>Met l'interface à l'état de la partie.</summary>

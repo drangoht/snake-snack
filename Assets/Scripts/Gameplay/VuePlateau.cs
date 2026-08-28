@@ -23,6 +23,10 @@ namespace SnakeSnack.Gameplay
         private readonly List<SpriteRenderer> _segments = new List<SpriteRenderer>();
 
         private Plateau _plateau;
+
+        /// <summary>Conteneur de tout ce que cette vue dessine — voir <see cref="Montrer"/>.</summary>
+        private Transform _racine;
+
         private Transform _racineSegments;
         private Transform _chevron;
         private SpriteRenderer[] _barresChevron;
@@ -33,6 +37,13 @@ namespace SnakeSnack.Gameplay
         {
             _plateau = plateau;
 
+            // ⚠ Tout le rendu du plateau est parenté à CE conteneur, et non au composant lui-même :
+            // c'est lui qu'on éteint d'un bloc quand le menu prend l'écran (GDD §4.6). Éteindre le
+            // GameObject du composant arrêterait aussi JeuSnake et le HUD, qui vivent dessus.
+            var conteneur = new GameObject("Plateau");
+            conteneur.transform.SetParent(transform, false);
+            _racine = conteneur.transform;
+
             ConstruireAire();
             ConstruireTraitsDeGrille();
             ConstruireBordure();
@@ -40,10 +51,24 @@ namespace SnakeSnack.Gameplay
             ConstruirePomme();
 
             var racine = new GameObject("Segments");
-            racine.transform.SetParent(transform, false);
+            racine.transform.SetParent(_racine, false);
             _racineSegments = racine.transform;
 
             ConstruireChevron();
+        }
+
+        /// <summary>
+        /// Montre ou masque tout le plateau (aire, grille, serpent, pomme, chevron).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Masquer plutôt que détruire : le pool de segments, la pomme et le chevron sont
+        /// reconstruits une seule fois pour toute la session. Un aller-retour au menu qui
+        /// détruirait puis reconstruirait tout produirait un ramassage de mémoire pile au moment
+        /// où la partie démarre.
+        /// </remarks>
+        public void Montrer(bool visible)
+        {
+            _racine.gameObject.SetActive(visible);
         }
 
         /// <summary>
@@ -62,7 +87,7 @@ namespace SnakeSnack.Gameplay
         /// </remarks>
         private void ConstruirePomme()
         {
-            _pomme = FormesPrimitives.Rectangle(transform, "Pomme", UiPalette.Pomme, 5);
+            _pomme = FormesPrimitives.Rectangle(_racine, "Pomme", UiPalette.Pomme, 5);
 
             float cote = (float)(_plateau.TailleCase * 0.72 / Mathf.Sqrt(2f));
             _pomme.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
@@ -105,7 +130,7 @@ namespace SnakeSnack.Gameplay
 
         private void ConstruireAire()
         {
-            var fond = FormesPrimitives.Rectangle(transform, "Aire", UiPalette.AireDeJeu, -100);
+            var fond = FormesPrimitives.Rectangle(_racine, "Aire", UiPalette.AireDeJeu, -100);
             Poser(fond, 0.0, _plateau.DecalageVerticalAire, _plateau.LargeurAire, _plateau.HauteurAire);
         }
 
@@ -116,7 +141,7 @@ namespace SnakeSnack.Gameplay
         private void ConstruireTraitsDeGrille()
         {
             var racine = new GameObject("Traits");
-            racine.transform.SetParent(transform, false);
+            racine.transform.SetParent(_racine, false);
 
             double gauche = -_plateau.LargeurAire / 2.0;
             double bas = (-_plateau.HauteurAire / 2.0) + _plateau.DecalageVerticalAire;
@@ -141,7 +166,7 @@ namespace SnakeSnack.Gameplay
         private void ConstruireBordure()
         {
             var racine = new GameObject("Bordure");
-            racine.transform.SetParent(transform, false);
+            racine.transform.SetParent(_racine, false);
 
             double centreY = _plateau.DecalageVerticalAire;
             double demiLargeur = _plateau.LargeurAire / 2.0;
@@ -174,7 +199,7 @@ namespace SnakeSnack.Gameplay
         private void ConstruireChevron()
         {
             var go = new GameObject("ChevronRefus");
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(_racine, false);
             _chevron = go.transform;
 
             double taille = _plateau.TailleMaximalePictogramme;
