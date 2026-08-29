@@ -21,6 +21,7 @@ Logique pure, sans dépendance moteur, **testée**. C'est ici que vit toute règ
 | `RetourRefus.cs` | Registre visuel d'un refus (ART §5) : pictogramme, texte de pause, ou silence ; échéances et opacité du retour | `tests/RetourRefusTests.cs` |
 | `ReglagesJeu.cs` | Schéma du JSON de tuning + `Valider()`. Voir `data-outils.md` | `tests/ReglagesJeuTests.cs` |
 | `Score.cs` | Score et record (GDD §4.5) : +1 par pomme, **record qui monte pendant la partie**, prédicat « record battu » jugé contre le record d'AVANT la partie (égaler ne bat pas), normalisation d'un record abîmé, et `longueur == 3 + score` | `tests/ScoreTests.cs` |
+| `Rebond.cs` | Les **courbes du juicy** (`docs/art/juicy.md` §2) : `Progres` borné aux deux extrémités (une image longue projetterait un segment au-delà de sa case), `Impulsion` (aller-retour), `Apparition` (pop avec dépassement, **finit exactement à 1**), `Gulp` (compression à surface conservée). ⚠ Rend un facteur, ne décide de rien | `tests/RebondTests.cs` |
 | `MenuPrincipal.cs` | Composition des entrées du menu (GDD §4.6) et navigation : « Quitter » absent quand la plateforme ne sait pas fermer, bouclage haut/bas, directions latérales ignorées | `tests/MenuPrincipalTests.cs` |
 | `EXEMPLE_Regle.cs` | Gabarit — à supprimer quand `Rules/` sera bien peuplé. |  |
 

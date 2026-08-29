@@ -84,6 +84,29 @@ namespace SnakeSnack.Gameplay
         private double _tempsAccumule;
         private double _dureeTick;
 
+        // --- Retours de mort (docs/art/juicy.md §6) --------------------------------------
+        //
+        // Ces trois valeurs sont volontairement des constantes, et non des champs de
+        // `reglages.json` : le tuning par fichier ne fonctionne pas en WebGL — `ChargeurReglages`
+        // y rend les défauts sans rien lire — donc une durée réglable donnerait l'illusion de
+        // pouvoir ajuster sur itch ce qui ne s'ajuste en réalité que sur le build bureau. Elles y
+        // passeront le jour où le juicy sera essayé assez souvent pour le mériter.
+
+        /// <summary>Délai avant que l'écran de fin ne recouvre la case fautive.</summary>
+        private const double DureeHitstop = 0.080;
+
+        private const double DureeMicroZoom = 0.150;
+
+        /// <summary>Taille de caméra du cadre de référence 1280×720 (SceneBuilder).</summary>
+        private const double TailleCameraDeReference = 360.0;
+
+        /// <summary>Creux du micro-zoom, en pixels de demi-hauteur : 6 sur 360, soit ≈ 1,7 %.</summary>
+        private const double AmplitudeMicroZoom = 6.0;
+
+        private Camera _camera;
+        private double _debutRetoursDeMort = double.NegativeInfinity;
+        private bool _finAffichee = true;
+
         private void Awake()
         {
             _reglages = ChargeurReglages.Charger();
@@ -104,6 +127,15 @@ namespace SnakeSnack.Gameplay
 
             _vue = gameObject.AddComponent<VuePlateau>();
             _vue.Construire(_plateau);
+
+            // Le glissement doit durer exactement un tick : la vue ne recopie pas la cadence, elle
+            // la reçoit, pour suivre un `ticksParSeconde` retuné dans reglages.json.
+            _vue.ReglerDureeTick(_dureeTick);
+
+            // ⚠ Résolue une fois : `Camera.main` parcourt la scène à chaque appel, et le micro-zoom
+            // la relit à chaque image. Elle peut être nulle en test — le zoom se contente alors de
+            // ne rien faire, il n'a jamais rien à décider.
+            _camera = Camera.main;
 
             _hud = gameObject.AddComponent<HudJeu>();
 
@@ -193,6 +225,10 @@ namespace SnakeSnack.Gameplay
                 return;
             }
 
+            // ⚠ AVANT la lecture des entrées : c'est ce qui donne au hitstop le pouvoir de les
+            // retenir dès l'image de l'impact.
+            AvancerLesRetoursDeMort();
+
             LireEntrees();
             AvancerLeTemps();
             RafraichirRetourDeRefus();
@@ -247,6 +283,18 @@ namespace SnakeSnack.Gameplay
         {
             Keyboard clavier = Keyboard.current;
             if (clavier == null)
+            {
+                return;
+            }
+
+            // ⚠ Hitstop : aucune entrée n'est lue pendant les 80 ms qui suivent l'impact, Espace
+            // compris (docs/art/juicy.md §6). Un joueur qui martèle la relance juste avant de mourir
+            // repartirait sinon pendant que l'écran retient encore l'image de sa mort — il ne verrait
+            // jamais la case qui l'a tué, et la relance paraîtrait partir toute seule.
+            //
+            // ⚠ Le délai est BORNÉ à cette durée et n'est jamais prolongé : un blocage qui s'allonge
+            // au fil des essais finit par se lire comme un jeu qui ne répond plus (§11).
+            if (!_finAffichee)
             {
                 return;
             }
@@ -403,12 +451,16 @@ namespace SnakeSnack.Gameplay
                 SignalerRefus(MotifRefus.DemiTour, tick.DirectionRefusee);
             }
 
+            // ⚠ Lue AVANT le déplacement : après une mort, `Segments[0]` est encore la case d'où le
+            // serpent a tenté de sortir, et c'est elle que le flash doit désigner.
+            Case teteAvant = _serpent.Segments[0];
+
             bool mange;
             ResultatDeplacement resultat = _serpent.Avancer(tick.DirectionAppliquee, _grille, _pomme, out mange);
 
             if (resultat != ResultatDeplacement.Avance)
             {
-                Mourir();
+                Mourir(resultat, teteAvant, tick.DirectionAppliquee);
                 return;
             }
 
@@ -418,6 +470,10 @@ namespace SnakeSnack.Gameplay
             {
                 return;
             }
+
+            // Le retour de la bouchée part AVANT le score : c'est le geste du serpent, pas le
+            // chiffre, que le joueur regarde à cet instant (docs/art/juicy.md §5).
+            _vue.SignalerBouchee(tick.DirectionAppliquee);
 
             // Étape 6 — le score d'abord (§4.4 : « score +1, puis tirer la nouvelle pomme »). Compté
             // même quand cette pomme est celle qui remplit la grille : elle a été mangée, l'écran de
@@ -508,16 +564,87 @@ namespace SnakeSnack.Gameplay
             _etat = EtatPartie.EnPause;
             _hud.Afficher(_etat);
 
+            // ⚠ Le serpent se fige sur ses cases : un segment qui finirait de glisser sous le voile
+            // montrerait un jeu qui tourne encore, exactement ce que la pause dit ne pas faire.
+            _vue.FigerAnimations();
+
             // Le temps accumulé est jeté : reprendre ne doit pas déclencher un tick immédiat.
             _tempsAccumule = 0.0;
         }
 
-        private void Mourir()
+        /// <summary>
+        /// La mort, et les trois retours qui la rendent lisible (<c>docs/art/juicy.md</c> §6).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>L'écran de fin n'est plus affiché ici</b>, mais après le hitstop, par
+        /// <see cref="AvancerLesRetoursDeMort"/> : le voile posé dans l'image même de l'impact
+        /// recouvrirait la case fautive avant que l'œil ait pu la voir — le flash existerait dans le
+        /// code sans jamais exister pour le joueur.
+        /// </remarks>
+        private void Mourir(ResultatDeplacement resultat, Case teteAvant, Direction directionTentee)
         {
             _file.Mourir();
             _etat = EtatPartie.Mort;
-            _hud.Afficher(_etat);
-            _vue.DessinerSerpent(_serpent.Segments);
+
+            // Le serpent se fige : plus aucun glissement après le dernier tick.
+            _vue.DessinerSerpent(_serpent.Segments, false);
+
+            // Une morsure a une case coupable DANS la grille — celle qu'on a mordue. Un mur n'en a
+            // pas : la case visée est hors grille, donc hors de l'aire, et le flash s'y afficherait
+            // au-delà de la bordure. On désigne alors la case d'où le serpent a tenté de sortir.
+            Case fautive = resultat == ResultatDeplacement.MortMorsure
+                ? Directions.Avance(teteAvant, directionTentee)
+                : teteAvant;
+
+            _vue.FlasherCase(fautive);
+
+            _debutRetoursDeMort = Time.unscaledTimeAsDouble;
+            _finAffichee = false;
+        }
+
+        /// <summary>
+        /// Déroule le hitstop et le micro-zoom après une mort, puis laisse l'écran de fin paraître.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Tout est sur <c>unscaledTime</c>, comme le retour de refus : ces retours doivent se
+        /// dérouler alors que la partie ne tourne plus.
+        ///
+        /// <para>⚠ Le zoom agit sur <c>orthographicSize</c>, jamais sur la position de la caméra
+        /// (<c>juicy.md</c> §10) : un déplacement latéral décalerait les cases à l'instant précis où
+        /// le joueur cherche laquelle l'a tué.</para>
+        /// </remarks>
+        private void AvancerLesRetoursDeMort()
+        {
+            if (_debutRetoursDeMort <= double.NegativeInfinity)
+            {
+                return;
+            }
+
+            double maintenant = Time.unscaledTimeAsDouble;
+
+            if (_camera != null)
+            {
+                double t = Rebond.Progres(_debutRetoursDeMort, DureeMicroZoom, maintenant);
+                _camera.orthographicSize = (float)(TailleCameraDeReference - (AmplitudeMicroZoom * Rebond.Impulsion(t)));
+
+                if (t >= 1.0)
+                {
+                    // Reposée exactement : une caméra laissée à 359,98 décalerait tout le cadre de
+                    // référence du GDD §4.3, sans que rien ne le signale.
+                    _camera.orthographicSize = (float)TailleCameraDeReference;
+                }
+            }
+
+            if (!_finAffichee && maintenant - _debutRetoursDeMort >= DureeHitstop)
+            {
+                _hud.Afficher(_etat);
+                _finAffichee = true;
+            }
+
+            if (maintenant - _debutRetoursDeMort >= DureeMicroZoom && _finAffichee)
+            {
+                _debutRetoursDeMort = double.NegativeInfinity;
+            }
         }
 
         /// <summary>
@@ -555,6 +682,17 @@ namespace SnakeSnack.Gameplay
             _refusPictogramme.Eteindre();
             _refusTextePause.Eteindre();
 
+            // ⚠ Les retours de la mort précédente sont purgés ICI, sans quoi `_finAffichee` resté
+            // faux garderait les entrées bloquées pour toute la partie suivante — un jeu qui ne
+            // répond plus, et dont la cause serait cherchée du côté du clavier.
+            _debutRetoursDeMort = double.NegativeInfinity;
+            _finAffichee = true;
+
+            if (_camera != null)
+            {
+                _camera.orthographicSize = (float)TailleCameraDeReference;
+            }
+
             SemerLAleatoire();
 
             // ⚠ La pomme est posée AVANT le premier appui (§4.4) : le départ est à l'arrêt, le
@@ -562,7 +700,9 @@ namespace SnakeSnack.Gameplay
             // aveugle.
             _pomme = Pomme.Tirer(_grille, _serpent.Segments, _alea);
 
-            _vue.DessinerSerpent(_serpent.Segments);
+            // Pose immédiate : un serpent qui glisserait vers sa position de départ donnerait
+            // l'impression que la partie a commencé avant que le joueur ne la voie.
+            _vue.DessinerSerpent(_serpent.Segments, false);
             _vue.DessinerPomme(_pomme);
             _vue.MasquerRefus();
 

@@ -53,6 +53,19 @@ namespace SnakeSnack.UI
         private int _meilleur;
         private bool _recordBattu;
 
+        // --- Bonds des nombres (docs/art/juicy.md §5 et §8) ------------------------------
+        //
+        // ⚠ Sur unscaledTime : le bond du record rejoue à l'ouverture de l'écran de fin, donc à un
+        // moment où la partie ne tourne plus.
+
+        private const double DureeBondScore = 0.160;
+        private const double DureeBondRecord = 0.220;
+        private const double AmpleurBondScore = 0.18;
+        private const double AmpleurBondRecord = 0.30;
+
+        private double _debutBondScore = double.NegativeInfinity;
+        private double _debutBondRecord = double.NegativeInfinity;
+
         private void Awake()
         {
             Construire();
@@ -204,12 +217,69 @@ namespace SnakeSnack.UI
         /// </param>
         public void AfficherScore(int points, int record, bool recordBattu)
         {
+            // ⚠ Comparés AVANT d'écrire les champs : c'est le changement qui déclenche le bond, pas
+            // la valeur. Sans cette comparaison, le simple rafraîchissement d'une nouvelle partie
+            // ferait sauter les deux nombres alors que rien n'a été gagné.
+            bool scoreMonte = points > _points;
+            bool recordVientDEtreBattu = recordBattu && !_recordBattu;
+
             _points = points;
             _meilleur = record;
             _recordBattu = recordBattu;
 
             _score.text = TextesUi.LigneScore(points);
             _record.text = TextesUi.LigneRecord(record);
+
+            if (scoreMonte)
+            {
+                _debutBondScore = Time.unscaledTimeAsDouble;
+            }
+
+            if (recordVientDEtreBattu)
+            {
+                _debutBondRecord = Time.unscaledTimeAsDouble;
+            }
+        }
+
+        /// <summary>
+        /// Fait respirer les nombres qui viennent de monter (<c>docs/art/juicy.md</c> §5, §8).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ L'échelle est reposée <b>exactement</b> à 1 en fin d'enveloppe : un `Text` laissé à
+        /// 1,002 resterait imperceptiblement plus gros pour le reste de la session, et personne ne
+        /// rattacherait ce décalage à une animation de 160 ms.
+        ///
+        /// <para>⚠ Aucun changement de couleur : le bond dit « ça a monté », il n'emprunte ni
+        /// <c>Pictogramme</c> (réservé au refus) ni <c>Pomme</c> (réservée à la nourriture) —
+        /// « une couleur = un rôle » (<c>docs/art/palette.md</c> §1.2).</para>
+        /// </remarks>
+        private void Update()
+        {
+            double maintenant = Time.unscaledTimeAsDouble;
+
+            _debutBondScore = AppliquerBond(_score, _debutBondScore, DureeBondScore, AmpleurBondScore, maintenant);
+            _debutBondRecord = AppliquerBond(_record, _debutBondRecord, DureeBondRecord, AmpleurBondRecord, maintenant);
+        }
+
+        /// <summary>Rend le nouveau début d'enveloppe : éteint une fois le bond terminé.</summary>
+        private static double AppliquerBond(Text cible, double debut, double duree, double ampleur, double maintenant)
+        {
+            if (debut <= double.NegativeInfinity || cible == null)
+            {
+                return debut;
+            }
+
+            double t = Rules.Rebond.Progres(debut, duree, maintenant);
+            float facteur = (float)(1.0 + (ampleur * Rules.Rebond.Impulsion(t)));
+            cible.transform.localScale = new Vector3(facteur, facteur, 1f);
+
+            if (t < 1.0)
+            {
+                return debut;
+            }
+
+            cible.transform.localScale = Vector3.one;
+            return double.NegativeInfinity;
         }
 
         /// <summary>Ligne « touche ignorée » de l'écran de pause (ART §5.4).</summary>

@@ -20,7 +20,23 @@ namespace SnakeSnack.Gameplay
     /// </remarks>
     public sealed class VuePlateau : MonoBehaviour
     {
+        /// <summary>Rayon des coins du serpent, en fraction du côté (<c>docs/art/cartoon.md</c> §3.1).</summary>
+        private const float RayonSegment = 0.28f;
+
+        /// <summary>Rayon des coins de la pomme — plus serré, pour qu'elle reste un losange franc (§3.2).</summary>
+        private const float RayonPomme = 0.18f;
+
+        private const double DureeGulp = 0.090;
+        private const double DureePop = 0.140;
+        private const double DureeFlashMort = 0.220;
+        private const double AmplitudeGulp = 0.15;
+        private const double DepassementPop = 0.12;
+
         private readonly List<SpriteRenderer> _segments = new List<SpriteRenderer>();
+
+        /// <summary>Position d'où part chaque segment de rendu, et celle où il va (juicy §4).</summary>
+        private readonly List<Vector3> _departs = new List<Vector3>();
+        private readonly List<Vector3> _arrivees = new List<Vector3>();
 
         private Plateau _plateau;
 
@@ -31,6 +47,41 @@ namespace SnakeSnack.Gameplay
         private Transform _chevron;
         private SpriteRenderer[] _barresChevron;
         private SpriteRenderer _pomme;
+        private SpriteRenderer _flashMort;
+
+        private int _segmentsVisibles;
+        private double _dureeTick = Cadence.DureeTickParDefautSecondes;
+
+        /// <summary>
+        /// ⚠ Un drapeau, et non un test de nullité sur <c>_plateau</c> : <see cref="Plateau"/> est un
+        /// <b>type valeur</b>, il vaut donc « zéro » et jamais « rien ». <c>Update</c> tourne dès que
+        /// le composant existe, c'est-à-dire avant <see cref="Construire"/> — sans cette garde, la
+        /// première image lirait un plateau vide.
+        /// </summary>
+        private bool _construit;
+
+        /// <summary>Enveloppes en cours. <c>double.NegativeInfinity</c> = éteinte.</summary>
+        private double _debutGlissement = double.NegativeInfinity;
+        private double _debutGulp = double.NegativeInfinity;
+        private double _debutPop = double.NegativeInfinity;
+        private double _debutFlash = double.NegativeInfinity;
+
+        private int _indexPop = -1;
+        private Direction _directionGulp = Direction.Est;
+
+        /// <summary>
+        /// Durée d'un tick, pour que le glissement dure exactement le temps d'une case.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Reçue de <see cref="JeuSnake"/> plutôt que recopiée : la cadence est réglable
+        /// (<c>reglages.json</c>), et une interpolation figée à 125 ms sur un jeu retuné à 6 ticks/s
+        /// verrait le serpent arriver puis attendre — un mouvement saccadé qu'aucune erreur ne
+        /// signalerait.
+        /// </remarks>
+        public void ReglerDureeTick(double dureeTickSecondes)
+        {
+            _dureeTick = dureeTickSecondes;
+        }
 
         /// <summary>Construit l'aire de jeu. À appeler une fois, avant tout dessin.</summary>
         public void Construire(Plateau plateau)
@@ -54,7 +105,27 @@ namespace SnakeSnack.Gameplay
             racine.transform.SetParent(_racine, false);
             _racineSegments = racine.transform;
 
+            ConstruireFlashMort();
             ConstruireChevron();
+
+            _construit = true;
+        }
+
+        /// <summary>
+        /// La case qui a tué, mise en évidence le temps d'un aller-retour (<c>juicy.md</c> §6).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Un carré NET, pas arrondi : c'est un signal, pas une créature. Il réutilise
+        /// <see cref="UiPalette.Pictogramme"/>, déjà réservé à ce qui doit dominer — aucun rôle de
+        /// couleur n'est ajouté pour un effet (<c>juicy.md</c> §11).
+        /// </remarks>
+        private void ConstruireFlashMort()
+        {
+            _flashMort = FormesPrimitives.Rectangle(_racine, "FlashMort", UiPalette.Pictogramme, 20);
+
+            double cote = _plateau.TailleCase - 2.0;
+            _flashMort.transform.localScale = new Vector3((float)cote, (float)cote, 1f);
+            _flashMort.gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -87,7 +158,9 @@ namespace SnakeSnack.Gameplay
         /// </remarks>
         private void ConstruirePomme()
         {
-            _pomme = FormesPrimitives.Rectangle(_racine, "Pomme", UiPalette.Pomme, 5);
+            // ⚠ Coins adoucis, silhouette inchangée (cartoon §3.2) : le losange reste ce qui
+            // distingue la pomme du serpent avant même la couleur, y compris pour un daltonien.
+            _pomme = FormesPrimitives.RectangleArrondi(_racine, "Pomme", UiPalette.Pomme, 5, RayonPomme);
 
             float cote = (float)(_plateau.TailleCase * 0.72 / Mathf.Sqrt(2f));
             _pomme.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
@@ -224,13 +297,29 @@ namespace SnakeSnack.Gameplay
             _chevron.gameObject.SetActive(false);
         }
 
-        /// <summary>Dessine le serpent. La tête est plus claire : on doit voir où l'on va.</summary>
-        public void DessinerSerpent(IReadOnlyList<Case> segments)
+        /// <summary>
+        /// Dessine le serpent. La tête est plus claire : on doit voir où l'on va.
+        /// </summary>
+        /// <param name="anime">
+        /// <c>true</c> : les segments glissent de leur case précédente vers la nouvelle sur la durée
+        /// du tick (<c>juicy.md</c> §4). <c>false</c> : pose immédiate, pour une mort, une pause ou
+        /// une nouvelle partie — un serpent qui glisserait vers sa position de départ donnerait
+        /// l'impression que la partie a commencé avant l'affichage.
+        /// </param>
+        public void DessinerSerpent(IReadOnlyList<Case> segments, bool anime = true)
         {
             while (_segments.Count < segments.Count)
             {
-                _segments.Add(FormesPrimitives.Rectangle(
-                    _racineSegments, "Segment" + _segments.Count, UiPalette.CorpsSerpent, 10));
+                // ⚠ Coins arrondis (cartoon §3.1) : c'est ce seul changement de sprite qui sort la
+                // partie du papier millimétré et la raccorde au personnage du menu et de la cover.
+                _segments.Add(FormesPrimitives.RectangleArrondi(
+                    _racineSegments, "Segment" + _segments.Count, UiPalette.CorpsSerpent, 10, RayonSegment));
+            }
+
+            while (_departs.Count < _segments.Count)
+            {
+                _departs.Add(Vector3.zero);
+                _arrivees.Add(Vector3.zero);
             }
 
             // Un segment de trop est masqué, jamais détruit : le pool resservira à la partie suivante.
@@ -238,6 +327,9 @@ namespace SnakeSnack.Gameplay
             {
                 _segments[i].gameObject.SetActive(false);
             }
+
+            int ancienNombre = _segmentsVisibles;
+            _segmentsVisibles = segments.Count;
 
             double cote = _plateau.TailleCase - 2.0;
 
@@ -249,7 +341,177 @@ namespace SnakeSnack.Gameplay
                 rendu.sortingOrder = i == 0 ? 11 : 10;
 
                 PointPlateau centre = _plateau.CentreDeLaCase(segments[i]);
-                Poser(rendu, centre.X, centre.Y, cote, cote);
+                var arrivee = new Vector3((float)centre.X, (float)centre.Y, 0f);
+
+                // ⚠ Un segment qui vient d'apparaître n'a pas de position précédente : le faire
+                // partir de zéro le lancerait depuis le centre du plateau, en travers de la grille.
+                // Il est posé sur sa case, et c'est le pop de §5 qui le fait grandir.
+                bool nouveau = i >= ancienNombre;
+                _departs[i] = (anime && !nouveau) ? _segments[i].transform.localPosition : arrivee;
+                _arrivees[i] = arrivee;
+
+                rendu.transform.localPosition = _departs[i];
+                rendu.transform.localScale = new Vector3((float)cote, (float)cote, 1f);
+            }
+
+            _debutGlissement = anime ? Time.timeAsDouble : double.NegativeInfinity;
+
+            if (!anime)
+            {
+                EteindreEnveloppes();
+                AppliquerGlissement(1.0);
+            }
+        }
+
+        /// <summary>
+        /// La bouchée : la tête gonfle perpendiculairement à sa marche, le nouveau segment de queue
+        /// apparaît en pop (<c>juicy.md</c> §5).
+        /// </summary>
+        /// <param name="directionMarche">Direction appliquée au tick de la bouchée.</param>
+        public void SignalerBouchee(Direction directionMarche)
+        {
+            _directionGulp = directionMarche;
+            _debutGulp = Time.timeAsDouble;
+
+            _debutPop = Time.timeAsDouble;
+            _indexPop = _segmentsVisibles - 1;
+        }
+
+        /// <summary>Met en évidence la case où le contact a eu lieu (<c>juicy.md</c> §6).</summary>
+        /// <remarks>
+        /// ⚠ Pour une morsure, c'est la case mordue ; pour un mur, c'est la case de la tête, et non
+        /// celle visée — cette dernière est <b>hors de la grille</b>, donc hors de l'aire : le flash
+        /// s'y afficherait sur le fond, au-delà de la bordure, là où aucune case n'existe. Écart
+        /// assumé par rapport au brief, qui dit « la case fautive » sans trancher ce cas.
+        /// </remarks>
+        public void FlasherCase(Case caseFautive)
+        {
+            PointPlateau centre = _plateau.CentreDeLaCase(caseFautive);
+            _flashMort.transform.localPosition = new Vector3((float)centre.X, (float)centre.Y, 0f);
+            _debutFlash = Time.timeAsDouble;
+            _flashMort.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// Fige tout ce qui est en cours d'animation, sur sa valeur d'arrivée.
+        /// </summary>
+        /// <remarks>
+        /// Appelé à la pause : un serpent qui continuerait de glisser sous le voile montrerait un
+        /// jeu qui tourne encore, exactement ce que la pause dit ne pas faire. ⚠ Le flash de mort
+        /// n'en fait pas partie — il est déclenché <i>par</i> la mort et doit se dérouler après.
+        /// </remarks>
+        public void FigerAnimations()
+        {
+            AppliquerGlissement(1.0);
+            EteindreEnveloppes();
+        }
+
+        private void EteindreEnveloppes()
+        {
+            _debutGlissement = double.NegativeInfinity;
+            _debutGulp = double.NegativeInfinity;
+            _debutPop = double.NegativeInfinity;
+            _indexPop = -1;
+        }
+
+        /// <summary>
+        /// Le seul endroit où le temps entre dans le rendu : chaque image, on relit les enveloppes
+        /// en cours et on repose ce qu'elles décrivent.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Aucune enveloppe n'écrit dans <c>Rules/</c> : la position logique reste celle du tick,
+        /// et l'ancrage du chevron continue de se calculer sur la case, jamais sur ces facteurs
+        /// (<c>juicy.md</c> §11).
+        /// </remarks>
+        private void Update()
+        {
+            if (!_construit || _segmentsVisibles == 0)
+            {
+                return;
+            }
+
+            double maintenant = Time.timeAsDouble;
+
+            if (_debutGlissement > double.NegativeInfinity)
+            {
+                double t = Rebond.Progres(_debutGlissement, _dureeTick, maintenant);
+                AppliquerGlissement(t);
+
+                if (t >= 1.0)
+                {
+                    _debutGlissement = double.NegativeInfinity;
+                }
+            }
+
+            AppliquerEchelles(maintenant);
+            AppliquerFlash(maintenant);
+        }
+
+        private void AppliquerGlissement(double t)
+        {
+            for (int i = 0; i < _segmentsVisibles && i < _segments.Count; i++)
+            {
+                _segments[i].transform.localPosition = Vector3.Lerp(_departs[i], _arrivees[i], (float)t);
+            }
+        }
+
+        /// <summary>Le gulp de la tête et le pop du nouveau segment, sur l'échelle uniquement.</summary>
+        private void AppliquerEchelles(double maintenant)
+        {
+            float cote = (float)(_plateau.TailleCase - 2.0);
+
+            if (_debutGulp > double.NegativeInfinity)
+            {
+                double t = Rebond.Progres(_debutGulp, DureeGulp, maintenant);
+                float etire = (float)Rebond.Gulp(t, AmplitudeGulp);
+
+                // ⚠ L'axe comprimé est l'INVERSE de l'axe étiré : la tête gonfle sans perdre de
+                // surface. Deux facteurs symétriques la feraient rapetisser en avalant.
+                float comprime = 1f / etire;
+                bool horizontale = _directionGulp == Direction.Est || _directionGulp == Direction.Ouest;
+
+                _segments[0].transform.localScale = horizontale
+                    ? new Vector3(cote * comprime, cote * etire, 1f)
+                    : new Vector3(cote * etire, cote * comprime, 1f);
+
+                if (t >= 1.0)
+                {
+                    _debutGulp = double.NegativeInfinity;
+                    _segments[0].transform.localScale = new Vector3(cote, cote, 1f);
+                }
+            }
+
+            if (_debutPop > double.NegativeInfinity && _indexPop >= 0 && _indexPop < _segmentsVisibles)
+            {
+                double t = Rebond.Progres(_debutPop, DureePop, maintenant);
+                float facteur = (float)Rebond.Apparition(t, DepassementPop);
+                _segments[_indexPop].transform.localScale = new Vector3(cote * facteur, cote * facteur, 1f);
+
+                if (t >= 1.0)
+                {
+                    _debutPop = double.NegativeInfinity;
+                    _indexPop = -1;
+                }
+            }
+        }
+
+        private void AppliquerFlash(double maintenant)
+        {
+            if (_debutFlash <= double.NegativeInfinity)
+            {
+                return;
+            }
+
+            double t = Rebond.Progres(_debutFlash, DureeFlashMort, maintenant);
+
+            Color couleur = UiPalette.Pictogramme;
+            couleur.a = (float)Rebond.Impulsion(t);
+            _flashMort.color = couleur;
+
+            if (t >= 1.0)
+            {
+                _debutFlash = double.NegativeInfinity;
+                _flashMort.gameObject.SetActive(false);
             }
         }
 

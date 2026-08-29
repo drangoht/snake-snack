@@ -84,6 +84,8 @@ faire confiance, et vérifier dans le navigateur, pas au raisonnement.
 | La typographie (§2) | [`art/typographie.md`](art/typographie.md) | tranché le 2026-08-28 |
 | Le menu principal et son illustration (GDD §4.6) | [`art/menu.md`](art/menu.md) | tranché le 2026-08-28 |
 | Le retour d'une entrée refusée (GDD §3, §4.2) | [`art/retour-refus.md`](art/retour-refus.md) | tranché ; le démenti du 2026-08-27 (contraste du chevron) est levé par §1, à reconfirmer en jeu |
+| Le juicy — retours de jeu (mouvement, bouchée, mort, pomme, record) | [`art/juicy.md`](art/juicy.md) | arbitré le 2026-08-28 ; P1 en cours |
+| Le cartoon — formes et contours en jeu | [`art/cartoon.md`](art/cartoon.md) | arbitré le 2026-08-28 ; rounding en cours, visage à prototyper |
 
 ## 6. Historique des décisions
 
