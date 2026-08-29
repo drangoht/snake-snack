@@ -39,8 +39,8 @@ Une partie se relance en **une touche et zéro attente**.
 | Revenir au menu | Échap (écran de fin) **ou** Retour arrière (pause) | — pas en 0.1 |
 | Naviguer le menu | Flèches ou ZQSD, Entrée ou Espace | souris : survol et clic |
 
-⚠ **Le jeu se joue au clavier** : il n'y a pas de commandes tactiles en 0.1.0, une souris ne suffit
-que pour le menu.
+⚠ **Le jeu se joue au clavier** : il n'y a aucune commande tactile, une souris ne suffit que pour le
+menu.
 
 ### Ce qu'il y a dedans
 
@@ -48,9 +48,11 @@ que pour le menu.
 - Un record qui survit à la fermeture du jeu, et qui se bat strictement.
 - Un menu principal : jouer, comment jouer, crédits.
 - Une pause, et un refus de demi-tour qui **se voit** plutôt que d'avaler l'appui en silence.
+- Un serpent qui **glisse** d'une case à l'autre, des formes arrondies, et une mort qui montre la
+  case fautive avant d'afficher l'écran de fin.
 
-**Ce qui n'y est pas encore** : aucun son ni aucune musique en 0.1.0, et les graphismes sont ceux
-d'une première version. C'est une base jouable, pas une version finie.
+**Ce qui n'y est pas encore** : aucun son ni aucune musique. C'est une base jouable, pas une version
+finie.
 
 ### Crédits
 
@@ -75,7 +77,12 @@ projet précédent.
       **Décoché** : le jeu n'a aucune commande tactile, l'annoncer jouable au doigt serait faux.
 - [ ] **Orientation** déclarée — sans objet tant que « mobile friendly » est décoché
 - [ ] Onglet **Classification** : genre, tags, **décompte de joueurs**, mode multijoueur
-- [ ] **Cover 630 × 500** — la seule image que voient les visiteurs qui n'ouvrent pas la page
+- [x] **Cover 630 × 500** — la seule image que voient les visiteurs qui n'ouvrent pas la page.
+      Produite par `tools/generer_cover_itch.py`, **inchangée en 0.2.0** : l'illustration du menu
+      n'a pas bougé.
+- [x] **Captures d'écran** — trois, prises DANS le navigateur sur la page itch elle-même.
+      ⚠ Celles de la partie montrent le rendu du jeu : **à régénérer à chaque changement visible**,
+      sinon la page annonce un serpent que la partie ne montre plus.
 
 ⚠ **Visibilité** : la page est en **Draft** depuis sa création (2026-08-28). Rien n'est public tant
 que l'auteur n'a pas cliqué « Publish » lui-même.
