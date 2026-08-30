@@ -83,6 +83,7 @@ stamp shown at the bottom right. Neither a file's date (incremental build) nor t
 | Tests | `dotnet test tests/SnakeSnack.Tests.csproj` |
 | Launch and capture | `py tools/drive_game.py --launch --capture docs/x.png` |
 | Serve the web build | `py tools/serve_web.py` (⚠ **no cache** — see PITFALLS) |
+| See the touch controls without a phone | `-touch` on the exe, or `?touch` in the web URL |
 | Publish | `& "tools/release_itch.ps1" -Version X.Y.Z -DryRun` |
 | Regenerate the fonts | `py tools/generate_fonts.py` |
 | Regenerate the menu illustration | `py tools/generate_snake_illustration.py --preview` |

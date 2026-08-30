@@ -98,7 +98,26 @@ namespace SnakeSnack.UI
         /// therefore concern only this component. Only <see cref="MenuEntry.Play"/> and
         /// <see cref="MenuEntry.Quit"/> come back up.
         /// </remarks>
+        /// <summary>
+        /// The footer line, kept so it can be rewritten if a touchscreen shows up late.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ It is the only label of this screen that names a control, so it is the only one that
+        /// becomes a lie when the player turns out to have fingers rather than keys (GDD §3, touch).
+        /// </remarks>
+        private Text _footer;
+
         public event Action<MenuEntry> Confirmed;
+
+        /// <summary>Rewrites the labels that name a control (GDD §3, touch).</summary>
+        public void RefreshControlLabels()
+        {
+            if (_footer != null)
+            {
+                _footer.text = UiText.MenuFooter;
+            }
+        }
+
 
         private readonly List<RectTransform> _rows = new List<RectTransform>();
         private readonly List<Text> _labels = new List<Text>();
@@ -189,9 +208,9 @@ namespace SnakeSnack.UI
             BuildCursor(_root.transform);
             BuildRows(_root.transform, headingFont);
 
-            UiFactory.Text(_root.transform, "MenuFooter", bodyFont, 18, TextAnchor.LowerCenter,
-                UiPalette.SecondaryText, new Vector2(0.5f, 0f), new Vector2(0f, 26f), new Vector2(1100f, 24f))
-                .text = UiText.MenuFooter;
+            _footer = UiFactory.Text(_root.transform, "MenuFooter", bodyFont, 18, TextAnchor.LowerCenter,
+                UiPalette.SecondaryText, new Vector2(0.5f, 0f), new Vector2(0f, 26f), new Vector2(1100f, 24f));
+            _footer.text = UiText.MenuFooter;
 
             // ⚠ The panels are created AFTER the entries: at equal sorting order, uGUI stacks in
             // hierarchy order, and a panel created before would go under the entries it is meant to

@@ -23,6 +23,8 @@ Pure logic, with no engine dependency, **tested**. This is where every numbered 
 | `Score.cs` | Score and best (GDD §4.5): +1 per apple, **a best that rises during the game**, the "best beaten" predicate judged against the best from BEFORE the game (equalling does not beat), normalisation of a damaged best, and `length == 3 + score` | `tests/ScoreTests.cs` |
 | `Easing.cs` | The **juice curves** (`docs/art/juicy.md` §2): `Progress` clamped at both ends (a long frame would throw a segment beyond its cell), `Pulse` (there and back), `PopIn` (a pop with overshoot, **ending exactly at 1**), `Falloff`, `Gulp` (compression at constant area). ⚠ Returns a factor, decides nothing | `tests/EasingTests.cs` |
 | `MainMenu.cs` | Composition of the menu entries (GDD §4.6) and navigation: "Quit" absent when the platform cannot close, wrap-around up/down, lateral directions ignored | `tests/MainMenuTests.cs` |
+| `Swipe.cs` | A finger's travel → a direction (GDD §3, touch): threshold of 28 reference px, dominant axis, ties to the horizontal. ⚠ Y **upwards**, and the reading fires on travel, not on release | `tests/SwipeTests.cs` |
+| `TouchPad.cs` | Where the on-screen controls sit and what a point hits (GDD §3, touch): the cross in the right margin, pause in the left. ⚠ Shrinks to the margin and **refuses** below a thumb-sized key rather than covering the playfield | `tests/TouchPadTests.cs` |
 | `EXAMPLE_Rule.cs` | Template — to be deleted once `Rules/` is well populated. |  |
 
 ⚠ The refusal of an input (`EnqueueResult`, `TickResult.ReversalRejected`) is **returned to the caller**,

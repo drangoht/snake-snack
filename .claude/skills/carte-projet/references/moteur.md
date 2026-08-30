@@ -9,6 +9,9 @@
 | `BoardView.cs` | Draws the playfield, the lines, the border, the snake (reused pool), the **apple** (a diamond, a shape distinct from the snake's squares) and the rejection chevron. `Show(bool)` switches the lot off in one go when the menu takes the screen |
 | `PrimitiveShapes.cs` | The 1×1 px white square the whole rendering is made of — no imported asset |
 | `PersistentBest.cs` | The best between two sessions (`PlayerPrefs`, key `snakesnack.record`). ⚠ **Best effort**: read impossible → zero, write impossible → log, never a blocking error. `Save()` is explicit, otherwise a closed tab loses the best |
+| `TouchInput.cs` | Reads the fingers and converts them into the requests the keyboard makes (GDD §3, touch). Judges nothing — `Rules/Swipe` and `Rules/TouchPad` do. ⚠ Converts screen px → reference px through the camera, otherwise the swipe threshold means a different gesture on every panel |
+| `TouchControlsView.cs` | Draws the cross and the pause button. ⚠ Draws only: a button drawn elsewhere than it is hit-tested looks right and answers wrong |
+| `Core/TouchSimulationBootstrap.cs` | `?touch` (web) / `-touch` (Windows): the mouse reports as a finger, the only way to see the mobile port without a phone. ⚠ Answers **real** clicks, never a synthetic `PointerEvent` |
 
 The only object placed in the scene is `Game` (see `SceneBuilder.BuildGame`); `BoardView`, `GameHud`
 and `MenuScreen` are added at startup by `SnakeGame`, so that no serialised reference can get lost when

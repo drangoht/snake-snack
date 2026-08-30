@@ -10,6 +10,98 @@ version tested.
 > ⚠ The sessions before v0.3.0 quote the interface **as it then was, in French**. The strings have
 > since been translated; the observations about them still hold.
 
+## Session of 2026-08-30 (2) — v0.3.0-d8c811c+ (Windows build, touch simulation)
+
+**Scope**: the touch port reopened the same day (GDD §3) — the on-screen pad, the swipe, the pause
+button, tap to resume and tap to restart, and the labels that name a control. **Not tested**: a real
+phone (none available), the web build's `?touch` switch after its fix, portrait orientation, and
+multi-touch (two fingers at once).
+
+**Method**: `tools/build.ps1`, then the exe launched with **`-touch`**, which turns the mouse into a
+finger (`Core/TouchSimulationBootstrap.cs`). A throwaway script (not committed to `tools/`) clicks and
+drags at coordinates given in the 1280×720 reference frame, converted through the window's **client**
+origin — the window rect would put every click 38 px too high. Captures: `docs/verif-touch-pad.png`,
+`verif-touch-swipe.png`, `verif-touch-pause.png`, `verif-touch-tap.png`.
+
+**The point of method**: every control's position was computed from `Rules/TouchPad` and **written
+down before the first capture**, in pixels of the frame. Measured on screen: North (1199, 576) ·
+South (1199, 690) · West (1144, 632) · East (1256, 632) · pause (97, 134), against (1200, 577) ·
+(1200, 691) · (1143, 634) · (1257, 634) · (98, 135) predicted. Playfield border at 1112, first key at
+1118: the 3.5 px of clearance the rule promises are there.
+
+| Feedback | Predicted | Measured | |
+|---|---|---|---|
+| Pad steers | South key → game starts, snake turns south | banner emptied, snake vertical, 4 cells down | ✔ |
+| Swipe steers | downward swipe → same signature | banner emptied, snake vertical, 5 cells down | ✔ |
+| Pause button | "PAUSED" veil + touch subtitle | veil, "Tap to resume - pause button for the menu" | ✔ |
+| Tap resumes, tap restarts | fresh game, score 0, snake centred | exactly that | ✔ |
+| Menu by tap | "Play" answers a tap | game opened | ✔ |
+| Labels | no key named anywhere | "Tap an entry", "Swipe or use the pad" | ✔ |
+| Controls off the playfield | no overlap, 3.5 px clear | measured above | ✔ |
+
+### [BUG-004] — FOUND AND FIXED IN THE SAME SESSION: the pad drew perfectly and steered nothing
+Severity: Blocking (the whole point of the port)
+Context: first run of the touch build, `-touch`, on the game screen.
+Observed / Expected: expected the snake to turn on a pad press; obtained a pad drawn to the pixel, and
+a snake that never moved. Swipe likewise.
+Reproduction: click any pad key; nothing happens, no error, no log.
+Cause, found by instrumenting `Poll()`: **`TouchControl.phase` is a state, not an event.** `Began` was
+reported on **six consecutive frames** for a single click, so one thumb queued six turns, and the
+depth-2 queue of §4.2 spent its whole budget rejecting them as duplicates. The press is the
+*transition*; detecting it needs the `touchId` too, the slots being a reused pool.
+Assigned to: fixed on the spot in `Gameplay/TouchInput.cs`; the pitfall is in
+`docs/pitfalls/touch-mobile.md`.
+
+### Two failures that were MINE, not the game's
+Recorded because each cost a full diagnostic round, and both will happen again:
+- **The first "pad is dead" verdict was a test aiming at the middle of the cross**, which `TouchPad`
+  answers `None` on purpose. The click was at frame y = 596 — the pad centre — where the South key is
+  at 653. The code was right the whole time.
+- **The first "swipe is dead" verdict was a drag built on `SetCursorPos`**, which moves the cursor and
+  puts nothing in the input stream: simulation saw the press and no travel. `SendInput` with
+  `MOUSEEVENTF_MOVE | ABSOLUTE` fixed it, and the swipe worked first try afterwards.
+
+### [BUG-005] The `?touch` switch never fires on the web build
+Severity: Minor (affects testing, not players)
+Context: web build served locally, URL `?touch`.
+Observed / Expected: expected the log line "Touch simulation enabled"; the browser console has no
+trace of it, while the **same build on Windows prints it**. The mouse therefore stays a mouse, and the
+port cannot be exercised in a browser.
+Hypothesis: IL2CPP managed stripping is free to remove a class nothing references, and
+`Application.absoluteURL` is not documented as populated at `BeforeSceneLoad`.
+Two fixes attempted, **neither of which took**: calling the bootstrap explicitly from
+`SnakeGame.Awake` (settles both hypotheses above), then reading every `Touchscreen` rather than just
+`Touchscreen.current` (which was a real defect, see below, but not this one). After three rebuilds the
+browser still does not steer from a mouse drag, while the **same code steers from the pad, the swipe,
+the pause and the taps on Windows**.
+⚠ **Left OPEN, deliberately.** It costs a ten-minute build per attempt and it blocks **testing only**:
+a phone has a real touchscreen and real fingers, neither of which needs simulation. What it does cost
+is the ability to exercise the port in a browser, which is where the game is actually published — so
+it is worth reopening before the next touch change.
+Assigned to: `developpeur`.
+
+### The multi-device defect, found while chasing BUG-005 — and it WOULD have hit players
+`Poll()` read `Touchscreen.current`. A machine can carry several touchscreens: this one has a device
+that never receives anything, alongside whatever else appears. Reading only `current` polls the idle
+one, and the game answers nothing — pad drawn, labels in touch mode, no error. Fixed by walking every
+device and preferring the one actually carrying a touch. ⚠ The first attempt at that fix used
+`Touchscreen.all`, which is the **inherited `InputDevice.all`** — every device, keyboard included:
+`Available` would then have reported a touchscreen on any machine at all. Caught by the compiler only
+because of an unrelated type error on the same line.
+
+### Feel
+**The pad is where a right thumb already is**, and it costs the playfield nothing: it sits in the
+178 px of margin that the grid's rounding leaves empty, so no cell had to shrink for it. The keys are
+deliberately quiet (55 % opacity at rest): they are a tool, not a character, and the eye stays on the
+snake.
+
+**What I have no proof of, and it is the important one: none of this has been touched by a finger.**
+Every observation above comes from a mouse pretending to be one. A real thumb is wider than a cursor,
+lands with travel, and arrives with the whole hand covering part of the screen — three things this
+method cannot reproduce. The 54 px key is ~9 mm on a phone in landscape, above the usual floor, but
+that is a calculation, not a measurement. **First test to run on a real device**, before the Mobile
+friendly box is ticked.
+
 ## Session of 2026-08-30 — v0.2.0-3b2c0cc+ (Windows build)
 
 **Scope**: the three P2/P3 juice feedbacks shipped that day (apple pop-in §7, summary bump §8, head

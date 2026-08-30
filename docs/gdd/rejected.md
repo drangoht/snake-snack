@@ -81,6 +81,17 @@ the error keeps the same detour from being taken twice.
 
 > **Gamepad and touch.** *Postponed, not ruled out* — see §3. Every device is one more path to replay
 > on every build, for a web game played with a keyboard. To reopen on feedback from mobile players.
+>
+> ⚠ **Touch: reopened and shipped on 2026-08-30, on the author's ruling.** The conclusion above is
+> kept, because its reasoning still holds — the second input path *is* a recurring cost, and it is now
+> being paid. What the reasoning got wrong is the trigger it waited for: "feedback from mobile
+> players" cannot arrive from a game that answers nothing on a phone. The page has been public since
+> it was created; a visitor opening it from a phone saw a game draw itself perfectly and ignore every
+> touch. The condition was unreachable by construction.
+>
+> Both paths were shipped rather than one — swipe **and** an on-screen pad — again on the author's
+> ruling, against the cheaper single-path option. **Gamepad stays postponed**, on the original
+> reasoning, which nothing has refuted.
 
 ⚠ When one of these conclusions is refuted by a real game, **keep it and mark it as such** rather than
 rewriting it.

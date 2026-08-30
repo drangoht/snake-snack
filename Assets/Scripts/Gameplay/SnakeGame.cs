@@ -53,6 +53,19 @@ namespace SnakeSnack.Gameplay
         /// </summary>
         private MenuScreen _menu;
 
+        /// <summary>
+        /// The fingers, when there are any (GDD §3, touch — reopened on 2026-08-30).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Null on a machine with no touchscreen</b>, which is the normal case on a desktop.
+        /// Every touch path tests it: building it anyway would cost a poll per frame for a device
+        /// that does not exist.
+        /// </remarks>
+        private TouchInput _touch;
+
+        /// <summary>The drawn controls. Null whenever <see cref="_touch"/> is, or when the margin was too narrow.</summary>
+        private TouchControlsView _touchControls;
+
         /// <summary>The current game's generator. ⚠ Nothing but the apple draws from it (§4.4).</summary>
         private RandomSource _random;
 
@@ -115,6 +128,11 @@ namespace SnakeSnack.Gameplay
 
         private void Awake()
         {
+            // ⚠ FIRST, before anything asks whether there is a touchscreen: with `?touch` /
+            // `-touch` this is what creates one. The attribute on that class did not fire on
+            // the WebGL build, so the call is made here where nothing can strip it away.
+            TouchSimulationBootstrap.EnableIfAsked();
+
             _settings = SettingsLoader.Load();
 
             _grid = new Grid(_settings.gridWidth, _settings.gridHeight);
@@ -142,6 +160,8 @@ namespace SnakeSnack.Gameplay
             // re-reads it every frame. It can be null in tests — the zoom then simply does nothing,
             // it never has anything to decide.
             _camera = Camera.main;
+
+            BuildTouchControls();
 
             _hud = gameObject.AddComponent<GameHud>();
 
@@ -172,6 +192,7 @@ namespace SnakeSnack.Gameplay
         {
             _view.Show(false);
             _hud.Show(false);
+            ShowTouchControls(false);
             _menu.Open();
         }
 
@@ -194,6 +215,7 @@ namespace SnakeSnack.Gameplay
 
             _view.Show(true);
             _hud.Show(true);
+            ShowTouchControls(true);
             NewGame();
         }
 
@@ -223,6 +245,30 @@ namespace SnakeSnack.Gameplay
 
         private void Update()
         {
+            // ⚠ A touchscreen may show up AFTER Awake. Unity registers the device when the platform
+            // reports it, and there is no contract saying that happens before the first frame — on a
+            // browser it may well be the first contact that reveals it. Deciding once at startup and
+            // never looking again would give, on exactly those devices, a game that draws itself and
+            // answers nothing: the very failure this whole port exists to remove. Cheap to re-ask,
+            // and it settles for good on the first frame where the answer is yes.
+            if (_touch == null && TouchInput.Available)
+            {
+                AdoptTouch();
+            }
+
+            // ⚠ Polled every frame, the menu's included. A gesture spans several frames: skipping
+            // the poll while the menu is up would leave a finger's origin stale, and the first swipe
+            // of the game would be measured from wherever that finger last was.
+            if (_touch != null)
+            {
+                _touch.Poll();
+
+                if (_touchControls != null)
+                {
+                    _touchControls.SetPressed(_touch.PressedTarget);
+                }
+            }
+
             if (_menu.Active)
             {
                 // ⚠ Nothing of the game runs while the menu is there, fade-out included: a direction
@@ -286,14 +332,142 @@ namespace SnakeSnack.Gameplay
             }
         }
 
-        private void ReadInputs()
+        /// <summary>
+        /// Builds the touch stack, when the machine has fingers to read (GDD §3, touch).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>The frame the pad is laid out in is the VISIBLE one, not the reference one.</b> The
+        /// camera fixes the vertical extent at 720 reference pixels; the width follows the panel's
+        /// aspect ratio. A phone in landscape is wider than 16:9, so the margin the pad lives in is
+        /// larger there than the 178 px of the reference frame — and in a window narrower than 16:9
+        /// it shrinks to nothing. Laying the pad out on the constant 1280 would put it off-screen on
+        /// the first and over the playfield on the second, and neither raises anything.
+        /// </remarks>
+        private void BuildTouchControls()
         {
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard == null)
+            if (!TouchInput.Available || _camera == null)
             {
                 return;
             }
 
+            // ⚠ Set BEFORE the HUD and the menu are built: they read their labels once, when they
+            // build their texts. Setting it afterwards would give a game that reads the fingers
+            // correctly and keeps telling the player to press Esc.
+            UiText.Touch = true;
+
+            int visibleWidth = Mathf.RoundToInt(2f * _camera.orthographicSize * _camera.aspect);
+            int visibleHeight = Mathf.RoundToInt(2f * _camera.orthographicSize);
+
+            bool fits = TouchPad.Fits(_board, visibleWidth);
+            TouchPad pad = fits ? new TouchPad(_board, visibleWidth, visibleHeight) : default;
+
+            _touch = new TouchInput(_camera, pad, fits);
+
+            if (!fits)
+            {
+                // Still entirely playable: swipes steer, a tap restarts. Only the pause button is
+                // lost, which is why this is worth a line in the log rather than silence.
+                Debug.LogWarning(
+                    "Touch: the playfield leaves no room for the on-screen pad in this window — "
+                    + "swipe only, and no pause button.");
+                return;
+            }
+
+            _touchControls = gameObject.AddComponent<TouchControlsView>();
+            _touchControls.Build(pad);
+        }
+
+        /// <summary>
+        /// Takes on a touchscreen that appeared after startup: controls, labels, visibility.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ The labels have to be rewritten here, and that is the whole reason
+        /// <see cref="GameHud.RefreshControlLabels"/> exists: the HUD and the menu read their text
+        /// once, when they build it. Adopting the fingers without rewriting them would give a game
+        /// that answers a swipe perfectly while still telling the player to press Esc.
+        /// </remarks>
+        private void AdoptTouch()
+        {
+            BuildTouchControls();
+
+            if (_touch == null)
+            {
+                return;
+            }
+
+            _hud.RefreshControlLabels();
+            _menu.RefreshControlLabels();
+            ShowTouchControls(!_menu.Active);
+        }
+
+        /// <summary>
+        /// Shows or hides the drawn controls. Harmless when there are none.
+        /// </summary>
+        /// <remarks>
+        /// The pad follows the board and the HUD exactly: the menu is a screen in its own right
+        /// (GDD §4.6) and is navigated by tapping its entries, so a directional cross laid over it
+        /// would be four keys that steer nothing.
+        /// </remarks>
+        private void ShowTouchControls(bool visible)
+        {
+            if (_touchControls != null)
+            {
+                _touchControls.Show(visible);
+            }
+        }
+
+        /// <summary>
+        /// The finger's requests, mapped onto the very actions the keyboard performs (GDD §3).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>A tap never starts a game.</b> §4.1 wants the first tick triggered by a direction,
+        /// so that nobody dies while reading the screen — a tap-to-start would hand the snake a
+        /// heading the player never chose. On the end screen, on the other hand, a tap is exactly
+        /// Space: one press, zero waiting (§2).
+        ///
+        /// <para>⚠ <b>The pause button carries the two meanings Esc carries</b>, and for the same
+        /// reason: a paused player has to be able to leave, and a phone has no Backspace. Pressing it
+        /// during a game pauses; pressing it on a screen that is already stopped — pause or end —
+        /// goes back to the menu.</para>
+        /// </remarks>
+        private void ReadTouchInputs()
+        {
+            if (_touch == null)
+            {
+                return;
+            }
+
+            if (_touch.TakePause())
+            {
+                if (_state == GameState.Paused || GameOver)
+                {
+                    BackToMenu();
+                    return;
+                }
+
+                TogglePause();
+            }
+
+            if (_touch.TakeTap())
+            {
+                if (GameOver)
+                {
+                    NewGame();
+                }
+                else if (_state == GameState.Paused)
+                {
+                    TogglePause();
+                }
+            }
+
+            while (_touch.TryTakeDirection(out Direction direction))
+            {
+                Request(direction);
+            }
+        }
+
+        private void ReadInputs()
+        {
             // ⚠ Hitstop: no input is read during the 80 ms following impact, Space included
             // (docs/art/juicy.md §6). A player hammering restart just before dying would otherwise
             // set off again while the screen still holds the image of their death — they would never
@@ -302,6 +476,17 @@ namespace SnakeSnack.Gameplay
             // ⚠ The delay is BOUNDED to that duration and never extended: a block that lengthens
             // attempt after attempt ends up reading as a game that has stopped responding (§11).
             if (!_endScreenShown)
+            {
+                return;
+            }
+
+            // ⚠ Read BEFORE the keyboard, and above all before the null check below: a phone has no
+            // keyboard at all. Leaving the touch read after that guard is what makes a mobile port
+            // that builds, runs, shows the game — and answers nothing.
+            ReadTouchInputs();
+
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
             {
                 return;
             }

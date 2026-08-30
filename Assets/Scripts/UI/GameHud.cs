@@ -105,6 +105,9 @@ namespace SnakeSnack.UI
                 UiPalette.SecondaryText, new Vector2(0.5f, 0f), new Vector2(0f, 14f), new Vector2(1100f, 24f));
             _controls.text = UiText.ControlsReminder;
 
+            // The reminder is the one label of the HUD that names a control: it is rewritten if a
+            // touchscreen turns up after the HUD was built (see RefreshControlLabels).
+
             // Score on the left, best score on the right, in the top banner: outside the playfield
             // (GDD §4.3), and shown AT ALL TIMES (§4.5). A goal you only discover once you have lost
             // cannot be aimed at — it is the best score read during play that turns a restart into
@@ -308,6 +311,15 @@ namespace SnakeSnack.UI
         public void ShowRejectionWhilePaused(bool visible)
         {
             _rejectionWhilePaused.gameObject.SetActive(visible);
+        }
+
+        /// <summary>Rewrites the labels that name a control (GDD §3, touch).</summary>
+        public void RefreshControlLabels()
+        {
+            if (_controls != null)
+            {
+                _controls.text = UiText.ControlsReminder;
+            }
         }
 
         private string Summary()

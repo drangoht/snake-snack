@@ -32,14 +32,14 @@ A game restarts in **one key with zero waiting**.
 
 | Action | Keyboard | Touch |
 |---|---|---|
-| Turn (4 directions) | Arrows **or** WASD | — not in 0.1 |
-| Pause / resume | Esc | — not in 0.1 |
-| Restart after death | Space | — not in 0.1 |
-| Back to the menu | Esc (end screen) **or** Backspace (pause) | — not in 0.1 |
-| Navigate the menu | Arrows or WASD, Enter or Space | mouse: hover and click |
+| Turn (4 directions) | Arrows **or** WASD | Swipe anywhere, **or** the on-screen pad |
+| Pause / resume | Esc | Pause button, top left — tap to resume |
+| Restart after death | Space | Tap anywhere |
+| Back to the menu | Esc (end screen) **or** Backspace (pause) | Pause button, from pause or end screen |
+| Navigate the menu | Arrows or WASD, Enter or Space | Tap an entry · mouse: hover and click |
 
-⚠ **The game is played with a keyboard**: there are no touch controls, and a mouse is only enough for
-the menu.
+**It plays on a phone**, in landscape: swipe to turn, or use the pad in the right-hand margin. The
+controls take nothing from the playfield — they live in the margin the grid already left empty.
 
 On a French AZERTY keyboard, the WASD block is the four keys printed Z, Q, S, D — the game reads
 physical positions, so it works either way, and the arrows work everywhere.
@@ -75,9 +75,12 @@ To check by hand after every publish; they were wrong for several versions on an
 
 - [x] **Kind of project** = HTML (otherwise the web build downloads instead of playing) — set 2026-08-28
 - [x] File ticked **"This file will be played in the browser"** — set 2026-08-28
-- [x] **Mobile friendly** — it alone decides what itch offers a visitor on a phone.
-      **Unticked**: the game has no touch controls, announcing it playable with a finger would be false.
-- [ ] **Orientation** declared — moot as long as "mobile friendly" is unticked
+- [ ] **Mobile friendly** — it alone decides what itch offers a visitor on a phone.
+      ⚠ It was **unticked**, and rightly so: the game had no touch controls, and announcing it
+      playable with a finger would have been false. **Touch shipped on 2026-08-30: it must now be
+      ticked**, and until it is, itch keeps hiding from phone visitors a game that plays on a phone.
+- [ ] **Orientation**: **landscape**. The playfield is 21 × 15 and the frame is 16:9; the web template
+      already tells a phone player to turn the device.
 - [ ] **Classification** tab: genre, tags, **player count**, multiplayer mode
 - [x] **Cover 630 × 500** — the only image seen by visitors who do not open the page.
       Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be

@@ -26,6 +26,23 @@ namespace SnakeSnack.UI
     /// </remarks>
     public static class UiText
     {
+        /// <summary>
+        /// True when the player has fingers rather than keys (GDD §3, touch).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Every label naming a key has a touch counterpart, and this flag is what chooses.</b>
+        /// A game telling a phone player to "press Esc" describes a device they do not have: the
+        /// instruction is not merely useless, it is the first sentence they read, and it says the
+        /// game was not meant for them. <c>docs/pitfalls/interface.md</c> already carries the general
+        /// form of the trap — a capability that does not announce its control does not exist.
+        ///
+        /// <para>Set once at startup by <see cref="SnakeSnack.Gameplay.SnakeGame"/>, from whether a
+        /// touchscreen exists. Not read from the platform here: <c>UiText</c> holds words, and a
+        /// class that decided by itself what device is in front of it could no longer be exercised
+        /// from a test.</para>
+        /// </remarks>
+        public static bool Touch { get; set; }
+
         // --- Main menu (GDD §4.6) --------------------------------------------------------
 
         /// <summary>Game title, on the main menu. The same words as the itch page.</summary>
@@ -39,7 +56,16 @@ namespace SnakeSnack.UI
         public const string MenuTagline = "It grows with every bite.";
 
         /// <summary>Key reminder for the menu, at the foot of the screen ("invisible reads as non-existent").</summary>
-        public const string MenuFooter = "Arrows or WASD to choose   -   Enter or Space to confirm";
+        public const string MenuFooterKeyboard = "Arrows or WASD to choose   -   Enter or Space to confirm";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string MenuFooterTouch = "Tap an entry to choose it";
+
+        /// <inheritdoc cref="MenuFooterKeyboard"/>
+        public static string MenuFooter
+        {
+            get { return Touch ? MenuFooterTouch : MenuFooterKeyboard; }
+        }
 
         /// <summary>The label of a menu entry (GDD §4.6).</summary>
         /// <remarks>
@@ -102,7 +128,16 @@ namespace SnakeSnack.UI
             "Engine: Unity.";
 
         /// <summary>Footer of the menu panels.</summary>
-        public const string PanelBack = "Esc to go back";
+        public const string PanelBackKeyboard = "Esc to go back";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string PanelBackTouch = "Tap to go back";
+
+        /// <inheritdoc cref="PanelBackKeyboard"/>
+        public static string PanelBack
+        {
+            get { return Touch ? PanelBackTouch : PanelBackKeyboard; }
+        }
 
         // --- Game ------------------------------------------------------------------------
 
@@ -110,7 +145,16 @@ namespace SnakeSnack.UI
         /// Banner, before the first press. §4.1 starts the game on the first applicable direction:
         /// the player must know they are being waited for, otherwise they think it has frozen.
         /// </summary>
-        public const string StateWaiting = "Press a direction to start";
+        public const string StateWaitingKeyboard = "Press a direction to start";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string StateWaitingTouch = "Swipe, or press a direction, to start";
+
+        /// <inheritdoc cref="StateWaitingKeyboard"/>
+        public static string StateWaiting
+        {
+            get { return Touch ? StateWaitingTouch : StateWaitingKeyboard; }
+        }
 
         /// <summary>Banner, game running. Empty: nothing to say while all is well.</summary>
         public const string StateRunning = "";
@@ -126,7 +170,16 @@ namespace SnakeSnack.UI
         /// <c>docs/pitfalls/interface.md</c>: a capability that does not announce its key does not
         /// exist for the player).
         /// </summary>
-        public const string ControlsReminder = "Arrows or WASD: steer   -   Esc: pause   -   Space: restart";
+        public const string ControlsReminderKeyboard = "Arrows or WASD: steer   -   Esc: pause   -   Space: restart";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string ControlsReminderTouch = "Swipe or use the pad to steer   -   pause button, top left";
+
+        /// <inheritdoc cref="ControlsReminderKeyboard"/>
+        public static string ControlsReminder
+        {
+            get { return Touch ? ControlsReminderTouch : ControlsReminderKeyboard; }
+        }
 
         /// <summary>Title of the pause screen.</summary>
         public const string PauseTitle = "PAUSED";
@@ -140,12 +193,30 @@ namespace SnakeSnack.UI
         /// exist for the player (<c>docs/pitfalls/interface.md</c>) — and this one can only announce
         /// itself on the pause screen, since that is the only place it acts.
         /// </remarks>
-        public const string PauseSubtitle = "Esc to resume   -   Backspace for the menu";
+        public const string PauseSubtitleKeyboard = "Esc to resume   -   Backspace for the menu";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string PauseSubtitleTouch = "Tap to resume   -   pause button for the menu";
+
+        /// <inheritdoc cref="PauseSubtitleKeyboard"/>
+        public static string PauseSubtitle
+        {
+            get { return Touch ? PauseSubtitleTouch : PauseSubtitleKeyboard; }
+        }
 
         /// <summary>
         /// The rejection line of the pause screen (<c>docs/ART.md</c> §5.4, word for word).
         /// </summary>
-        public const string RejectionWhilePaused = "Key ignored - the game is paused";
+        public const string RejectionWhilePausedKeyboard = "Key ignored - the game is paused";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string RejectionWhilePausedTouch = "Ignored - the game is paused";
+
+        /// <inheritdoc cref="RejectionWhilePausedKeyboard"/>
+        public static string RejectionWhilePaused
+        {
+            get { return Touch ? RejectionWhilePausedTouch : RejectionWhilePausedKeyboard; }
+        }
 
         /// <summary>
         /// Death message. GDD §2 wants "score and best shown right there": they are, through the
@@ -154,7 +225,16 @@ namespace SnakeSnack.UI
         public const string DeathTitle = "GAME OVER";
 
         /// <summary>One-key restart, zero waiting (GDD §2).</summary>
-        public const string DeathSubtitle = "Space to play again   -   Esc for the menu";
+        public const string DeathSubtitleKeyboard = "Space to play again   -   Esc for the menu";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string DeathSubtitleTouch = "Tap to play again   -   pause button for the menu";
+
+        /// <inheritdoc cref="DeathSubtitleKeyboard"/>
+        public static string DeathSubtitle
+        {
+            get { return Touch ? DeathSubtitleTouch : DeathSubtitleKeyboard; }
+        }
 
         /// <summary>Banner, grid filled (GDD §4.4).</summary>
         public const string StateWon = "Grid filled";
@@ -166,7 +246,16 @@ namespace SnakeSnack.UI
         public const string WinTitle = "YOU WIN";
 
         /// <summary>Subtitle of the win: the snake fills the whole grid.</summary>
-        public const string WinSubtitle = "Not one free cell left - Space to play again   -   Esc for the menu";
+        public const string WinSubtitleKeyboard = "Not one free cell left - Space to play again   -   Esc for the menu";
+
+        /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
+        public const string WinSubtitleTouch = "Not one free cell left - tap to play again";
+
+        /// <inheritdoc cref="WinSubtitleKeyboard"/>
+        public static string WinSubtitle
+        {
+            get { return Touch ? WinSubtitleTouch : WinSubtitleKeyboard; }
+        }
 
         /// <summary>Banner, score of the current game (GDD §4.5).</summary>
         public static string ScoreLine(int points)

@@ -52,15 +52,29 @@ absence of hostile randomness anywhere in the game.
 
 | Action | Keyboard | Gamepad | Touch |
 |---|---|---|---|
-| Turn (4 directions) | Arrows **or** WASD | — not in 0.1 | — not in 0.1 |
-| Pause / resume | Esc | — not in 0.1 | — not in 0.1 |
-| Restart after death | Space | — not in 0.1 | — not in 0.1 |
-| Back to the menu | Esc (end screen) **or** Backspace (pause) | — not in 0.1 | — not in 0.1 |
-| Navigate the menu (§4.6) | Arrows or WASD, Enter or Space | — not in 0.1 | mouse: hover and click |
+| Turn (4 directions) | Arrows **or** WASD | — not in 0.1 | Swipe **or** the on-screen pad |
+| Pause / resume | Esc | — not in 0.1 | Pause button / tap to resume |
+| Restart after death | Space | — not in 0.1 | Tap anywhere |
+| Back to the menu | Esc (end screen) **or** Backspace (pause) | — not in 0.1 | Pause button, from pause or end screen |
+| Navigate the menu (§4.6) | Arrows or WASD, Enter or Space | — not in 0.1 | tap an entry · mouse: hover and click |
 
-Gamepad and touch are **decided empty**, not forgotten: the game is played with a keyboard on the itch
-page, and every extra device is a path to replay on every build. To reopen if feedback from mobile
-players arrives (see §7).
+Gamepad stays **decided empty**, not forgotten: every extra device is a path to replay on every
+build.
+
+**Touch was decided empty too, and was reopened on 2026-08-30 by the author** (see §7): the game is
+published on a page anyone can open from a phone, and what a phone player got was a game that drew
+itself perfectly and answered nothing. Both paths are provided, **on the author's ruling** — swipe
+anywhere on the playfield, and a visible pad — with the cost stated plainly: two input paths to
+replay at every build, which is the very cost that had the feature postponed.
+
+⚠ **The controls take nothing from the playfield.** A 21 × 15 grid at 44 px is 924 px wide inside the
+1280 px frame: the pad lives in the 178 px margin that rounding already left over, and the pause
+button in the one opposite (`Rules/TouchPad.cs`). Shrinking the grid to make room would have made
+every cell smaller for the player whose screen is already the smallest.
+
+⚠ **A tap never starts a game.** §4.1 wants the first tick triggered by a direction, so nobody dies
+while reading the screen — a tap-to-start would hand the snake a heading the player never chose. On
+the end screen a tap *is* Space: one press, zero waiting (§2).
 
 ⚠ **Declaration on the code side**: `Key.W`, `Key.A`, `Key.S`, `Key.D` name POSITIONS on a QWERTY
 keyboard — the WASD block. On a French AZERTY keyboard the same positions are the keys printed Z, Q,
@@ -140,4 +154,4 @@ them without something new**:
 - `UnityEngine.Random` or `System.Random` for the apple draw
 - Weighted score (speed bonus, points tied to time or length)
 - Menu: a navigable end screen, a "Settings" entry, the best score shown on the menu (detail in [`gdd/menu.md`](gdd/menu.md))
-- Gamepad and touch
+- Gamepad — and touch, until the author reopened it on 2026-08-30 (shipped: swipe + on-screen pad)

@@ -26,6 +26,11 @@
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 .consulo/
 
+# Dropped into Assets/Resources/ by the test framework at build time, and therefore EMBEDDED in the
+# binary if left there. They describe the machine that built, not the game.
+/[Aa]ssets/[Rr]esources/PerformanceTestRun*.json
+/[Aa]ssets/[Rr]esources/PerformanceTestRun*.json.meta
+
 # Imported assets whose .meta Unity regenerates
 /[Aa]ssets/[Pp]lugins/[Ee]ditor/JetBrains*
 
