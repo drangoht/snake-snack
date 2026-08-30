@@ -1,93 +1,91 @@
-# ART — Direction artistique de Snake Snack
+# ART — Art direction for Snake Snack
 
-> Ce document accueille toute décision de direction artistique du projet. §1 (palette), §2
-> (typographie) et §5 (retour d'une entrée refusée) sont tranchés. §3 (grille de sprites et échelle)
-> reste **vide et structuré**, pour que la suite s'y range sans reprendre le plan à chaque fois — ne
-> pas le remplir par anticipation.
+> This document takes in every art-direction decision of the project. §1 (palette), §2 (typography)
+> and §5 (feedback for a refused input) are settled. §3 (sprite grid and scale) stays **empty and
+> structured**, so that what follows files itself there without redoing the outline every time — do
+> not fill it in pre-emptively.
 
 ## 1. Palette
 
-**Parti pris** : un socle froid et presque noir (fond, aire, grille) sur lequel seules quatre
-couleurs chaudes portent une information de gameplay — le mur en ambre, la pomme en rouge, le
-serpent en vert, et un blanc pur réservé au signal qui doit toujours dominer (le pictogramme de
-refus). Raisonnement complet, ratios de contraste chiffrés et variantes écartées :
-[`art/palette.md`](art/palette.md).
+**Stance**: a cold, near-black base (background, playfield, grid) on which only four warm colours
+carry gameplay information — the wall in amber, the apple in red, the snake in green, and a pure white
+reserved for the signal that must always dominate (the rejection pictogram). Full reasoning, numeric
+contrast ratios and rejected variants: [`art/palette.md`](art/palette.md).
 
-Vit dans `Assets/Scripts/UI/UiPalette.cs` (renommage de `PaletteProvisoire.cs`, même 12 rôles, aucun
-appelant à changer). **Jamais de couleur en dur ailleurs** dans le code ou les générateurs.
+Lives in `Assets/Scripts/UI/UiPalette.cs`. **Never a hard-coded colour anywhere else** in the code or
+in the generators.
 
-| Rôle | Couleur |
+| Role | Colour |
 |---|---|
-| `Fond` | `#0A0E13` |
-| `AireDeJeu` | `#121821` |
-| `TraitDeGrille` | `#1C2530` |
-| `BordureAire` | `#E3A23A` |
-| `CorpsSerpent` | `#4E9358` |
-| `TeteSerpent` | `#D8F5C4` |
-| `Pomme` | `#E5473B` |
-| `Pictogramme` | `#FFFFFF` |
-| `TexteHud` | `#E7EDF2` |
-| `TexteSecondaire` | `#8792A0` |
-| `VoileDePause` | `#000000` à 62 % |
-| `TamponDeBuild` | `#FFFFFF` à 45 % |
+| `Background` | `#0A0E13` |
+| `Playfield` | `#121821` |
+| `GridLine` | `#1C2530` |
+| `PlayfieldBorder` | `#E3A23A` |
+| `SnakeBody` | `#4E9358` |
+| `SnakeHead` | `#D8F5C4` |
+| `Apple` | `#E5473B` |
+| `Pictogram` | `#FFFFFF` |
+| `HudText` | `#E7EDF2` |
+| `SecondaryText` | `#8792A0` |
+| `PauseScrim` | `#000000` at 62 % |
+| `BuildStamp` | `#FFFFFF` at 45 % |
 
-⚠ Projet en espace colorimétrique **Gamma** (`ProjectSettings.asset`) : ces codes hexa se posent
-tels quels (`/255` → `Color`), aucune reconversion linéaire à faire à la main.
+⚠ The project is in **Gamma** colour space (`ProjectSettings.asset`): these hex codes are laid down
+as-is (`/255` → `Color`), with no linear reconversion to do by hand.
 
-## 2. Typographie
+## 2. Typography
 
-⚠ **Nunito n'existe qu'en fichier VARIABLE chez `google/fonts`** (aucun `static/`, amont en
-`buildStatic: false`). Décision de l'auteur, 2026-08-28 : **on l'instancie** plutôt que de changer de
-famille. `tools/generer_polices.py` fige `wght=600` et `wght=800` avec `fontTools.varLib.instancer`
-et écrit `Assets/Resources/Polices/` — les deux `.ttf` du dépôt ne se retéléchargent pas à la main.
-Nunito ne déclare **aucun Reserved Font Name**, le nom est donc conservé (`docs/CREDITS.md`).
+⚠ **Nunito exists only as a VARIABLE file on `google/fonts`** (no `static/`, upstream in
+`buildStatic: false`). Author's decision, 2026-08-28: **we instantiate it** rather than change family.
+`tools/generate_fonts.py` freezes `wght=600` and `wght=800` with `fontTools.varLib.instancer` and
+writes `Assets/Resources/Fonts/` — the repository's two `.ttf` files are not re-downloaded by hand.
+Nunito declares **no Reserved Font Name**, so the name is kept (`docs/CREDITS.md`).
 
-**Famille retenue : Nunito** (SIL OFL), deux graisses seulement — **SemiBold** pour le texte
-secondaire, **ExtraBold** pour les titres et les nombres du HUD. Corps relevé de deux points par
-rapport aux tailles actuelles du code (plancher : 18 px à la résolution de référence 1280×720),
-contours allégés — une police d'affichage ronde a le trait plus fin qu'Arial au même calibre.
-Raisonnement complet, tailles par texte, licence et procédure de récupération du `.ttf` statique :
-[`art/typographie.md`](art/typographie.md).
+**Family adopted: Nunito** (SIL OFL), two weights only — **SemiBold** for secondary text,
+**ExtraBold** for headings and HUD numbers. Sizes raised by two points relative to the code's current
+ones (floor: 18 px at the 1280×720 reference resolution), strokes lightened — a round display face has
+a thinner stroke than Arial at the same size. Full reasoning, sizes per text, licence and the
+procedure for obtaining the static `.ttf`: [`art/typography.md`](art/typography.md).
 
-⚠ Rappel du piège déjà payé (`docs/pitfalls/polices-texte.md`) : le repli d'Unity sur les glyphes
-manquants n'existe QUE sur le bureau — un navigateur WebGL perd en silence tout caractère absent de
-la police (flèches ← → ↑ ↓ en tête de liste). N'écrire que des caractères que la police contient, et
-dessiner les symboles en sprite. Vérifier la table `cmap` du fichier réellement importé avant de
-faire confiance, et vérifier dans le navigateur, pas au raisonnement.
+⚠ A reminder of the pitfall already paid for (`docs/pitfalls/fonts-text.md`): Unity's fallback for
+missing glyphs exists ONLY on the desktop — a WebGL browser silently loses any character absent from
+the font (arrows ← → ↑ ↓ at the top of the list). Write only characters the font contains, and draw
+the symbols as sprites. Check the `cmap` table of the file actually imported before trusting anything,
+and check in the browser, not by reasoning.
 
-## 3. Grille de sprites et échelle
+## 3. Sprite grid and scale
 
-<!-- À définir au fil des briefs (grille de cases, épaisseur de contour, corps de texte). Ce que le
-     §5 pose déjà comme contrainte dure, réutilisable pour tout le reste : case de jeu = 44 px,
-     aire de jeu 924×660 dans un cadre 1280×720, bandeau HUD ~60 px, marges latérales ~178 px. -->
+<!-- To be defined as the briefs come (cell grid, outline thickness, text sizes). What §5 already sets
+     as a hard constraint, reusable for the rest: game cell = 44 px, playfield 924×660 in a 1280×720
+     frame, HUD band ~60 px, side margins ~178 px. -->
 
-## 4. Contraste et accessibilité — règles permanentes
+## 4. Contrast and accessibility — permanent rules
 
-- Jamais une information portée par la seule couleur : toujours doublée d'une différence de forme,
-  de position ou de texte.
-- Jamais de clignotement périodique en boucle sur une grande surface de l'écran. Une variation
-  d'opacité déclenchée une fois (fondu entrée/sortie) est admise ; un stroboscope ne l'est pas.
-- Tout sprite se valide sur le **fond réel du jeu**, jamais sur un damier neutre.
+- Never information carried by colour alone: always doubled by a difference of shape, position or
+  text.
+- Never periodic looping flicker over a large area of the screen. An opacity variation triggered once
+  (fade in/out) is allowed; a strobe is not.
+- Every sprite is validated on the **real game background**, never on a neutral checkerboard.
 
-## 5. Briefs — un sujet, un fichier
+## 5. Briefs — one subject, one file
 
-> ⚠ **La numérotation `§5.x` est conservée dans le fichier du brief.** Le code et les tests
-> renvoient à « ART §5.4 », « ART §5.7 » en une soixantaine d'endroits : ces renvois restent justes,
-> ils désignent la sous-section correspondante de `art/retour-refus.md`. Ne pas renuméroter.
+> ⚠ **The `§5.x` numbering is preserved inside the brief's file.** The code and the tests refer to
+> "ART §5.4", "ART §5.7" in some sixty places: those references stay correct, they name the matching
+> subsection of `art/rejection-feedback.md`. Do not renumber.
 
-<!-- ⚠ INDEX. Un brief détaillé va dans docs/art/<sujet>.md : il n'intéresse que qui travaille sur
-     CE sujet, alors que ce fichier-ci est relu avant chaque asset. Une ligne ici. -->
+<!-- ⚠ INDEX. A detailed brief goes into docs/art/<subject>.md: it only concerns whoever works on THAT
+     subject, whereas this file is re-read before every asset. One line here. -->
 
-| Brief | Fichier | Statut |
+| Brief | File | Status |
 |---|---|---|
-| La palette (§1) | [`art/palette.md`](art/palette.md) | tranché le 2026-08-28 |
-| La typographie (§2) | [`art/typographie.md`](art/typographie.md) | tranché le 2026-08-28 |
-| Le menu principal et son illustration (GDD §4.6) | [`art/menu.md`](art/menu.md) | tranché le 2026-08-28 |
-| Le retour d'une entrée refusée (GDD §3, §4.2) | [`art/retour-refus.md`](art/retour-refus.md) | tranché ; le démenti du 2026-08-27 (contraste du chevron) est levé par §1, à reconfirmer en jeu |
-| Le juicy — retours de jeu (mouvement, bouchée, mort, pomme, record) | [`art/juicy.md`](art/juicy.md) | arbitré le 2026-08-28 ; P1 en cours |
-| Le cartoon — formes et contours en jeu | [`art/cartoon.md`](art/cartoon.md) | arbitré le 2026-08-28 ; rounding en cours, visage à prototyper |
+| The palette (§1) | [`art/palette.md`](art/palette.md) | settled 2026-08-28 |
+| The typography (§2) | [`art/typography.md`](art/typography.md) | settled 2026-08-28 |
+| The main menu and its illustration (GDD §4.6) | [`art/menu.md`](art/menu.md) | settled 2026-08-28 |
+| Feedback for a refused input (GDD §3, §4.2) | [`art/rejection-feedback.md`](art/rejection-feedback.md) | settled; the 2026-08-27 objection (chevron contrast) is lifted by §1, to be reconfirmed in play |
+| The juice — game feedback (movement, bite, death, apple, best score) | [`art/juicy.md`](art/juicy.md) | ruled 2026-08-28; delivered in full 2026-08-30 |
+| The cartoon — shapes and outlines in play | [`art/cartoon.md`](art/cartoon.md) | ruled 2026-08-28; rounding and face delivered 2026-08-30 |
 
-## 6. Historique des décisions
+## 6. Decision history
 
-Décisions visuelles déjà tranchées et variantes écartées : [`art/historique.md`](art/historique.md).
-Ne pas rouvrir un sujet sans élément neuf.
+Visual decisions already settled and rejected variants: [`art/history.md`](art/history.md). Do not
+reopen a subject without something new.

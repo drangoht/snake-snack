@@ -1,143 +1,143 @@
 # GDD — Snake Snack
 
-> **Comment remplir ce document** : skill **`/rediger-le-gdd`** — il mène l'entretien section par
-> section, dans l'ordre où les décisions se prennent, et déroule l'exemple complet d'un petit jeu.
+> **How to fill this document in**: the **`/write-the-gdd`** skill — it runs the interview section by
+> section, in the order decisions get made, and works through the complete example of a small game.
 
-**Source de vérité du design.** Toute décision de gameplay y est reportée *immédiatement*, avec ce
-qui la justifie. Le code dit *comment* ; ce document dit **pourquoi**.
+**The source of truth for design.** Every gameplay decision is recorded here *immediately*, with what
+justifies it. The code says *how*; this document says **why**.
 
-⚠ **Ce fichier reste un sommaire : ~150 lignes, plafond.** Le détail d'un système va dans
-`docs/gdd/<systeme>.md` (§4), les décisions écartées dans `docs/gdd/ecarte.md` (§7). Il est relu par
-chaque agent avant chaque tâche : ce qu'on y ajoute, on le paie à toutes les tâches suivantes, y
-compris celles qui n'ont rien à voir.
+⚠ **This file stays a summary: ~150 lines, ceiling.** The detail of a system goes into
+`docs/gdd/<system>.md` (§4), the rejected decisions into `docs/gdd/rejected.md` (§7). It is re-read by
+every agent before every task: whatever is added here gets paid for on every later task, including the
+ones that have nothing to do with it.
 
-> Quand une conclusion est réfutée, **la garder et la marquer comme telle** plutôt que la réécrire :
-> le raisonnement qui a mené à l'erreur a autant de valeur que la correction, et c'est ce qui évite
-> de refaire deux fois le même détour.
+> When a conclusion is refuted, **keep it and mark it as such** rather than rewriting it: the
+> reasoning that led to the error is worth as much as the correction, and it is what stops the same
+> detour being taken twice.
 
 ## 1. Pitch
 
-**On dirige un serpent qui s'allonge à chaque bouchée, jusqu'à ce que son propre corps ne laisse
-plus de passage.**
+**You steer a snake that grows with every bite, until its own body leaves no way through.**
 
-Verbe du joueur : *diriger*. Ce qui s'y oppose : *sa propre queue* — pas un ennemi, pas un aléa.
-Snake canonique, sans twist : le jeu est déjà entier, l'enjeu est la qualité de la sensation, pas
-l'ajout de mécaniques. « Canonique » vaut pour les *mécaniques*, pas pour les *réglages* : la cadence
-qui accélère du Snake Nokia n'est pas héritée (§4.1, et §7 pour la raison).
+The player's verb: *steer*. What opposes it: *its own tail* — not an enemy, not randomness. Canonical
+Snake, with no twist: the game is already whole, what is at stake is the quality of the feel, not the
+addition of mechanics. "Canonical" applies to the *mechanics*, not to the *settings*: the accelerating
+rate of Nokia Snake is not inherited (§4.1, and §7 for the reason).
 
-## 2. La boucle de jeu
+## 2. The game loop
 
 ```
-apparition au centre, trois segments à l'arrêt  →  orienter la tête ; le serpent avance seul,
-   une case par tick
-   →  pomme avalée : +1 segment, +1 point, une nouvelle pomme apparaît ailleurs
-   →  l'espace encore libre se réduit à chaque bouchée
-   →  la tête touche le corps ou un mur : mort, score et record affichés sur place
-   →  Espace : nouvelle partie immédiate, sans menu ni écran intermédiaire
+appears at the centre, three segments at a standstill  ->  point the head; the snake moves on its
+   own, one cell per tick
+   ->  apple swallowed: +1 segment, +1 point, a new apple appears elsewhere
+   ->  the free space shrinks with every bite
+   ->  the head touches the body or a wall: death, score and best score shown right there
+   ->  Space: a new game at once, with no menu and no intermediate screen
 ```
 
-⚠ **« Sans menu » vaut pour la relance, pas pour le lancement du jeu** : depuis le 2026-08-28, le jeu
-s'ouvre sur un menu principal (§4.6), et Échap y ramène **depuis l'écran de fin uniquement**. Espace
-relance toujours en une touche et zéro attente — c'est cette phrase-ci qui protège la boucle.
+⚠ **"No menu" applies to the restart, not to launching the game**: since 2026-08-28 the game opens on
+a main menu (§4.6), and Esc goes back there **from the end screen only**. Space still restarts in one
+key with zero waiting — that sentence is the one protecting the loop.
 
-**Les bords tuent, ils ne téléportent pas.** Une grille close se lit d'un coup d'œil dès la première
-seconde, et toute mort reste imputable à un virage — jamais à un serpent qui a « disparu quelque
-part ». (La téléportation a été envisagée puis écartée : voir §7.)
+**The edges kill, they do not teleport.** A closed grid reads at a glance from the first second, and
+every death stays attributable to a turn — never to a snake that "vanished somewhere". (Teleporting
+was considered then ruled out: see §7.)
 
-**Ce qui donne envie de relancer** : la relance coûte une touche et zéro attente, et la partie
-précédente a laissé une phrase en tête — « j'aurais dû passer par la droite ». C'est cette phrase
-qui relance, pas le bouton. Elle n'existe que si la mort est toujours attribuable à une décision du
-joueur : d'où l'absence d'aléa hostile dans tout le jeu.
+**What makes you want to restart**: restarting costs one key and zero waiting, and the previous game
+left a sentence in your head — "I should have gone right". That sentence is what restarts the game,
+not the button. It only exists if death is always attributable to a player's decision: hence the
+absence of hostile randomness anywhere in the game.
 
-## 3. Commandes
+## 3. Controls
 
-| Action | Clavier | Manette | Tactile |
+| Action | Keyboard | Gamepad | Touch |
 |---|---|---|---|
-| Tourner (4 directions) | Flèches **ou** ZQSD | — pas en 0.1 | — pas en 0.1 |
-| Pause / reprise | Échap | — pas en 0.1 | — pas en 0.1 |
-| Relancer après la mort | Espace | — pas en 0.1 | — pas en 0.1 |
-| Revenir au menu | Échap (écran de fin) **ou** Retour arrière (pause) | — pas en 0.1 | — pas en 0.1 |
-| Naviguer le menu (§4.6) | Flèches ou ZQSD, Entrée ou Espace | — pas en 0.1 | souris : survol et clic |
+| Turn (4 directions) | Arrows **or** WASD | — not in 0.1 | — not in 0.1 |
+| Pause / resume | Esc | — not in 0.1 | — not in 0.1 |
+| Restart after death | Space | — not in 0.1 | — not in 0.1 |
+| Back to the menu | Esc (end screen) **or** Backspace (pause) | — not in 0.1 | — not in 0.1 |
+| Navigate the menu (§4.6) | Arrows or WASD, Enter or Space | — not in 0.1 | mouse: hover and click |
 
-Manette et tactile sont **décidés vides**, pas oubliés : le jeu se joue au clavier sur la page itch,
-et chaque périphérique supplémentaire est un chemin à rejouer à chaque build. À rouvrir si des
-retours de joueurs mobiles arrivent (voir §7).
+Gamepad and touch are **decided empty**, not forgotten: the game is played with a keyboard on the itch
+page, and every extra device is a path to replay on every build. To reopen if feedback from mobile
+players arrives (see §7).
 
-⚠ **Déclaration côté code** : les touches Z, Q, S, D d'un clavier français se déclarent
-`Key.W`, `Key.A`, `Key.S`, `Key.D`. Écrire `Key.Z` pour la touche marquée Z vise en réalité le W —
-aucune erreur n'est levée, le jeu répond simplement à la mauvaise touche.
+⚠ **Declaration on the code side**: `Key.W`, `Key.A`, `Key.S`, `Key.D` name POSITIONS on a QWERTY
+keyboard — the WASD block. On a French AZERTY keyboard the same positions are the keys printed Z, Q,
+S, D. Writing `Key.Z` for the key printed Z actually targets W — no error is raised, the game simply
+answers the wrong key.
 
-⚠ **Deux entrées sont refusées, et le refus doit se voir** :
-- le **demi-tour instantané** (le serpent se mangerait à la nuque) ;
-- toute direction tapée pendant la pause.
+⚠ **Two inputs are refused, and the refusal must show**:
+- the **instant reversal** (the snake would bite its own neck);
+- any direction pressed during the pause.
 
-Invisible se lit inexistant : un appui ignoré sans retour à l'écran est lu comme un appui *raté* par
-le jeu. **La forme du retour est tranchée → `docs/art/retour-refus.md`** (arbitrage de l'auteur, 2026-08-27) :
-un chevron barré, orienté vers la direction refusée, ancré au bord de la case tête ; une ligne de
-texte sur l'écran de pause pour une direction tapée en pause. Le refus est un **état à échéance**,
-jamais une animation rejouée : marteler la touche prolonge l'affichage sans le faire clignoter.
+Invisible reads as non-existent: a press ignored with no on-screen feedback is read as a press the
+game *missed*. **The form of the feedback is settled → `docs/art/rejection-feedback.md`** (author's
+ruling, 2026-08-27): a barred chevron, pointing towards the refused direction, anchored to the edge of
+the head cell; a line of text on the pause screen for a direction pressed while paused. The refusal is
+a **state with a deadline**, never a replayed animation: hammering the key extends the display without
+making it flicker.
 
-⚠ **Le doublon ne reçoit aucun retour** — retaper la direction déjà suivie n'est pas une erreur, et
-le serpent qui continue tout droit est déjà la confirmation. Le filtrage est **explicite** dans le
-code, pour qu'il ne se lise pas comme un oubli à corriger.
+⚠ **A duplicate gets no feedback** — repeating the direction already being followed is not an error,
+and the snake carrying straight on is already the confirmation. The filtering is **explicit** in the
+code, so it does not read as an oversight to fix.
 
-⚠ **Une capacité doit annoncer sa touche dans le jeu** (HUD, description, écran d'acquisition).
+⚠ **A capability must announce its key inside the game** (HUD, description, acquisition screen).
 
-## 4. Systèmes
+## 4. Systems
 
-<!-- ⚠ CETTE SECTION EST UN INDEX. Un système = un fichier docs/gdd/<systeme>.md, une ligne ici.
-     Ce qu'on écrit dans un fichier de système n'est relu que par qui touche à CE système. -->
+<!-- ⚠ THIS SECTION IS AN INDEX. One system = one docs/gdd/<system>.md file, one line here.
+     What is written in a system file is only re-read by whoever touches THAT system. -->
 
-| Système | Fichier | En une phrase |
+| System | File | In one sentence |
 |---|---|---|
-| **4.1** Le pas de temps | [`gdd/pas-de-temps.md`](gdd/pas-de-temps.md) | Le serpent avance d'une case par tick, jamais entre deux — l'unité de toute mesure ultérieure. |
-| **4.2** La file d'entrées | [`gdd/file-entrees.md`](gdd/file-entrees.md) | File FIFO de profondeur 2 : une entrée dépilée, validée et appliquée par tick. |
-| **4.3** La grille | [`gdd/grille.md`](gdd/grille.md) | 21 × 15 cases carrées, impaires sur les deux axes pour qu'une case centrale exacte existe. |
-| **4.4** La pomme | [`gdd/pomme.md`](gdd/pomme.md) | Une seule pomme à tout instant, posée avant le premier appui pour que le départ ait une cible. |
-| **4.5** Le score et le record | [`gdd/score-record.md`](gdd/score-record.md) | +1 par pomme, rien d'autre ; le record survit à la fermeture et se bat strictement. |
-| **4.6** Le menu principal | [`gdd/menu.md`](gdd/menu.md) | Le jeu s'ouvre sur un menu, mais rien ne s'interpose entre une mort et la partie suivante. |
+| **4.1** The time step | [`gdd/time-step.md`](gdd/time-step.md) | The snake moves one cell per tick, never between two — the unit of every later measurement. |
+| **4.2** The input queue | [`gdd/input-queue.md`](gdd/input-queue.md) | A depth-2 FIFO: one input dequeued, validated and applied per tick. |
+| **4.3** The grid | [`gdd/grid.md`](gdd/grid.md) | 21 × 15 square cells, odd on both axes so an exact centre cell exists. |
+| **4.4** The apple | [`gdd/apple.md`](gdd/apple.md) | A single apple at every instant, placed before the first press so the start has a target. |
+| **4.5** Score and best score | [`gdd/score-best.md`](gdd/score-best.md) | +1 per apple, nothing else; the best score survives closing and is beaten strictly. |
+| **4.6** The main menu | [`gdd/menu.md`](gdd/menu.md) | The game opens on a menu, but nothing comes between a death and the next game. |
 
-## 5. Progression et difficulté
-
-<!--
-Règles acquises, à respecter sauf raison neuve :
-- Un cran de difficulté ajoute une RÈGLE NOMMÉE, pas un multiplicateur. Le joueur doit pouvoir la
-  lire avant de lancer et comprendre pourquoi il a perdu.
-- Avant d'ajouter une contrainte, vérifier ce qu'elle DONNE au joueur : une contrainte qui distribue
-  aussi son antidote ne durcit rien.
-- Un levier optionnel n'est pas une règle : une règle s'applique à toute partie.
-- Jamais un mur de patience sur un affrontement clé : plus dangereux vaut mieux que plus long.
--->
-
-## 6. Ce qui a été mesuré
+## 5. Progression and difficulty
 
 <!--
-Renvoyer vers docs/TEST_REPORT.md, et consigner ici la CONCLUSION, pas la donnée brute.
-
-⚠ Une partie isolée ne tranche rien : la variance entre deux parties peut atteindre un facteur 2,4
-avant même que le réglage testé n'agisse. Un verdict d'équilibrage se prend au banc apparié, sur le
-test des signes.
+Acquired rules, to be respected unless there is a new reason:
+- A step of difficulty adds a NAMED RULE, not a multiplier. The player must be able to read it before
+  starting and understand why they lost.
+- Before adding a constraint, check what it GIVES the player: a constraint that also hands out its own
+  antidote hardens nothing.
+- An optional lever is not a rule: a rule applies to every game.
+- Never a wall of patience on a key confrontation: more dangerous beats longer.
 -->
 
-## 7. Ce qui a été écarté, et pourquoi
+## 6. What has been measured
 
-<!-- INDEX. Le raisonnement complet de chaque décision est dans docs/gdd/ecarte.md : on ne l'ouvre
-     que pour rouvrir un débat, pas à chaque tâche. Une ligne ici par sujet tranché. -->
+<!--
+Point at docs/TEST_REPORT.md, and record the CONCLUSION here, not the raw data.
 
-Détail et raisons : [`gdd/ecarte.md`](gdd/ecarte.md). Sujets déjà tranchés — **ne pas les rouvrir
-sans élément neuf** :
+⚠ A single game settles nothing: the variance between two games can reach a factor of 2.4 before the
+setting under test even acts. A balancing verdict is taken on a paired bench, with the sign test.
+-->
 
-- Bords téléportants (le serpent ressort par le côté opposé)
-- Snacks à effets distincts, bonus temporaires
-- Cadence qui accélère avec la longueur (le Snake Nokia)
-- File d'entrées de profondeur 1 (une seule direction retenue)
-- Grille 32 × 18 remplissant le 16:9 sans marges
-- Retour de refus : variantes écartées
-- Tirage de la pomme par rejet (« tirer une case au hasard, retirer tant qu'elle est occupée »)
-- Contraindre l'apparition de la pomme (distance minimale à la tête, interdiction dans le prolongement immédiat)
-- Plusieurs pommes simultanées
-- Pomme à durée de vie limitée (elle disparaît et réapparaît ailleurs)
-- `UnityEngine.Random` ou `System.Random` pour le tirage de la pomme
-- Score pondéré (bonus de rapidité, points liés au temps ou à la longueur)
-- Menu : écran de fin navigable, entrée « Réglages », record affiché au menu (détail dans [`gdd/menu.md`](gdd/menu.md))
-- Manette et tactile
+## 7. What was ruled out, and why
+
+<!-- INDEX. The full reasoning for each decision is in docs/gdd/rejected.md: it is only opened to
+     reopen a debate, not on every task. One line here per settled subject. -->
+
+Detail and reasons: [`gdd/rejected.md`](gdd/rejected.md). Subjects already settled — **do not reopen
+them without something new**:
+
+- Teleporting edges (the snake comes back out of the opposite side)
+- Snacks with distinct effects, temporary bonuses
+- A rate that speeds up with length (Nokia Snake)
+- A depth-1 input queue (a single direction remembered)
+- A 32 × 18 grid filling the 16:9 frame with no margins
+- Rejection feedback: rejected variants
+- Drawing the apple by rejection ("draw a random cell, redraw while it is occupied")
+- Constraining where the apple appears (minimum distance from the head, ban on the cell straight ahead)
+- Several apples at once
+- An apple with a limited lifetime (it disappears and reappears elsewhere)
+- `UnityEngine.Random` or `System.Random` for the apple draw
+- Weighted score (speed bonus, points tied to time or length)
+- Menu: a navigable end screen, a "Settings" entry, the best score shown on the menu (detail in [`gdd/menu.md`](gdd/menu.md))
+- Gamepad and touch

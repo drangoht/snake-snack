@@ -1,101 +1,98 @@
-# Brief — 1. La palette
+# Brief — 1. The palette
 
-Sorti de `docs/ART.md` §1 : le raisonnement complet n'intéresse que qui touche `UiPalette.cs` ou
-dessine un sprite ; `ART.md` §1 ne garde que la décision et les codes hexa.
+Taken out of `docs/ART.md` §1: the full reasoning only concerns whoever touches `UiPalette.cs` or
+draws a sprite; `ART.md` §1 keeps only the decision and the hex codes.
 
-## 1.1 Le parti pris
+## 1.1 The stance
 
-**Un socle froid et presque noir qui ne cherche jamais l'œil, sur lequel seul ce qui compte au jeu
-porte une couleur chaude.** Le mur qui tue est ambre, la pomme qui nourrit est rouge, le serpent
-reste vert — ni menace ni récompense, juste le joueur — et le blanc pur n'appartient qu'au signal qui
-doit toujours gagner (le pictogramme de refus). Fond, aire et grille restent une seule famille grise
-bleutée : rien n'y attire l'œil, pour que les quatre couleurs chaudes se voient tout de suite.
+**A cold, near-black base that never seeks the eye, on which only what matters in play carries a warm
+colour.** The wall that kills is amber, the apple that feeds is red, the snake stays green — neither
+threat nor reward, just the player — and pure white belongs only to the signal that must always win
+(the rejection pictogram). Background, playfield and grid stay one blue-grey family: nothing there
+draws the eye, so that the four warm colours are seen at once.
 
-Ce parti pris ne change *aucune* forme, *aucune* position, *aucune* taille déjà posées ailleurs
-(§5.4, §5.6) — il colore un système déjà validé en niveaux de gris, il ne le redessine pas.
+This stance changes *no* shape, *no* position, *no* size already set elsewhere (§5.4, §5.6) — it
+colours a system already validated in greyscale, it does not redraw it.
 
-## 1.2 Les 12 rôles — couverture exacte de `UiPalette.cs`
+## 1.2 The 12 roles — exact coverage of `UiPalette.cs`
 
-Douze rôles nommés existaient déjà, en gris, dans `Assets/Scripts/UI/PaletteProvisoire.cs`. Cette
-palette **couvre exactement ces douze rôles, sous les mêmes noms** — aucun ajouté, aucun retiré.
-**Câblé le 2026-08-28** : le fichier est renommé `Assets/Scripts/UI/UiPalette.cs` (avec son `.meta`,
-donc le même GUID) et ses valeurs remplacées ; aucun appelant n'a changé, seulement le nom du type.
+Twelve named roles already existed, in grey. This palette **covers exactly those twelve roles, under
+the same meanings** — none added, none removed. **Wired on 2026-08-28**: the values are in
+`Assets/Scripts/UI/UiPalette.cs`; no caller changed, only the type's name.
 
-| Rôle | Gris provisoire | Couleur retenue | Pourquoi cette couleur |
+| Role | Provisional grey | Colour adopted | Why this colour |
 |---|---|---|---|
-| `Fond` | 0,07 | `#0A0E13` | Slate quasi noir, jamais pur noir (§1.4) : les marges ne doivent rien réclamer. |
-| `AireDeJeu` | 0,13 | `#121821` | Même famille que `Fond`, un cran plus clair : l'aire se détache sans se signaler. |
-| `TraitDeGrille` | 0,20 | `#1C2530` | Toujours la même famille froide : aide à compter, ne doit jamais lire comme un objet. |
-| `BordureAire` | 0,62 | `#E3A23A` | Ambre : c'est le mur qui tue (GDD §2), seule couleur « alerte » posée à demeure sur tout l'écran. |
-| `CorpsSerpent` | 0,58 | `#4E9358` | Vert moyen : le serpent est le joueur, ni danger ni objectif — la seule couleur neutre du jeu. |
-| `TeteSerpent` | 0,94 | `#D8F5C4` | Même vert, tiré vers le clair : la case qui compte le plus au tick reste la plus lisible. |
-| `Pomme` | 0,80 | `#E5473B` | Rouge chaud, seule couleur de ce hue dans le jeu : rien d'autre ne se confond avec « à manger ». |
-| `Pictogramme` | 1,00 | `#FFFFFF` | Blanc pur, réservé : c'est le seul rôle à cette valeur, il doit toujours dominer, quel que soit le fond. |
-| `TexteHud` | 0,86 | `#E7EDF2` | Blanc légèrement froid : lisible en permanence sur `Fond`, jamais aussi saturé que `Pictogramme`. |
-| `TexteSecondaire` | 0,52 | `#8792A0` | Gris-bleu moyen : hiérarchie sous `TexteHud`, toujours dans la famille froide du fond. |
-| `VoileDePause` | noir 62 % | `#000000` à 62 % | Inchangé : un voile achromatique n'entre en concurrence avec aucune des quatre couleurs chaudes. |
-| `TamponDeBuild` | blanc 45 % | `#FFFFFF` à 45 % | Inchangé, pour la même raison — et il doit rester lisible quel que soit le fond réel qu'il recouvre. |
+| `Background` | 0.07 | `#0A0E13` | Near-black slate, never pure black (§1.4): the margins must ask for nothing. |
+| `Playfield` | 0.13 | `#121821` | Same family as `Background`, one notch lighter: the playfield stands out without announcing itself. |
+| `GridLine` | 0.20 | `#1C2530` | Still the same cold family: helps you count, must never read as an object. |
+| `PlayfieldBorder` | 0.62 | `#E3A23A` | Amber: this is the wall that kills (GDD §2), the only "alert" colour permanently on screen. |
+| `SnakeBody` | 0.58 | `#4E9358` | Mid green: the snake is the player, neither danger nor goal — the game's only neutral colour. |
+| `SnakeHead` | 0.94 | `#D8F5C4` | The same green pulled towards light: the cell that matters most at the tick stays the most readable. |
+| `Apple` | 0.80 | `#E5473B` | Warm red, the only colour of that hue in the game: nothing else is confused with "to eat". |
+| `Pictogram` | 1.00 | `#FFFFFF` | Pure white, reserved: it is the only role at that value, it must always dominate, whatever the background. |
+| `HudText` | 0.86 | `#E7EDF2` | Slightly cool white: permanently readable on `Background`, never as saturated as `Pictogram`. |
+| `SecondaryText` | 0.52 | `#8792A0` | Mid blue-grey: ranked below `HudText`, always in the background's cold family. |
+| `PauseScrim` | black 62 % | `#000000` at 62 % | Unchanged: an achromatic scrim competes with none of the four warm colours. |
+| `BuildStamp` | white 45 % | `#FFFFFF` at 45 % | Unchanged, for the same reason — and it must stay readable whatever background it actually covers. |
 
-Aucun rôle ne manque, aucun n'est de trop : les quatre couleurs chaudes (bordure, corps, tête,
-pomme) portent chacune une information de gameplay distincte ; les deux blancs (pictogramme, texte)
-et les deux gris froids (fond, aire) restent achromatiques par construction, pour ne jamais rivaliser
-avec les quatre premières. Si un treizième rôle apparaît un jour (un boost, un multiplicateur), il
-devra se justifier de la même façon avant d'entrer ici — pas se caler entre deux rôles existants.
+No role is missing, none is superfluous: the four warm colours (border, body, head, apple) each carry
+a distinct piece of gameplay information; the two whites (pictogram, text) and the two cold greys
+(background, playfield) stay achromatic by construction, so they never rival the first four. If a
+thirteenth role ever appears (a boost, a multiplier), it will have to justify itself the same way
+before entering here — not slot itself between two existing roles.
 
-## 1.3 La preuve du contraste
+## 1.3 The contrast proof
 
-Ratio WCAG standard : `(L_clair + 0,05) / (L_sombre + 0,05)`, `L` = luminance relative
-(conversion sRGB → linéaire standard, gamma 2,4). Seuils de référence : **3:1** pour un objet
-graphique / composant d'UI (WCAG 1.4.11), **4,5:1** pour du texte de taille normale, **3:1** pour du
-texte large (≥ 24 px ou 19 px gras) — nos textes HUD dépassent tous largement l'un ou l'autre seuil,
-posé ci-dessous.
+Standard WCAG ratio: `(L_light + 0.05) / (L_dark + 0.05)`, `L` = relative luminance (standard sRGB →
+linear conversion, gamma 2.4). Reference thresholds: **3:1** for a graphical object / UI component
+(WCAG 1.4.11), **4.5:1** for normal-size text, **3:1** for large text (≥ 24 px or 19 px bold) — our
+HUD texts all comfortably exceed one threshold or the other, as set out below.
 
-| Paire | Ratio | Verdict | La forme qui double la couleur |
+| Pair | Ratio | Verdict | The shape that doubles the colour |
 |---|---|---|---|
-| Pomme / TeteSerpent | **3,36 : 1** | ✅ corrige le défaut constaté (`docs/TEST_REPORT.md`, 2026-08-27) : en gris, cette paire ne faisait que 1,41 : 1 — c'est elle qui était « un gris voisin ». | Un losange contre un carré, et la pomme fait 0,72 case contre une case pleine pour la tête. |
-| Pomme / CorpsSerpent | **1,07 : 1** | ⚠ faible en luminance seule — voir §1.5, point à surveiller. | Même losange isolé contre une chaîne continue de carrés : la silhouette entière diffère, pas seulement une case. |
-| TeteSerpent / CorpsSerpent | **3,15 : 1** | ✅ meilleur que le gris d'origine (2,66 : 1). | La tête est aussi la case la plus grosse du groupe articulé — GDD §5.6 : jamais la couleur seule. |
-| BordureAire / AireDeJeu | **8,06 : 1** | ✅ nettement au-dessus du gris d'origine (6,00 : 1) — « le mur qui tue » doit sauter aux yeux. | Trait continu qui referme tout le pourtour de la grille, contre un remplissage uni. |
-| TexteHud / Fond | **16,4 : 1** | ✅ très large marge au-dessus du seuil texte (4,5 : 1). | — (texte, la forme est la police elle-même, voir §2). |
-| TexteSecondaire / Fond | **6,13 : 1** | ✅ au-dessus du seuil texte, y compris si ce texte finit par chevaucher `AireDeJeu` (5,64 : 1 dans ce cas — voir `docs/gdd/grille.md` sur la marge basse absente). | Poids de police plus léger que `TexteHud` (§2) : la hiérarchie se lit aussi sans la couleur. |
-| Pictogramme / CorpsSerpent | **3,72 : 1** | ✅ le cas qui compte le plus : ART §5.6 documente que le chevron d'un demi-tour tombe *toujours* sur le corps. Meilleur que le gris d'origine (3,04 : 1) — c'est un vrai correctif, pas un hasard. | Chevron plein barré d'un trait perpendiculaire : aucune autre forme du jeu n'a cette silhouette. |
-| Pictogramme / AireDeJeu | **17,8 : 1** | ✅ cas où le pictogramme tombe en case libre (`RefuseeFilePleine`, direction non bloquée). | Idem. |
+| Apple / SnakeHead | **3.36 : 1** | ✅ fixes the defect observed (`docs/TEST_REPORT.md`, 2026-08-27): in grey this pair was only 1.41 : 1 — it was the "neighbouring grey". | A diamond against a square, and the apple is 0.72 of a cell against a full cell for the head. |
+| Apple / SnakeBody | **1.07 : 1** | ⚠ weak in luminance alone — see §1.5, a point to watch. | The same isolated diamond against a continuous chain of squares: the whole silhouette differs, not just one cell. |
+| SnakeHead / SnakeBody | **3.15 : 1** | ✅ better than the original grey (2.66 : 1). | The head is also the largest cell of the articulated group — GDD §5.6: never colour alone. |
+| PlayfieldBorder / Playfield | **8.06 : 1** | ✅ markedly above the original grey (6.00 : 1) — "the wall that kills" must jump out. | A continuous line closing the whole perimeter of the grid, against a flat fill. |
+| HudText / Background | **16.4 : 1** | ✅ a very wide margin over the text threshold (4.5 : 1). | — (text; the shape is the typeface itself, see §2). |
+| SecondaryText / Background | **6.13 : 1** | ✅ above the text threshold, including if that text ends up overlapping `Playfield` (5.64 : 1 in that case — see `docs/gdd/grid.md` on the missing bottom margin). | A lighter font weight than `HudText` (§2): the hierarchy also reads without the colour. |
+| Pictogram / SnakeBody | **3.72 : 1** | ✅ the case that matters most: ART §5.6 documents that the chevron of a reversal *always* lands on the body. Better than the original grey (3.04 : 1) — a real fix, not luck. | A solid chevron barred by a perpendicular stroke: no other shape in the game has that silhouette. |
+| Pictogram / Playfield | **17.8 : 1** | ✅ the case where the pictogram lands on a free cell (`RejectedQueueFull`, direction not blocked). | Same. |
 
-## 1.4 Contraintes techniques
+## 1.4 Technical constraints
 
-- **Le projet est en espace colorimétrique Gamma** (`ProjectSettings.asset` :
-  `m_ActiveColorSpace: 0`). Les codes hexa ci-dessus se posent **tels quels** (`#RRGGBB` → `/255` →
-  `Color`) : aucune reconversion linéaire à faire à la main. Si le projet passe un jour en Linear,
-  cette page devra être rouverte — jusque-là, ne pas « corriger » ces valeurs par anticipation.
-  ⚠ **Vérifié sur build Windows le 2026-08-28** : les rôles posés sur un `Image`/`Text` uGUI et sur
-  le fond de caméra ressortent **au pixel exact** ; ceux posés sur un `SpriteRenderer` (bordure,
-  corps, tête, pomme, pictogramme) ressortent **1 à 2 unités plus sombres** sur R et G (`#E3A23A`
-  lu `#E1A13A`, `#4E9358` lu `#4E9158`). L'écart est inférieur à 1 % et déplace les ratios de moins
-  de 0,15 — il ne justifie aucune retouche, mais il explique qu'une mesure prise sur capture ne
-  retombe pas exactement sur la colonne du §1.3.
-- **Jamais de couleur en dur ailleurs que dans `UiPalette.cs`.** Un sprite, un shader, un composant
-  `Image`/`Text` référencent le rôle nommé, jamais un `#RRGGBB` recopié.
-- **`Fond` n'est jamais `#000000` pur** (§1.5, variante écartée) : un noir strict s'écrase sur les
-  écrans bas de gamme et rend `TraitDeGrille` invisible chez une partie du public itch.
-- **Contraste vérifié sur fond réel** : les ratios ci-dessus opposent chaque paire à ce qui
-  l'entoure réellement en jeu (`AireDeJeu`, pas un damier neutre), conformément à `ART.md` §4.
+- **The project is in Gamma colour space** (`ProjectSettings.asset`: `m_ActiveColorSpace: 0`). The hex
+  codes above are laid down **as-is** (`#RRGGBB` → `/255` → `Color`): no linear reconversion to do by
+  hand. If the project ever moves to Linear, this page must be reopened — until then, do not "fix"
+  these values pre-emptively.
+  ⚠ **Verified on a Windows build on 2026-08-28**: the roles set on a uGUI `Image`/`Text` and on the
+  camera background come out **pixel-exact**; those set on a `SpriteRenderer` (border, body, head,
+  apple, pictogram) come out **1 to 2 units darker** on R and G (`#E3A23A` read as `#E1A13A`,
+  `#4E9358` read as `#4E9158`). The discrepancy is under 1 % and moves the ratios by less than 0.15 —
+  it justifies no retouch, but it explains why a measurement taken on a screenshot does not land
+  exactly on the column of §1.3.
+- **Never a hard-coded colour anywhere but `UiPalette.cs`.** A sprite, a shader, an `Image`/`Text`
+  component references the named role, never a copied `#RRGGBB`.
+- **`Background` is never pure `#000000`** (§1.5, rejected variant): a strict black crushes on low-end
+  screens and makes `GridLine` invisible for part of the itch audience.
+- **Contrast checked on the real background**: the ratios above compare each pair with what actually
+  surrounds it in play (`Playfield`, not a neutral checkerboard), as required by `ART.md` §4.
 
-## 1.5 Ce qui reste ouvert
+## 1.5 What is still open
 
-- **Pomme / CorpsSerpent (1,07 : 1)** : la paire la plus faible de cette palette. Rouge et vert sont
-  la paire de teintes la plus dure à distinguer pour une deutéranopie (la forme de daltonisme la plus
-  fréquente) ; à luminance quasi identique, un joueur concerné perd une bonne partie du contraste
-  chromatique en plus du contraste de clarté. La forme (losange isolé contre chaîne de carrés)
-  couvre ce cas — c'est exactement pour ce genre de paire que `ART.md` §4 interdit la couleur seule
-  — mais je n'ai **aucune vérification en conditions réelles** (simulateur de daltonisme ou retour
-  d'un joueur concerné). À confirmer par `game-tester`, capture à l'appui, avant de considérer le
-  sujet clos.
-  **Première indication, 2026-08-28** (`docs/TEST_REPORT.md`) : simulation deutéranope (Viénot 1999)
-  appliquée à une capture du build. Pomme et corps virent tous deux à un olive proche, et l'ambre de
-  la bordure les rejoint — la teinte ne sépare plus rien, seules la forme et la taille tiennent, et
-  elles tiennent. Ce n'est qu'une transformation de matrice sur une capture : elle ne remplace ni un
-  simulateur validé ni un joueur concerné, et le point reste ouvert.
-- **La marge basse absente** (`docs/gdd/grille.md`, constaté 2026-08-28) reste un arbitrage de mise
-  en page, pas un sujet de palette — mais elle change le fond réel sous `TexteSecondaire`
-  (`RappelDesCommandes`). Le ratio tient dans les deux cas (§1.3), donc cette palette n'a pas besoin
-  d'attendre que l'arbitrage tranche.
+- **Apple / SnakeBody (1.07 : 1)**: the weakest pair in this palette. Red and green are the hardest
+  pair of hues to tell apart with deuteranopia (the most common form of colour blindness); at almost
+  identical luminance, an affected player loses much of the chromatic contrast on top of the lightness
+  contrast. Shape (an isolated diamond against a chain of squares) covers that case — it is exactly
+  for this kind of pair that `ART.md` §4 forbids colour alone — but I have **no verification in real
+  conditions** (a colour-blindness simulator or feedback from an affected player). To be confirmed by
+  `game-tester`, screenshot in hand, before considering the subject closed.
+  **First indication, 2026-08-28** (`docs/TEST_REPORT.md`): a deuteranope simulation (Viénot 1999)
+  applied to a screenshot of the build. Apple and body both turn to a close olive, and the border's
+  amber joins them — hue separates nothing any more, only shape and size hold, and they hold. That is
+  only a matrix transform on a screenshot: it replaces neither a validated simulator nor an affected
+  player, and the point stays open.
+- **The missing bottom margin** (`docs/gdd/grid.md`, observed 2026-08-28) stays a layout trade-off,
+  not a palette subject — but it changes the real background under `SecondaryText`
+  (`ControlsReminder`). The ratio holds in both cases (§1.3), so this palette does not need to wait
+  for that trade-off to be settled.

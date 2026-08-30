@@ -1,56 +1,56 @@
-# Pièges — Build web (WebGL)
+# Pitfalls — Web build (WebGL)
 
 
-**⚠ WebGL est la seule plateforme dont le stripping par défaut est le plus agressif.** [hérité]
-L'Input System résout ses couches de contrôle **par réflexion** : au niveau élevé, le jeu démarre
-normalement et **ne répond plus au clavier**. Poser `ManagedStrippingLevel.Low`.
+**⚠ WebGL is the only platform whose default stripping is the most aggressive.** [inherited]
+The Input System resolves its control layouts **by reflection**: at the high level, the game starts
+normally and **no longer answers the keyboard**. Set `ManagedStrippingLevel.Low`.
 
-**⚠ Le cache du navigateur mélange deux builds.** [hérité] Les fichiers de sortie WebGL portent
-toujours le même nom d'un build à l'autre. Le navigateur peut donc associer le `.data` d'un build au
-`.wasm` d'un autre. Le symptôme n'est **pas** « version périmée », c'est :
+**⚠ The browser cache mixes two builds.** [inherited] The WebGL output files always carry the same
+name from one build to the next. The browser can therefore pair the `.data` of one build with the
+`.wasm` of another. The symptom is **not** "stale version", it is:
 
 ```
-Chargement impossible : RuntimeError: memory access out of bounds
+Cannot load: RuntimeError: memory access out of bounds
   at wasm://wasm/0b2ac7ce:wasm-function[97296]:0x1712ca9
-  ... trois cents lignes d'offsets, pas un seul nom de méthode ...
+  ... three hundred lines of offsets, not a single method name ...
 ```
 
-Une heure a été perdue à chercher ça **dans le code du jeu**. La parade est double :
-1. un identifiant de build injecté dans les URL de la page (`BuildTools.StampWebCacheBuster`) ;
-2. ⚠ **la page hôte elle-même ne doit jamais être cachée** — elle est la seule à porter cet
-   identifiant. Cachée, elle continue de désigner les fichiers de l'ancien build : *un mécanisme
-   d'invalidation transporté par une ressource cachable s'auto-annule.* Les balises `http-equiv` ne
-   suffisent pas (Chrome les ignore pour le document principal) : il faut de vraies en-têtes HTTP,
-   d'où `tools/serve_web.py`.
+An hour was lost looking for that **in the game's code**. The countermeasure is twofold:
+1. a build id injected into the page's URLs (`BuildTools.StampWebCacheBuster`);
+2. ⚠ **the host page itself must never be cached** — it is the only one carrying that id. Cached, it
+   keeps naming the files of the old build: *an invalidation mechanism carried by a cacheable
+   resource cancels itself out.* The `http-equiv` tags are not enough (Chrome ignores them for the
+   main document): real HTTP headers are needed, hence `tools/serve_web.py`.
 
-**⚠ Un serveur local mono-thread bloque le démarrage du jeu.** [hérité] `socketserver.TCPServer`
-traite une requête à la fois ; le navigateur garde ses connexions ouvertes et un jeu qui précharge
-ses `StreamingAssets` en parallèle bloque ses propres requêtes. Le jeu reste sur sa barre de
-démarrage — qui semble même reculer — **sans aucune erreur**, ni côté navigateur, ni côté serveur.
+**⚠ A single-threaded local server blocks the game's startup.** [inherited] `socketserver.TCPServer`
+handles one request at a time; the browser keeps its connections open and a game preloading its
+`StreamingAssets` in parallel blocks its own requests. The game sits on its startup bar — which even
+appears to go backwards — **with no error at all**, neither on the browser side nor on the server
+side.
 
-**⚠ Le nom du canal itch décide si le fichier est JOUABLE dans le navigateur.** [hérité] `html5`
-(ou `html`, ou `web`) est reconnu comme tel ; tout autre nom produit une archive à télécharger, qui
-s'installe parfaitement et ne se joue pas. Rien ne le signale. Prérequis côté itch, à faire une
-fois : *Kind of project* = **HTML**, et le fichier coché « played in the browser ».
+**⚠ The itch channel's name decides whether the file is PLAYABLE in the browser.** [inherited]
+`html5` (or `html`, or `web`) is recognised as such; any other name produces an archive to download,
+which installs perfectly and does not play. Nothing reports it. Prerequisite on the itch side, to be
+done once: *Kind of project* = **HTML**, and the file ticked "played in the browser".
 
-**⚠ Le `devicePixelRatio` mobile est le réglage de performance le plus rentable.** [hérité] Un
-téléphone récent annonce 3 : Unity rend alors **neuf fois** plus de pixels que la dalle logique n'en
-montre, sur un GPU dix fois plus faible qu'une carte de bureau. La cadence s'effondre sans qu'aucune
-erreur ne le dise. Forcer `config.devicePixelRatio = 1` sur mobile.
+**⚠ The mobile `devicePixelRatio` is the most profitable performance setting.** [inherited] A recent
+phone announces 3: Unity then renders **nine times** more pixels than the logical panel shows, on a
+GPU ten times weaker than a desktop card. The frame rate collapses with no error saying so. Force
+`config.devicePixelRatio = 1` on mobile.
 
-**⚠ Le manifeste de version n'appartient qu'à la cible téléchargeable.** [hérité] Un joueur web est
-toujours à jour (la page sert le build courant). Pousser le manifeste depuis une release web
-annoncerait à tous les joueurs Windows une mise à jour qui n'existe pas.
+**⚠ The version manifest belongs to the downloadable target only.** [inherited] A web player is
+always up to date (the page serves the current build). Pushing the manifest from a web release would
+announce to every Windows player an update that does not exist.
 
-**⚠ Unity dépose un dossier `Data/` (code Burst) à la RACINE du projet** lors d'un build WebGL, hors
-de tout dossier de build. Artefact — ignoré par git.
+**⚠ Unity drops a `Data/` folder (Burst code) at the ROOT of the project** during a WebGL build,
+outside any build folder. An artefact — ignored by git.
 
 
-**⚠ Un build web modifie `ProjectSettings/ProjectSettings.asset` — et rien ne le restaure.**
-Constaté le 2026-08-28, au premier build web du projet. `BuildTools` pose les réglages WebGL
-(`webGLTemplate: PROJECT:SnakeSnack`, format de compression, taille de tas, `defaultScreenWidthWeb`)
-directement dans les réglages de projet **versionnés**, et le script de build ne les remet pas
-ensuite. Le dépôt ressort donc modifié après un `-Target web`, exactement comme la scène — à ceci
-près que **la scène, on l'écarte, et ces réglages-là, non** : ce sont les vrais réglages web du
-projet, et les perdre ferait sortir le prochain build avec le gabarit par défaut d'Unity. Les
-committer une fois, puis ne plus s'en étonner.
+**⚠ A web build modifies `ProjectSettings/ProjectSettings.asset` — and nothing restores it.**
+Observed on 2026-08-28, at the project's first web build. `BuildTools` writes the WebGL settings
+(`webGLTemplate: PROJECT:SnakeSnack`, compression format, heap size, `defaultScreenWidthWeb`) straight
+into the **versioned** project settings, and the build script does not put them back afterwards. The
+repository therefore comes out modified after a `-Target web`, exactly like the scene — except that
+**the scene gets discarded, and those settings do not**: they are the project's real web settings, and
+losing them would make the next build come out with Unity's default template. Commit them once, then
+stop being surprised.

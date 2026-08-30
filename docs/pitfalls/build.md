@@ -1,63 +1,64 @@
-# Pièges — Build
+# Pitfalls — Build
 
 
-**⚠ Lancer Unity par l'opérateur `&` en PowerShell rend la main IMMÉDIATEMENT sans rien faire.**
-[hérité] Pas de log, `$LASTEXITCODE` vide, et le script poursuit comme si tout allait bien. Utiliser
-`Start-Process -Wait`. *Un lancement qui échoue en silence est pire qu'un lancement qui échoue.*
+**⚠ Launching Unity with the `&` operator in PowerShell returns IMMEDIATELY without doing anything.**
+[inherited] No log, empty `$LASTEXITCODE`, and the script carries on as if all were well. Use
+`Start-Process -Wait`. *A launch that fails silently is worse than a launch that fails.*
 
-**⚠ Un code retour nul ne distingue pas « construit » de « rien à faire ».** Exiger une **phrase de
-réussite explicite** dans le journal (c'est ce que fait `tools/build.ps1`).
+**⚠ A zero return code does not tell "built" from "nothing to do".** Require an **explicit success
+phrase** in the log (that is what `tools/build.ps1` does).
 
-**⚠ Pire : Unity quitte avec le code retour 0 alors que le build a ÉCHOUÉ.** Constaté sur un build
-Windows dont le journal dit `Build Finished, Result: Failure` (6 erreurs) puis, trente lignes plus
-bas, `Exiting batchmode successfully now!` et un code 0. Un script qui se fie au code retour empaquette
-et publie un dossier de build incomplet **sans que rien ne l'avertisse**. La phrase de réussite dans
-le journal est le seul signal fiable.
+**⚠ Worse: Unity exits with return code 0 while the build has FAILED.** Observed on a Windows build
+whose log says `Build Finished, Result: Failure` (6 errors) then, thirty lines further down,
+`Exiting batchmode successfully now!` and a code of 0. A script trusting the return code packages and
+publishes an incomplete build folder **with nothing to warn it**. The success phrase in the log is
+the only reliable signal.
 
-**⚠ La DATE d'un artefact de build ne prouve rien** : Unity construit de façon incrémentale, un
-fichier identique n'est **pas réécrit**. Un horodatage antérieur au build est normal. Le premier
-garde-fou de fraîcheur écrit sur cette base échouait sur des builds parfaitement valides.
+**⚠ The DATE of a build artefact proves nothing**: Unity builds incrementally, an identical file is
+**not rewritten**. A timestamp older than the build is normal. The first freshness guard written on
+that basis failed on perfectly valid builds.
 
-**⚠ Les métadonnées Windows d'un `.exe` Unity décrivent le MOTEUR** (« 6000.5.6f1 »), pas le jeu. Un
-contrôle qui compare la version de release à ces métadonnées échoue toujours.
+**⚠ The Windows metadata of a Unity `.exe` describes the ENGINE** ("6000.5.6f1"), not the game. A
+check comparing the release version to that metadata always fails.
 
-**⚠ Seule la version EMBARQUÉE tranche**, parce qu'elle est posée juste avant le build. D'où
-`build_stamp.json`, écrit **par** le build : il ne peut pas annoncer une version que le build n'a pas
-posée. **Une release a déjà expédié le binaire de la version précédente sans qu'aucune erreur ne soit
-levée** — c'est ce contrôle qui l'empêche.
+**⚠ Only the EMBEDDED version settles it**, because it is written just before the build. Hence
+`build_stamp.json`, written **by** the build: it cannot announce a version the build did not put
+there. **A release has already shipped the binary of the previous version with no error raised** —
+that check is what prevents it.
 
-**⚠ Un tampon de build écrit par le script de PUBLICATION survit à sa release.** [hérité] Écrit
-seulement au moment de publier, le fichier reste ensuite en place, et tout build local ultérieur
-affiche le SHA de la dernière release. *Un garde-fou de fraîcheur qui se trompe est pire que pas de
-garde-fou, puisqu'on lui fait confiance.* Il est donc posé par le **build** (`BuildTools.StampGitSha`)
-et ignoré par git — c'est un artefact, pas une source.
+**⚠ A build stamp written by the PUBLISHING script outlives its release.** [inherited] Written only
+at publishing time, the file then stays in place, and every later local build shows the SHA of the
+last release. *A freshness guard that lies is worse than no guard, since it is trusted.* It is
+therefore written by the **build** (`BuildTools.StampGitSha`) and ignored by git — it is an artefact,
+not a source.
 
-**⚠ Le build en ligne de commande échoue si l'éditeur Unity est ouvert** (« another Unity instance is
-running »). Vérifier `Get-Process Unity` ou `Temp\UnityLockfile` — et **ne jamais tuer l'éditeur** :
-attendre, ou travailler sur une copie de `Assets` + `Packages` + `ProjectSettings`.
+**⚠ The command-line build fails if the Unity editor is open** ("another Unity instance is running").
+Check `Get-Process Unity` or `Temp\UnityLockfile` — and **never kill the editor**: wait, or work on a
+copy of `Assets` + `Packages` + `ProjectSettings`.
 
-**⚠ Le premier build d'une plateforme réimporte tous les assets** (plusieurs dizaines de minutes) ;
-les suivants sont rapides. Prévoir le timeout en conséquence.
+**⚠ The first build of a platform reimports every asset** (several tens of minutes); the later ones
+are quick. Plan the timeout accordingly.
 
-**⚠ La scène régénérée produit un diff énorme et vide de sens.** `SceneBuilder` renumérote tous les
-`fileID` : des milliers de lignes ajoutées et autant de retirées pour une scène identique. L'écarter
-(`git checkout --`) **sauf si `SceneBuilder.cs` a changé**. Sans l'exclusion correspondante dans
-`BuildTools.HasLocalChanges`, tout build se déclarerait issu d'un arbre modifié.
+**⚠ The regenerated scene produces a huge, meaningless diff.** `SceneBuilder` renumbers every
+`fileID`: thousands of lines added and as many removed for an identical scene. Discard it
+(`git checkout --`) **unless `SceneBuilder.cs` has changed**. Without the matching exclusion in
+`BuildTools.HasLocalChanges`, every build would declare itself built from a modified tree.
 
 
-**⚠ `Start-Process -PassThru -Wait` NE MET PAS À JOUR `$LASTEXITCODE`.** Constaté le 2026-08-28, à
-la première tentative de publication. `build.ps1` lance Unity par `Start-Process` (obligatoire :
-lancé par `&`, Unity rend la main immédiatement sans rien faire) et vérifie correctement
-`$proc.ExitCode`. Mais il ne se terminait par **aucun `exit` explicite** : à la sortie du script,
-`$LASTEXITCODE` valait encore le code du dernier exécutable *natif* appelé avant — git, `py`… —
-et `release_itch.ps1`, qui teste `$LASTEXITCODE` après `& build.ps1`, refusait de publier un build
-parfaitement valide. Les deux lignes se suivaient dans la même sortie :
+**⚠ `Start-Process -PassThru -Wait` DOES NOT UPDATE `$LASTEXITCODE`.** Observed on 2026-08-28, on the
+first publishing attempt. `build.ps1` launches Unity through `Start-Process` (mandatory: launched
+with `&`, Unity returns immediately without doing anything) and correctly checks `$proc.ExitCode`.
+But it ended with **no explicit `exit`**: on leaving the script, `$LASTEXITCODE` still held the code
+of the last *native* executable called before — git, `py`... — and `release_itch.ps1`, which tests
+`$LASTEXITCODE` after `& build.ps1`, refused to publish a perfectly valid build. The two lines
+followed each other in the same output:
 
 ```
-Build web OK : v0.1.0-891ab4c  ->  C:\CODE\JEUX\snake-snack\Build\Web
-ERREUR : Build web echoue - voir Logs\build-web.log
+web build OK: v0.1.0-891ab4c  ->  C:\CODE\JEUX\snake-snack\Build\Web
+ERROR: web build failed - see Logs\build-web.log
 ```
 
-Le journal invoqué ne contenait évidemment aucune erreur, ce qui est le plus coûteux : on cherche le
-défaut dans le build. Parade : **tout script PowerShell dont un autre lit le code retour se termine
-par un `exit` explicite.** Ne jamais déduire d'un `$LASTEXITCODE` qu'aucun natif n'a positionné.
+The log it pointed at contained no error at all, which is the costly part: you go looking for the
+defect in the build. Countermeasure: **every PowerShell script whose return code another one reads
+ends with an explicit `exit`.** Never infer anything from a `$LASTEXITCODE` no native command has
+set.

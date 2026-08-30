@@ -1,84 +1,82 @@
-# 4.6 — Le menu principal
+# 4.6 — The main menu
 
-**Le jeu s'ouvre sur un menu, et le menu ne s'interpose jamais entre une mort et la partie
-suivante.** Arbitrage de l'auteur, 2026-08-28.
+**The game opens on a menu, and the menu never comes between a death and the next game.** Author's
+ruling, 2026-08-28.
 
-## Ce que le menu doit faire, et ce qu'il ne doit pas défaire
+## What the menu must do, and what it must not undo
 
-Le §2 dit « Espace : nouvelle partie immédiate, **sans menu ni écran intermédiaire** ». Cette phrase
-porte sur la **relance après la mort**, pas sur le premier écran du jeu : elle reste vraie. Ce qui
-la protégerait mal, et qui a été **écarté** : un écran de fin transformé en petit menu « Rejouer /
-Menu ». Il aurait mis un choix — donc une hésitation — exactement là où le §2 veut zéro attente.
+§2 says "Space: a new game at once, **with no menu and no intermediate screen**". That sentence is
+about the **restart after death**, not about the game's first screen: it stays true. What would have
+protected it badly, and was **ruled out**: an end screen turned into a small "Play again / Menu" menu.
+It would have put a choice — hence a hesitation — exactly where §2 wants zero waiting.
 
-| Situation | Touche | Ce qui se passe |
+| Situation | Key | What happens |
 |---|---|---|
-| Lancement du jeu | — | le menu, animé, sélection sur « Jouer » |
-| Menu | Flèches ou ZQSD (haut/bas) | déplace la sélection, avec **bouclage** |
-| Menu | Entrée ou Espace | valide |
-| Menu, panneau ouvert | Échap, Entrée, Espace, ou clic | referme le panneau |
-| Écran de mort ou de victoire | Espace | **partie immédiate**, inchangé |
-| Écran de mort ou de victoire | Échap | retour au menu |
-| Partie en cours | Échap | pause, inchangé |
-| Écran de pause | Retour arrière | retour au menu, la partie est abandonnée |
+| Game launch | — | the menu, animated, selection on "Play" |
+| Menu | Arrows or WASD (up/down) | moves the selection, with **wrap-around** |
+| Menu | Enter or Space | confirms |
+| Menu, panel open | Esc, Enter, Space, or a click | closes the panel |
+| Death or win screen | Space | **immediate game**, unchanged |
+| Death or win screen | Esc | back to the menu |
+| Game running | Esc | pause, unchanged |
+| Pause screen | Backspace | back to the menu, the game is abandoned |
 
-**Le retour au menu depuis une partie passe par la pause**, sur **Retour arrière** (arbitrage de
-l'auteur, 2026-08-28). L'écran de pause est déjà un écran d'arrêt : y abandonner la partie est une
-décision, pas un réflexe, et rien n'est mis sur le chemin de la boucle qui tourne.
+**Going back to the menu from a game goes through the pause**, on **Backspace** (author's ruling,
+2026-08-28). The pause screen is already a screen of stopping: abandoning the game there is a
+decision, not a reflex, and nothing is put in the way of the running loop.
 
-⚠ **Pourquoi pas une autre touche.** Échap est la bascule de pause : lui donner un second sens
-(appui long, double appui) ferait payer à toutes les parties le confort d'un aller-retour rare. Le
-« M » de Menu se déclare `Key.Semicolon` sur un clavier français — le piège que le §3 proscrit. Et
-Tab sert d'amorce à `tools/piloter_jeu.py`, qui exige une touche que le jeu ignore.
+⚠ **Why not another key.** Esc is the pause toggle: giving it a second meaning (long press, double
+press) would make every game pay for the convenience of a rare round trip. The "M" of Menu is declared
+`Key.Semicolon` on a French keyboard — the trap §3 bans. And Tab is the priming key of
+`tools/drive_game.py`, which requires a key the game ignores.
 
-⚠ **Aucune confirmation n'est demandée**, et c'est délibéré : une partie de Snake dure moins d'une
-minute (§4.3), le score est déjà au bandeau, et le record est écrit **au tick où il monte** (§4.5) —
-il n'y a donc rien à perdre qu'une partie en cours, dont l'abandon vient d'être demandé
-explicitement depuis un écran arrêté.
+⚠ **No confirmation is asked for**, and that is deliberate: a game of Snake lasts under a minute
+(§4.3), the score is already in the band, and the best score is written **on the tick it rises**
+(§4.5) — so there is nothing to lose but a running game, whose abandonment has just been asked for
+explicitly from a stopped screen.
 
-## Les entrées
+## The entries
 
-Quatre, dans cet ordre : **Jouer**, **Comment jouer**, **Crédits**, **Quitter**.
+Four, in this order: **Play**, **How to play**, **Credits**, **Quit**.
 
-- **Jouer** en tête : c'est ce que fait la quasi-totalité des visiteurs d'une page itch, et la
-  sélection s'y repose à **chaque** ouverture du menu, y compris au retour d'une partie.
-- **Comment jouer** existe parce que le rappel des touches du HUD est tassé en une ligne au bas de
-  l'écran : le panneau peut, lui, énoncer les deux règles qui tuent (les bords, le corps) et le refus
-  du demi-tour. Un appui ignoré sans explication se lit comme une touche ratée (§3).
-- **Crédits** n'est pas une décoration : la SIL OFL 1.1 de Nunito **exige** l'attribution
-  (`docs/CREDITS.md`), et un texte de licence qui ne vit que dans le dépôt ne remplit pas
-  l'obligation pour un joueur qui ne verra jamais le dépôt.
-- **Quitter** est **absent du build web** : `Application.Quit()` n'y fait rien. Un bouton mort coûte
-  plus cher qu'une entrée manquante — le joueur clique, rien ne se passe, et il doute du reste.
+- **Play** first: it is what almost every visitor of an itch page does, and the selection rests there
+  on **every** opening of the menu, including on the way back from a game.
+- **How to play** exists because the HUD's key reminder is packed into one line at the bottom of the
+  screen: the panel can state the two rules that kill (the edges, the body) and the reversal refusal.
+  A press ignored with no explanation reads as a missed key (§3).
+- **Credits** is not decoration: Nunito's SIL OFL 1.1 **requires** attribution (`docs/CREDITS.md`),
+  and a licence text that only lives in the repository does not discharge the obligation towards a
+  player who will never see the repository.
+- **Quit** is **absent from the web build**: `Application.Quit()` does nothing there. A dead button
+  costs more than a missing entry — the player clicks, nothing happens, and they doubt the rest.
 
-Le **bouclage** de la navigation (de la dernière entrée à la première) tient à ce que le menu n'a
-aucun retour de refus : celui du §3 est réservé aux directions refusées *en partie*. Une butée
-silencieuse y serait indiscernable d'une touche non reçue.
+The **wrap-around** of the navigation (from the last entry back to the first) is there because the
+menu has no rejection feedback: the one from §3 is reserved for directions refused *in play*. A silent
+stop there would be indistinguishable from a key that was not received.
 
-⚠ **Les directions latérales ne déplacent rien.** Un joueur de Snake tape les flèches gauche et
-droite par réflexe ; les accepter ferait sauter la sélection au moment où il essaie simplement de
-tourner.
+⚠ **Sideways directions move nothing.** A Snake player presses the left and right arrows out of
+reflex; accepting them would jump the selection at the moment they are simply trying to turn.
 
-## La souris
+## The mouse
 
-Le §3 décide « manette et tactile : pas en 0.1 ». La **souris** n'est pas dans ce lot : le visiteur
-d'une page itch a la main dessus, et un menu qui ignore le clic se lit comme un jeu cassé avant
-d'avoir démarré. Le survol **déplace la sélection** (il ne dessine pas un second surlignage
-concurrent), le clic valide.
+§3 decides "gamepad and touch: not in 0.1". The **mouse** is not part of that batch: the visitor of an
+itch page has their hand on it, and a menu that ignores clicks reads as a broken game before it has
+started. Hover **moves the selection** (it does not draw a competing second highlight), the click
+confirms.
 
-⚠ **Le survol ne prend la main qu'une fois la souris réellement déplacée.** Le menu s'ouvre sous un
-curseur immobile — au lancement, au retour d'une partie, quand la fenêtre reprend le premier plan —
-et le système d'interface envoie alors un « pointeur entré » pour une souris que personne n'a
-touchée. Sans ce verrou, la sélection saute à l'entrée qui se trouve par hasard sous le curseur, et
-le joueur qui tape Entrée en croyant lancer une partie **quitte le jeu**. Constaté en pilotant le
-build le 2026-08-28.
+⚠ **Hover only takes over once the mouse has actually moved.** The menu opens under a still cursor —
+at launch, on the way back from a game, when the window regains the foreground — and the interface
+system then sends a "pointer entered" for a mouse nobody touched. Without that lock, the selection
+jumps to whichever entry happens to sit under the cursor, and the player pressing Enter while thinking
+they are starting a game **quits the game**. Observed while driving the build on 2026-08-28.
 
-## Ce qui a été écarté
+## What was ruled out
 
-- **Un écran de fin navigable** (« Rejouer / Menu ») — voir ci-dessus, il contredit le §2.
-- **Une entrée « Réglages »** : le tuning vit dans un JSON non éditable en jeu, et le §7 a déjà
-  écarté la cadence variable. L'entrée n'aurait rien à régler.
-- **Le record affiché sur le menu** : il l'est déjà en permanence pendant la partie (§4.5), et le
-  menu n'est pas l'endroit où l'on décide de battre un score — c'est l'écran de mort.
+- **A navigable end screen** ("Play again / Menu") — see above, it contradicts §2.
+- **A "Settings" entry**: the tuning lives in a JSON not editable in game, and §7 has already ruled
+  out a variable rate. The entry would have nothing to set.
+- **The best score shown on the menu**: it already is, permanently, during the game (§4.5), and the
+  menu is not where you decide to beat a score — the death screen is.
 
-Règles pressenties : `Assets/Scripts/Rules/MenuPrincipal.cs` — composition des entrées et navigation,
-testées sans moteur. L'écran lui-même : `Assets/Scripts/UI/EcranMenu.cs`.
+Expected rules: `Assets/Scripts/Rules/MainMenu.cs` — composition of the entries and navigation, tested
+without an engine. The screen itself: `Assets/Scripts/UI/MenuScreen.cs`.

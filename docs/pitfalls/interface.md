@@ -1,30 +1,29 @@
-# Pièges — Interface
+# Pitfalls — Interface
 
 
-**⚠ Le HUD peut recouvrir une modale.** L'ordre de tri des canevas est le seul arbitre : deux
-canevas au même `sortingOrder` s'empilent dans l'ordre de la hiérarchie, qui n'est pas stable quand
-la scène est régénérée par code. Donner un `sortingOrder` explicite à chaque canevas.
+**⚠ The HUD can cover a modal.** Canvas sorting order is the only arbiter: two canvases at the same
+`sortingOrder` stack in hierarchy order, which is not stable when the scene is regenerated in code.
+Give every canvas an explicit `sortingOrder`.
 
-**⚠ Un piège de focus se voit seulement à la manette.** Une liste dont le focus ne peut plus sortir
-se navigue parfaitement à la souris. Tester chaque écran **au clavier et à la manette**.
+**⚠ A focus trap only shows on a gamepad.** A list whose focus can no longer leave navigates
+perfectly with a mouse. Test every screen **with keyboard and gamepad**.
 
-**⚠ Invisible se lit inexistant.** [hérité] Une capacité qui n'annonce pas sa touche n'existe pas
-pour le joueur : sur un projet précédent, un dash a été joué une partie entière sans que le testeur
-sache qu'une touche existait. Un effet passif sans indicateur est cru inactif. C'est un bug
-d'ergonomie, pas un détail de présentation.
+**⚠ Invisible reads as non-existent.** [inherited] A capability that does not announce its key does
+not exist for the player: on an earlier project, a dash went a whole session unused because the
+tester did not know a key existed. A passive effect with no indicator is believed inactive. That is
+an ergonomics bug, not a presentation detail.
 
 
-**⚠ Un survol de souris sélectionne sans que personne n'ait bougé la souris.** uGUI envoie un
-« pointeur entré » quand un élément apparaît SOUS un curseur immobile — ouverture d'un écran, retour
-au menu, fenêtre qui reprend le premier plan. Un menu dont le survol déplace la sélection voit donc
-sa sélection sauter à l'entrée qui se trouve par hasard sous le curseur, et la touche de validation
-suivante lance autre chose que ce que l'écran montrait une seconde plus tôt. Constaté le 2026-08-28 :
-le curseur reposait sur « Quitter », et le jeu s'est fermé au premier appui. Parade : n'accepter le
-survol qu'**après** un déplacement réel du pointeur (`EcranMenu.SurveillerLePointeur`).
+**⚠ A mouse hover selects without anyone having moved the mouse.** uGUI sends a "pointer entered"
+when an element appears UNDER a still cursor — opening a screen, coming back to the menu, a window
+regaining the foreground. A menu whose hover moves the selection therefore sees its selection jump to
+whichever entry happens to sit under the cursor, and the next confirm key launches something other
+than what the screen was showing a second earlier. Observed on 2026-08-28: the cursor sat on "Quit",
+and the game closed on the first press. Countermeasure: only accept hover **after** a real pointer
+movement (`MenuScreen.WatchPointer`).
 
-**⚠ Une ligne de texte occupe ~1,36 fois le corps de la police, pas 1,0.** Dimensionner un panneau
-en multipliant le nombre de lignes par le `fontSize` donne une boîte d'un tiers trop petite. Avec
-`VerticalWrapMode.Overflow` (le défaut), le texte sort du cadre et passe par-dessus ce qui suit — ce
-qui se lit comme un défaut de rendu ; avec `Truncate`, les dernières lignes disparaissent en
-silence. Les deux se sont produits sur le panneau « Comment jouer » le 2026-08-28. Mesurer sur une
-capture, pas au calcul.
+**⚠ A line of text takes about 1.36 times the font size, not 1.0.** Sizing a panel by multiplying the
+number of lines by `fontSize` gives a box a third too small. With `VerticalWrapMode.Overflow` (the
+default), the text leaves the frame and runs over whatever follows — which reads as a rendering
+defect; with `Truncate`, the last lines disappear silently. Both happened on the "How to play" panel
+on 2026-08-28. Measure on a screenshot, not by arithmetic.

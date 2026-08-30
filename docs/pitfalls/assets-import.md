@@ -1,29 +1,28 @@
-# Pièges — Assets et import
+# Pitfalls — Assets and importing
 
 
-**⚠ Ne JAMAIS ignorer les `.meta` dans `.gitignore`.** Unity y stocke le **GUID** de chaque asset.
-Un `.meta` manquant fait perdre toutes les références qui pointaient vers l'asset : scripts détachés
-de leurs GameObjects, sprites vidés. Le `.gitignore` du projet ne contient aucune règle `*.meta`, et
-c'est délibéré.
+**⚠ NEVER ignore `.meta` files in `.gitignore`.** Unity stores each asset's **GUID** there. A missing
+`.meta` loses every reference pointing at the asset: scripts detached from their GameObjects, sprites
+emptied. The project's `.gitignore` contains no `*.meta` rule, and that is deliberate.
 
-**⚠ `Art/` et `Resources/` ne se valent pas — et se tromper ne lève rien.** [hérité]
-`Resources/` est chargé **par chemin** (`Resources.Load<Sprite>("Ui/bouton")`) et embarqué **en
-entier** dans le binaire, même ce qui n'est jamais utilisé. `Art/` est consommé par **référence de
-GUID**. Écrire un asset dans le mauvais des deux : le générateur annonce « écrit », et le jeu affiche
-l'ancienne image. Tenir une table de destination (`tools/unity_paths.py`) et y faire référence.
+**⚠ `Art/` and `Resources/` are not equivalent — and getting it wrong raises nothing.** [inherited]
+`Resources/` is loaded **by path** (`Resources.Load<Sprite>("Ui/button")`) and embedded **whole** in
+the binary, including whatever is never used. `Art/` is consumed **by GUID reference**. Writing an
+asset into the wrong one of the two: the generator announces "written", and the game shows the old
+image. Keep a destination table and refer to it.
 
-**⚠ Un fichier écrit dans `Assets/` n'existe pas tant qu'Unity ne l'a pas réimporté.** Un build en
-batchmode s'en charge, mais un éditeur ouvert peut servir l'ancienne version depuis sa base d'assets.
-Sur un fichier **nouveau** et ignoré par git, `AssetDatabase.ImportAsset` seul ne suffit pas : il
-faut d'abord un `AssetDatabase.Refresh()` pour que la base le découvre.
+**⚠ A file written into `Assets/` does not exist until Unity has reimported it.** A batchmode build
+takes care of that, but an open editor may serve the old version from its asset database. On a
+**new** file ignored by git, `AssetDatabase.ImportAsset` alone is not enough: an
+`AssetDatabase.Refresh()` is needed first for the database to discover it.
 
 
-**⚠ Un PNG déposé dans un projet en mode 3D est importé en TEXTURE, pas en sprite.**
-`ProjectSettings/EditorSettings.asset` porte `m_DefaultBehaviorMode: 0` (Mode3D) : le
-`textureType` par défaut d'une image importée est `Default`. `Resources.Load<Sprite>` rend alors
-**`null`** — exactement comme si le fichier n'existait pas — et l'`Image` reste vide sans qu'aucune
-erreur ne soit levée. Le cas est d'autant plus discret que le fichier est produit par un script et
-importé en batchmode : personne n'ouvre l'inspecteur pour le voir. Parade retenue le 2026-08-28 :
-`Assets/Editor/ImportIllustrations.cs`, un `AssetPostprocessor` qui impose `textureType = Sprite`
-sur tout `Resources/Illustrations/`. ⚠ Un `.meta` corrigé à la main n'aurait pas tenu : il est
-réécrit au réimport suivant. Vérification : `grep textureType` dans le `.meta` doit rendre `8`.
+**⚠ A PNG dropped into a project in 3D mode is imported as a TEXTURE, not as a sprite.**
+`ProjectSettings/EditorSettings.asset` carries `m_DefaultBehaviorMode: 0` (3D Mode): the default
+`textureType` of an imported image is `Default`. `Resources.Load<Sprite>` then returns **`null`** —
+exactly as if the file did not exist — and the `Image` stays empty without any error being raised.
+The case is all the more discreet because the file is produced by a script and imported in batchmode:
+nobody opens the inspector to see it. Countermeasure adopted on 2026-08-28:
+`Assets/Editor/ImportIllustrations.cs`, an `AssetPostprocessor` that forces `textureType = Sprite` on
+everything in `Resources/Illustrations/`. ⚠ A hand-fixed `.meta` would not have held: it is rewritten
+on the next reimport. Check: `grep textureType` in the `.meta` must return `8`.

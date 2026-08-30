@@ -1,87 +1,86 @@
-# Brief — Le menu principal et son illustration
+# Brief — The main menu and its illustration
 
-Tranché le 2026-08-28. Ce que le menu doit **faire** est dans `docs/gdd/menu.md` ; ce fichier ne
-traite que de ce qui se voit.
+Settled 2026-08-28. What the menu must **do** is in `docs/gdd/menu.md`; this file only deals with what
+is seen.
 
 ## 1. Composition
 
-Deux colonnes, dans un cadre de référence 1280×720 :
+Two columns, in a 1280×720 reference frame:
 
-- **À gauche**, alignés sur un même bord (x = −520 depuis le centre) : le titre `SNAKE SNACK`
-  (ExtraBold 64), l'accroche en texte secondaire (SemiBold 21), puis les entrées (ExtraBold 30,
-  62 px d'écart). Le bloc d'entrées reste **centré sur lui-même** quel qu'en soit le nombre : le menu
-  web, privé de « Quitter », ne se déséquilibre pas.
-- **À droite**, l'illustration du serpent (390 px de côté), légèrement au-dessus du centre.
-- **En pied**, le rappel des touches du menu, en texte secondaire.
+- **On the left**, aligned on a single edge (x = −520 from the centre): the title `SNAKE SNACK`
+  (ExtraBold 64), the tagline in secondary text (SemiBold 21), then the entries (ExtraBold 30, 62 px
+  apart). The entry block stays **centred on itself** whatever their number: the web menu, deprived of
+  "Quit", does not become lopsided.
+- **On the right**, the snake illustration (390 px square), slightly above the centre.
+- **At the foot**, the reminder of the menu keys, in secondary text.
 
-⚠ **Un même bord gauche, pas un centrage.** Des libellés de longueurs différentes centrés ne
-commencent pas au même x, et une colonne de menu se lit alors comme un alignement raté.
+⚠ **A single left edge, not centring.** Labels of different lengths, centred, do not start at the same
+x, and a menu column then reads as a failed alignment.
 
-## 2. Le curseur de sélection
+## 2. The selection cursor
 
-Un **losange rouge** — la pomme du jeu, même forme et même rôle de couleur. Le joueur qui n'a pas
-encore lancé de partie apprend d'un coup d'œil ce que la forme rouge veut dire, et le menu ne dépense
-pas un symbole de plus. L'entrée sélectionnée passe de `TexteSecondaire` à `TexteHud` **et** grossit
-de 7 % : la sélection ne tient donc pas à la seule couleur (§4).
+A **red diamond** — the game's apple, the same shape and the same colour role. A player who has not
+yet started a game learns at a glance what the red shape means, and the menu does not spend one more
+symbol. The selected entry goes from `SecondaryText` to `HudText` **and** grows by 7 %: the selection
+therefore does not rest on colour alone (§4).
 
-## 3. Les animations
+## 3. The animations
 
-| Ce qui bouge | Comment | Pourquoi |
+| What moves | How | Why |
 |---|---|---|
-| Ouverture | fondu global 0,42 s, titre et accroche montent de 14 px | l'écran arrive, il n'apparaît pas d'un coup |
-| Entrées | cascade, 0,07 s d'écart, chacune glisse de 34 px vers sa place | l'œil est mené du haut vers le bas de la liste, dans l'ordre où il devra la lire |
-| Sélection | le curseur **glisse** vers l'entrée visée (lissage exponentiel) | un curseur qui saute ne dit pas d'où il vient |
-| Illustration | flottement ±8 px sur 4,2 s, inclinaison ±1,6° sur 5,3 s | deux périodes différentes : le mouvement ne se referme jamais sur lui-même, il ne « boucle » pas à l'œil |
-| Sortie | fondu 0,16 s avant que la partie ne s'affiche | la coupure sèche menu → jeu se lit comme un rechargement |
+| Opening | global fade 0.42 s, title and tagline rise 14 px | the screen arrives, it does not appear all at once |
+| Entries | cascade, 0.07 s apart, each sliding 34 px into place | the eye is led from the top to the bottom of the list, in the order it will have to read it |
+| Selection | the cursor **slides** towards the target entry (exponential smoothing) | a cursor that jumps does not say where it came from |
+| Illustration | drift ±8 px over 4.2 s, tilt ±1.6° over 5.3 s | two different periods: the movement never closes on itself, it does not "loop" to the eye |
+| Exit | fade 0.16 s before the game appears | a hard cut menu → game reads as a reload |
 
-⚠ **Ce n'est pas du clignotement.** Le §4 interdit « le clignotement périodique en boucle sur une
-grande surface » : ce qui est visé est une variation d'**opacité**. Ici l'opacité de l'illustration
-ne bouge pas — elle se déplace et s'incline. Rien ne scintille, et le menu cesse d'avoir l'air d'une
-capture figée.
+⚠ **This is not flicker.** §4 forbids "periodic looping flicker over a large area": what it targets is
+a variation of **opacity**. Here the illustration's opacity does not move — it travels and tilts.
+Nothing flickers, and the menu stops looking like a frozen screenshot.
 
-⚠ **Tout est en temps non mis à l'échelle** : le menu ne dépend pas du temps de jeu.
+⚠ **Everything is on unscaled time**: the menu does not depend on game time.
 
-## 4. L'illustration
+## 4. The illustration
 
-**Un serpent enroulé en spirale, fait des mêmes carrés arrondis que le jeu, la tête sortie du dernier
-tour et une pomme en losange posée dans l'axe de son regard.**
+**A snake coiled in a spiral, made of the same rounded squares as the game, its head out of the last
+turn and a diamond apple placed along its line of sight.**
 
-Produite par `tools/generer_illustration_serpent.py` → `Assets/Resources/Illustrations/serpent-menu.png`
-(512×512, fond transparent). Aperçu sur le fond réel du jeu : `docs/verif-illustration-menu.png`
-(`--apercu`).
+Produced by `tools/generate_snake_illustration.py` →
+`Assets/Resources/Illustrations/snake-menu.png` (512×512, transparent background). Preview on the real
+game background: `docs/check-menu-illustration.png` (`--preview`).
 
-Ce qui fait tenir l'image, et qu'une retouche ne doit pas défaire :
+What holds the image together, and that a retouch must not undo:
 
-- **Même matière que le jeu.** Le corps est une suite de carrés arrondis espacés, comme les segments
-  à l'écran. L'illustration ne promet donc rien que le jeu ne montre.
-- **La spirale raconte la boucle de jeu** : le corps s'allonge, s'enroule et finit par n'avoir plus
-  de place — c'est le pitch du GDD §1, sans une ligne de texte.
-- **La pomme est dans l'axe du regard**, pas simplement à côté : c'est ce qui fait une scène plutôt
-  que deux objets voisins.
-- **Aucune couleur n'est inventée.** Le générateur **lit** `UiPalette.cs` : corps, tête, pomme,
-  fond (les yeux) et blanc (l'éclat) sont les rôles du §1. Un rôle renommé fait échouer le script au
-  lieu de produire une image périmée.
-- **La queue s'affine et les derniers segments virent vers la couleur de tête** : le regard trouve la
-  tête sans avoir à suivre le corps.
+- **The same material as the game.** The body is a sequence of spaced rounded squares, like the
+  segments on screen. The illustration therefore promises nothing the game does not show.
+- **The spiral tells the game loop**: the body grows, coils and ends up with no room left — that is
+  the pitch of GDD §1, without a line of text.
+- **The apple is along the line of sight**, not merely next to it: that is what makes a scene rather
+  than two neighbouring objects.
+- **No colour is invented.** The generator **reads** `UiPalette.cs`: body, head, apple, background
+  (the eyes) and white (the highlight) are the roles of §1. A renamed role makes the script fail
+  rather than produce a stale image.
+- **The tail tapers and the last segments shade towards the head colour**: the eye finds the head
+  without having to follow the body.
 
-⚠ **L'image est recadrée sur son contenu, puis recentrée sur un carré.** Le menu la pose dans un
-rectangle fixe : c'est le centre du fichier qui tombe au centre de ce rectangle. Sans recadrage,
-retoucher une constante du générateur (un tour de plus, une pomme plus loin) décalerait
-l'illustration dans le menu — et on corrigerait dans le mauvais fichier.
+⚠ **The image is cropped to its content, then recentred on a square.** The menu places it in a fixed
+rectangle: it is the centre of the file that lands at the centre of that rectangle. Without cropping,
+tweaking a constant in the generator (one more turn, a further apple) would shift the illustration in
+the menu — and the fix would be made in the wrong file.
 
-⚠ **Import.** `Assets/Editor/ImportIllustrations.cs` force `textureType = Sprite` sur tout
-`Resources/Illustrations/`. Sans lui, le projet étant en mode 3D, le PNG est importé en **texture**,
-`Resources.Load<Sprite>` rend `null`, et le menu s'affiche sans illustration **sans lever la moindre
-erreur** (`docs/pitfalls/assets-import.md`).
+⚠ **Import.** `Assets/Editor/ImportIllustrations.cs` forces `textureType = Sprite` on everything in
+`Resources/Illustrations/`. Without it, the project being in 3D mode, the PNG is imported as a
+**texture**, `Resources.Load<Sprite>` returns `null`, and the menu displays with no illustration
+**without raising the slightest error** (`docs/pitfalls/assets-import.md`).
 
-## 5. Les panneaux de lecture
+## 5. The reading panels
 
-Carte 880×480 centrée, fond `AireDeJeu`, cadre `BordureAire` de 3 px — le même ambre que le mur qui
-tue, pour que les cadres du jeu forment une famille. Voile de pause par-dessus le menu. Titre
-ExtraBold 34 centré, corps SemiBold 19 **aligné à gauche**, rappel de la touche de retour en pied.
+An 880×480 card, centred, `Playfield` background, 3 px `PlayfieldBorder` frame — the same amber as the
+wall that kills, so the game's frames form a family. Pause scrim over the menu. Title ExtraBold 34
+centred, body SemiBold 19 **aligned left**, reminder of the back key at the foot.
 
-⚠ **Une ligne de Nunito occupe environ 1,36 fois le corps**, pas 1,0. Neuf lignes à 19 px demandent
-~260 px de haut, pas 190. Le premier jet dimensionnait la carte au calcul naïf : les deux dernières
-lignes du panneau — celles qui énoncent ce qui tue — étaient tronquées. Le corps est désormais
-**tronqué dans la carte** plutôt que débordant : un texte trop long se voit, au lieu de passer par
-dessus le cadre et de ressembler à un défaut de rendu.
+⚠ **One line of Nunito takes about 1.36 times the font size**, not 1.0. Nine lines at 19 px need
+~260 px of height, not 190. The first pass sized the card by naive arithmetic: the panel's last two
+lines — the ones stating what kills — were truncated. The body is now **truncated inside the card**
+rather than overflowing: text that is too long shows, instead of running over the frame and looking
+like a rendering defect.
