@@ -1,38 +1,38 @@
-# Carte — le code moteur (`Gameplay/`, `UI/`)
+# Map — the engine code (`Gameplay/`, `UI/`)
 
 ## §Gameplay — `Assets/Scripts/Gameplay/`
 
-| Fichier | Responsabilité |
+| File | Responsibility |
 |---|---|
-| `JeuSnake.cs` | **Le seul MonoBehaviour qui décide** : lit le clavier, fait tiquer la cadence, enchaîne les états. Ne porte aucune règle — tout est délégué à `Rules/` |
-| `EtatPartie.cs` | Les cinq états : `EnAttente`, `EnCours`, `EnPause`, `Mort`, `Victoire` (grille pleine, §4.4) |
-| `VuePlateau.cs` | Dessine aire, traits, bordure, serpent (pool réutilisé), **pomme** (losange, forme distincte des carrés du serpent) et chevron de refus. `Montrer(bool)` éteint le tout d'un bloc quand le menu prend l'écran |
-| `FormesPrimitives.cs` | Le carré blanc 1×1 px dont tout le rendu est fait — aucun asset importé |
-| `RecordPersistant.cs` | Le record entre deux sessions (`PlayerPrefs`, clé `snakesnack.record`). ⚠ **Meilleur effort** : lecture impossible → zéro, écriture impossible → journal, jamais d'erreur bloquante. `Save()` explicite, sinon l'onglet fermé perd le record |
+| `SnakeGame.cs` | **The only MonoBehaviour that decides**: reads the keyboard, ticks the cadence, chains the states. Carries no rule — everything is delegated to `Rules/` |
+| `GameState.cs` | The five states: `Waiting`, `Running`, `Paused`, `Dead`, `Won` (full grid, §4.4) |
+| `BoardView.cs` | Draws the playfield, the lines, the border, the snake (reused pool), the **apple** (a diamond, a shape distinct from the snake's squares) and the rejection chevron. `Show(bool)` switches the lot off in one go when the menu takes the screen |
+| `PrimitiveShapes.cs` | The 1×1 px white square the whole rendering is made of — no imported asset |
+| `PersistentBest.cs` | The best between two sessions (`PlayerPrefs`, key `snakesnack.record`). ⚠ **Best effort**: read impossible → zero, write impossible → log, never a blocking error. `Save()` is explicit, otherwise a closed tab loses the best |
 
-Le seul objet posé dans la scène est `Jeu` (voir `SceneBuilder.BuildJeu`) ; `VuePlateau`, `HudJeu` et
-`EcranMenu` sont ajoutés au démarrage par `JeuSnake`, pour qu'aucune référence sérialisée ne puisse
-se perdre à la régénération de la scène.
+The only object placed in the scene is `Game` (see `SceneBuilder.BuildGame`); `BoardView`, `GameHud`
+and `MenuScreen` are added at startup by `SnakeGame`, so that no serialised reference can get lost when
+the scene is regenerated.
 
-⚠ **Ordre de tri des canevas** — HUD 100, menu 200, tampon de build 1000. Deux canevas au même ordre
-s'empilent selon la hiérarchie, qui n'est pas stable quand la scène est régénérée par code.
+⚠ **Canvas sorting order** — HUD 100, menu 200, build stamp 1000. Two canvases at the same order stack
+according to the hierarchy, which is not stable when the scene is regenerated from code.
 
 ## §UI — `Assets/Scripts/UI/`
 
-| Fichier | Responsabilité |
+| File | Responsibility |
 |---|---|
-| `HudJeu.cs` | Construit et pilote les textes : état, commandes, **score et record permanents** (bandeau du haut, §4.5), écrans de pause et de mort avec leur récapitulatif, ligne « touche ignorée ». `Montrer(bool)` masque tout le canevas |
-| `EcranMenu.cs` | Le **menu principal** (GDD §4.6) : titre, illustration, entrées animées, curseur, souris. Ne décide rien — la navigation vient de `Rules/MenuPrincipal.cs`. Lève `Validee` (Jouer, Quitter) après son fondu de sortie |
-| `PanneauInfo.cs` | Les panneaux « Comment jouer » et « Crédits » : voile, carte encadrée d'ambre, fondu. Classe ordinaire, animée par `EcranMenu` |
-| `FabriqueUi.cs` | Les briques communes : canevas (avec son **ordre de tri explicite**), texte, rectangle, voile. Un seul endroit où se règlent débordement et raycast |
-| `PolicesUi.cs` | Charge les deux graisses et **journalise** l'absence — une police nulle ne dessine aucun pixel, sans erreur |
-| `ZoneCliquable.cs` | Survol et clic de souris (`Image` transparente : les `Text` du jeu ne sont pas des cibles de raycast) |
-| `Assets/Resources/Illustrations/` | L'illustration du menu, **produite** par `tools/generer_illustration_serpent.py`, importée en Sprite par `Assets/Editor/ImportIllustrations.cs` |
-| `TextesUi.cs` | **Tous les libellés**, en un seul endroit. Aucun texte en dur ailleurs |
-| `UiPalette.cs` | Les **12 rôles de couleur** de `docs/ART.md` §1. ⚠ Le seul endroit du dépôt où une couleur est écrite en dur |
-| `Assets/Resources/Polices/` | Les deux graisses Nunito (SemiBold, ExtraBold) + `OFL.txt`. ⚠ **Produites** par `tools/generer_polices.py`, chargées PAR CHEMIN (`Resources.Load`) — le HUD n'a aucune référence sérialisée |
-| `BuildStampLabel.cs` | Tampon de version, sur son propre canevas |
+| `GameHud.cs` | Builds and drives the texts: state, controls, **permanent score and best** (top banner, §4.5), pause and death screens with their summary, the "key ignored" line. `Show(bool)` hides the whole canvas |
+| `MenuScreen.cs` | The **main menu** (GDD §4.6): title, illustration, animated entries, cursor, mouse. Decides nothing — the navigation comes from `Rules/MainMenu.cs`. Raises `Confirmed` (Play, Quit) after its fade-out |
+| `InfoPanel.cs` | The "How to play" and "Credits" panels: veil, amber-framed card, fade. An ordinary class, animated by `MenuScreen` |
+| `UiFactory.cs` | The common bricks: canvas (with its **explicit sorting order**), text, rectangle, veil. A single place where overflow and raycast are set |
+| `UiFonts.cs` | Loads the two weights and **logs** their absence — a null font draws no pixel, with no error |
+| `ClickableArea.cs` | Mouse hover and click (a transparent `Image`: the game's `Text`s are not raycast targets) |
+| `Assets/Resources/Illustrations/` | The menu illustration, **produced** by `tools/generate_snake_illustration.py`, imported as a Sprite by `Assets/Editor/ImportIllustrations.cs` |
+| `UiText.cs` | **Every label**, in a single place. No hard-coded text anywhere else |
+| `UiPalette.cs` | The **12 colour roles** of `docs/ART.md` §1. ⚠ The only place in the repository where a colour is hard-coded |
+| `Assets/Resources/Fonts/` | The two Nunito weights (SemiBold, ExtraBold) + `OFL.txt`. ⚠ **Produced** by `tools/generate_fonts.py`, loaded BY PATH (`Resources.Load`) — the HUD has no serialised reference |
+| `BuildStampLabel.cs` | Version stamp, on its own canvas |
 
-Pause et mort restent un voile et deux lignes de texte sur l'écran de jeu ; le **menu**, lui, est un
-écran à part entière, qui masque le plateau et le HUD (`Montrer(false)`) plutôt que de se poser
-par-dessus.
+Pause and death remain a veil and two lines of text over the game screen; the **menu**, on the other
+hand, is a screen in its own right, which hides the board and the HUD (`Show(false)`) rather than
+laying itself over them.

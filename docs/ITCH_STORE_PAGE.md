@@ -1,88 +1,91 @@
-# Page itch.io — Snake Snack
+# itch.io page — Snake Snack
 
-**Le texte de la page vit ici**, et c'est d'ici qu'on le colle sur itch. Si la page publiée est dans
-une autre langue, garder les deux fichiers (`ITCH_STORE_PAGE_EN.md`) et **les corriger ensemble** :
-sinon l'un des deux ment, et on ne sait plus lequel.
+**The page's text lives here**, and it is from here that it is pasted onto itch. If the published page
+is ever in another language, keep both files and **correct them together**: otherwise one of the two
+lies, and nobody knows which.
 
-⚠ **Ce texte doit décrire le jeu TEL QU'IL EST.** Une page qui décrit une fonctionnalité retirée
-deux versions plus tôt est le défaut le plus courant et le plus coûteux : le visiteur constate
-l'écart et referme. Relire à chaque release qui change quelque chose de visible.
+⚠ **This text must describe the game AS IT IS.** A page describing a feature removed two versions
+earlier is the most common and the most costly defect: the visitor sees the gap and closes the tab.
+Re-read it at every release that changes something visible.
 
 ---
 
-## Titre
+## Title
 
 Snake Snack
 
-## Tagline (une ligne, sous le titre)
+## Tagline (one line, under the title)
 
-Le classique jeu de Snake
+The classic game of Snake
 
 ## Description
 
-**Dirigez un serpent qui s'allonge à chaque bouchée, jusqu'à ce que son propre corps ne laisse plus
-de passage.**
+**Steer a snake that grows with every bite, until its own body leaves no way through.**
 
-Pas de twist, pas de bonus, pas d'ennemi : ce qui vous arrête, c'est votre propre queue. Les bords
-de la grille tuent — ils ne téléportent pas — donc chaque mort reste imputable à un virage, et il y
-a toujours une phrase en tête en relançant : « j'aurais dû passer par la droite ».
+No twist, no power-ups, no enemy: what stops you is your own tail. The edges of the grid kill — they
+do not wrap around — so every death stays attributable to a turn, and there is always a sentence in
+your head as you restart: "I should have gone right".
 
-Une partie se relance en **une touche et zéro attente**.
+A game restarts in **one key with zero waiting**.
 
-### Commandes
+### Controls
 
-| Action | Clavier | Tactile |
+| Action | Keyboard | Touch |
 |---|---|---|
-| Tourner (4 directions) | Flèches **ou** ZQSD | — pas en 0.1 |
-| Pause / reprise | Échap | — pas en 0.1 |
-| Relancer après la mort | Espace | — pas en 0.1 |
-| Revenir au menu | Échap (écran de fin) **ou** Retour arrière (pause) | — pas en 0.1 |
-| Naviguer le menu | Flèches ou ZQSD, Entrée ou Espace | souris : survol et clic |
+| Turn (4 directions) | Arrows **or** WASD | — not in 0.1 |
+| Pause / resume | Esc | — not in 0.1 |
+| Restart after death | Space | — not in 0.1 |
+| Back to the menu | Esc (end screen) **or** Backspace (pause) | — not in 0.1 |
+| Navigate the menu | Arrows or WASD, Enter or Space | mouse: hover and click |
 
-⚠ **Le jeu se joue au clavier** : il n'y a aucune commande tactile, une souris ne suffit que pour le
-menu.
+⚠ **The game is played with a keyboard**: there are no touch controls, and a mouse is only enough for
+the menu.
 
-### Ce qu'il y a dedans
+On a French AZERTY keyboard, the WASD block is the four keys printed Z, Q, S, D — the game reads
+physical positions, so it works either way, and the arrows work everywhere.
 
-- Une grille close de 21 × 15 cases, une pomme à la fois, un point par pomme.
-- Un record qui survit à la fermeture du jeu, et qui se bat strictement.
-- Un menu principal : jouer, comment jouer, crédits.
-- Une pause, et un refus de demi-tour qui **se voit** plutôt que d'avaler l'appui en silence.
-- Un serpent qui **glisse** d'une case à l'autre, des formes arrondies, et une mort qui montre la
-  case fautive avant d'afficher l'écran de fin.
+### What is in it
 
-**Ce qui n'y est pas encore** : aucun son ni aucune musique. C'est une base jouable, pas une version
-finie.
+- A closed 21 × 15 grid, one apple at a time, one point per apple.
+- A best score that survives closing the game, and that has to be beaten strictly.
+- A main menu: play, how to play, credits.
+- A pause, and a refused reversal that **shows** rather than swallowing the press in silence.
+- A snake that **glides** from cell to cell, rounded shapes, a face that looks where it is going, and
+  a death that shows the offending cell before the end screen appears.
 
-### Crédits
+**What is not in it yet**: no sound and no music at all. This is a playable base, not a finished
+version.
 
-- **Police Nunito** — Vernon Adams, Cyreal, Jacques Le Bailly.
+### Credits
+
+- **Nunito font** — Vernon Adams, Cyreal, Jacques Le Bailly.
   `Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)`
-  Sous [SIL Open Font License 1.1](https://scripts.sil.org/OFL) ; instances statiques extraites pour
-  ce projet. Le texte intégral de la licence est embarqué dans le jeu (écran « Crédits »).
-- Tout le reste — code, illustrations, interface — est produit pour ce projet.
-- Fait avec Unity 6000.5.6f1 (URP 2D), à partir du gabarit
-  [unity-game-template-with-claude](https://github.com/drangoht/unity-game-template-with-claude).
+  Under the [SIL Open Font License 1.1](https://scripts.sil.org/OFL); static instances extracted for
+  this project. The full licence text is embedded in the game ("Credits" screen).
+- Everything else — code, illustrations, interface — is made for this project.
+- Made with Unity 6000.5.6f1 (URP 2D), from the
+  [unity-game-template-with-claude](https://github.com/drangoht/unity-game-template-with-claude)
+  template.
 
 ---
 
-## Réglages du tableau de bord — ⚠ ils ne sont dans AUCUN fichier du dépôt
+## Dashboard settings — ⚠ they are in NO file of the repository
 
-À vérifier à la main après chaque publication ; ils ont été faux pendant plusieurs versions sur un
-projet précédent.
+To check by hand after every publish; they were wrong for several versions on an earlier project.
 
-- [x] **Kind of project** = HTML (sinon le build web se télécharge au lieu de se jouer) — posé le 2026-08-28
-- [x] Fichier coché **« This file will be played in the browser »** — posé le 2026-08-28
-- [x] **Mobile friendly** — décide seule de ce qu'itch propose à un visiteur sur téléphone.
-      **Décoché** : le jeu n'a aucune commande tactile, l'annoncer jouable au doigt serait faux.
-- [ ] **Orientation** déclarée — sans objet tant que « mobile friendly » est décoché
-- [ ] Onglet **Classification** : genre, tags, **décompte de joueurs**, mode multijoueur
-- [x] **Cover 630 × 500** — la seule image que voient les visiteurs qui n'ouvrent pas la page.
-      Produite par `tools/generer_cover_itch.py`, **inchangée en 0.2.0** : l'illustration du menu
-      n'a pas bougé.
-- [x] **Captures d'écran** — trois, prises DANS le navigateur sur la page itch elle-même.
-      ⚠ Celles de la partie montrent le rendu du jeu : **à régénérer à chaque changement visible**,
-      sinon la page annonce un serpent que la partie ne montre plus.
+- [x] **Kind of project** = HTML (otherwise the web build downloads instead of playing) — set 2026-08-28
+- [x] File ticked **"This file will be played in the browser"** — set 2026-08-28
+- [x] **Mobile friendly** — it alone decides what itch offers a visitor on a phone.
+      **Unticked**: the game has no touch controls, announcing it playable with a finger would be false.
+- [ ] **Orientation** declared — moot as long as "mobile friendly" is unticked
+- [ ] **Classification** tab: genre, tags, **player count**, multiplayer mode
+- [x] **Cover 630 × 500** — the only image seen by visitors who do not open the page.
+      Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be
+      regenerated when the page's language changes.
+- [x] **Screenshots** — three, taken IN the browser on the itch page itself.
+      ⚠ The in-game ones show the game's rendering: **to be regenerated at every visible change**,
+      otherwise the page announces a snake the game no longer shows. They currently show the French
+      interface and a snake with no face.
 
-⚠ **Visibilité** : la page est en **Draft** depuis sa création (2026-08-28). Rien n'est public tant
-que l'auteur n'a pas cliqué « Publish » lui-même.
+⚠ **Visibility**: the page has been in **Draft** since it was created (2026-08-28). Nothing is public
+until the author clicks "Publish" themselves.

@@ -1,108 +1,110 @@
-# Guide — l'équipe d'agents de Snake Snack
+# Guide — Snake Snack's agent team
 
-Comment sont organisés les agents et les skills du projet, et quand invoquer lequel.
+How the project's agents and skills are organised, and when to invoke which.
 
-## D'abord : déléguer a un prix
+## First: delegating has a price
 
-Un agent **démarre à froid**. Il ne sait rien de la session en cours : il relit `CLAUDE.md`, le GDD,
-la carte, les pièges — de l'ordre de **8 000 jetons avant sa première action**, souvent les mêmes
-documents qu'on vient de lire soi-même.
+An agent **starts from cold**. It knows nothing of the current session: it re-reads `CLAUDE.md`, the
+GDD, the map, the pitfalls — in the order of **8,000 tokens before its first action**, often the same
+documents one has just read oneself.
 
-**Déléguer quand la tâche est dans sa spécialité *et* assez grosse pour amortir ça** : concevoir ou
-équilibrer un système, une passe de test complète, une release, une production d'assets. **Faire
-soi-même** : une correction de dix lignes, une question, une lecture, un renommage, un test unitaire
-à rejouer.
+**Delegate when the task is in its speciality *and* big enough to amortise that**: designing or
+balancing a system, a full test pass, a release, an asset production run. **Do it yourself**: a
+ten-line fix, a question, a read, a rename, a unit test to replay.
 
-Et quand on délègue : **écrire dans la consigne ce qu'on sait déjà** — les fichiers concernés, la
-décision prise, le piège identifié, le message d'erreur exact. Un agent à qui l'on donne son point de
-départ ne le redécouvre pas.
+And when delegating: **write in the instruction what you already know** — the files concerned, the
+decision taken, the pitfall identified, the exact error message. An agent given its starting point
+does not rediscover it.
 
-⚠ La chaîne complète ci-dessous (« Comment un chantier s'enchaîne ») vaut pour un **chantier**. La
-dérouler pour un ajustement de valeur coûte cinq démarrages à froid pour trois lignes changées.
+⚠ The full chain below ("How a piece of work chains together") applies to a **piece of work**. Running
+it for a value tweak costs five cold starts for three changed lines.
 
-## Les 9 agents (`.claude/agents/`)
+## The 9 agents (`.claude/agents/`)
 
-| Agent | Quand l'invoquer | Modèle |
+| Agent | When to invoke it | Model |
 |---|---|---|
 | **`developpeur`** | Code, architecture, build, tests | opus |
-| **`game-designer`** | Design, équilibrage, valeurs de tuning, scope | opus |
-| **`game-tester`** | Après toute implémentation majeure — joue et documente | sonnet |
-| **`release-manager`** | Publier une version de bout en bout + rédiger le devlog | sonnet |
-| **`directeur-artistique`** | Identité visuelle, cohérence, briefs graphiques | sonnet |
-| **`graphiste`** | Sprites, VFX, icônes — via les générateurs Python | sonnet |
-| **`musicien`** | Musique, SFX, mixage, pipeline audio | sonnet |
-| **`story-teller`** | Textes en jeu, noms, descriptions, localisation | sonnet |
-| **`marketing`** | Page itch, pitch, briefs de captures | sonnet |
+| **`game-designer`** | Design, balancing, tuning values, scope | opus |
+| **`game-tester`** | After every major implementation — plays and documents | sonnet |
+| **`release-manager`** | Publish a version end to end + write the devlog | sonnet |
+| **`directeur-artistique`** | Visual identity, consistency, graphic briefs | sonnet |
+| **`graphiste`** | Sprites, VFX, icons — through the Python generators | sonnet |
+| **`musicien`** | Music, SFX, mixing, audio pipeline | sonnet |
+| **`story-teller`** | In-game text, names, descriptions, localisation | sonnet |
+| **`marketing`** | itch page, pitch, screenshot briefs | sonnet |
 
-## Les 4 skills (`.claude/skills/`)
+⚠ The agent and skill names stay in French: they are what the author types. Everything they contain is
+in English.
 
-- **`/carte-projet`** — index du code : où vit tel système, écran, donnée, outil, plus les
-  checklists de câblage. **À invoquer avant toute exploration** plutôt que Glob/Grep à froid.
-- **`/verifier-en-jeu`** — construire, lancer, injecter de vraies entrées, capturer. À invoquer
-  chaque fois qu'on s'apprête à écrire « ça devrait marcher ».
-- **`/rediger-le-gdd`** — remplir `docs/GDD.md` section par section, par entretien, dans l'ordre
-  où les décisions se prennent réellement. À invoquer au démarrage, et dès qu'une section est restée
-  vide alors qu'on s'apprête à coder le système qu'elle devrait décrire.
-- **`/publier-itch`** — la procédure de publication en version courte.
+## The 4 skills (`.claude/skills/`)
 
-## Comment un chantier s'enchaîne
+- **`/carte-projet`** — the code index: where such a system, screen, piece of data or tool lives, plus
+  the wiring checklists. **To be invoked before any exploration** rather than Glob/Grep from cold.
+- **`/verifier-en-jeu`** — build, launch, inject real inputs, capture. To be invoked every time one is
+  about to write "that should work".
+- **`/rediger-le-gdd`** — fill `docs/GDD.md` section by section, by interview, in the order the
+  decisions are really taken. To be invoked at the start, and as soon as a section has stayed empty
+  while one is about to code the system it should describe.
+- **`/publier-itch`** — the publishing procedure, short version.
+
+## How a piece of work chains together
 
 ```
-constat (session jouée ou mesure)
-   → game-designer  : diagnostic + règle proposée, reportée dans le GDD
-   → developpeur    : implémentation + tests (logique pure dans Assets/Scripts/Rules/)
-   → mesure         : le banc, si le sujet est chiffrable
-   → game-tester    : ce que la mesure ne peut pas dire — le ressenti
+observation (a session played, or a measurement)
+   → game-designer  : diagnosis + proposed rule, carried back into the GDD
+   → developpeur    : implementation + tests (pure logic in Assets/Scripts/Rules/)
+   → measurement    : the bench, if the subject can be put in numbers
+   → game-tester    : what the measurement cannot say — the feel
    → release-manager: publication + devlog
 ```
 
-**L'ordre compte.** Le raccourci « implémenter puis mesurer après coup » coûte plusieurs
-allers-retours : sur un projet précédent, un cran de difficulté a été publié sans avoir jamais été
-joué, et le testeur n'a rien senti.
+**The order matters.** The shortcut "implement, then measure afterwards" costs several round trips: on
+a previous project, a difficulty step was published without ever having been played, and the tester
+felt nothing.
 
-## Les trois règles apprises à la dure
+## The three rules learned the hard way
 
-1. **Une partie isolée ne tranche rien.** La variance entre deux parties peut atteindre un facteur
-   2,4 avant même que le réglage testé n'agisse. Un verdict d'équilibrage se prend au **banc
-   apparié**, sur le test des signes.
-2. **Le banc ne dit pas ce qui se *sent*.** Il mesure la pression que le contenu exerce, pas
-   l'expérience. Les deux se sont déjà contredits — le testeur avait raison.
-3. **Quand un correctif ne déplace pas la métrique, suspecte l'instrument.** Continuer à doser est la
-   manière la plus coûteuse de se tromper.
+1. **A single game settles nothing.** The variance between two games can reach a factor of 2.4 before
+   the setting under test even acts. A balancing verdict is taken on a **paired bench**, using the sign
+   test.
+2. **The bench does not say what is *felt*.** It measures the pressure the content exerts, not the
+   experience. The two have already contradicted each other — the tester was right.
+3. **When a fix does not move the metric, suspect the instrument.** Carrying on with the dosage is the
+   most expensive way of being wrong.
 
-## Documentation — qui répond à quoi
+## Documentation — what answers what
 
 | Question | Document |
 |---|---|
-| Phase courante, conventions | `CLAUDE.md` (chargé automatiquement) |
-| *Pourquoi* le jeu est réglé ainsi | `docs/GDD.md` (sommaire) → `docs/gdd/<systeme>.md` — le remplir : `/rediger-le-gdd` |
-| *Où* se trouve quoi | skill `/carte-projet` |
-| Quels pièges guettent | `docs/pitfalls/<domaine>.md` (index : `docs/PITFALLS_UNITY.md`) |
-| Ce qui a été testé | `docs/TEST_REPORT.md` |
-| Ce qui est réellement sorti | `docs/DEVLOG.md` |
-| Publier | `docs/RELEASE.md` + `/publier-itch` |
+| Current phase, conventions | `CLAUDE.md` (loaded automatically) |
+| *Why* the game is tuned this way | `docs/GDD.md` (index) → `docs/gdd/<system>.md` — to fill it: `/rediger-le-gdd` |
+| *Where* something lives | skill `/carte-projet` |
+| Which pitfalls lie in wait | `docs/pitfalls/<domain>.md` (index: `docs/PITFALLS_UNITY.md`) |
+| What has been tested | `docs/TEST_REPORT.md` |
+| What has actually shipped | `docs/DEVLOG.md` |
+| Publishing | `docs/RELEASE.md` + `/publier-itch` |
 
-## Faire évoluer un agent
+## Making an agent evolve
 
-Si un agent prend systématiquement une mauvaise décision sur un point, **enrichis son fichier `.md`**
-— c'est le mécanisme prévu pour capitaliser l'expérience, et c'est moins coûteux que de le corriger
-à chaque session. Les fichiers `.claude/` sont versionnés au même titre que le code.
+If an agent systematically takes a bad decision on some point, **enrich its `.md` file** — that is the
+mechanism provided for capitalising experience, and it is cheaper than correcting it at every session.
+The `.claude/` files are versioned in the same way as the code.
 
-⚠ **Un agent qui décrit un état périmé du projet est pire qu'un agent absent** : il donne des
-instructions fausses avec autorité. Quand une phase se termine, relis les agents qu'elle concerne.
+⚠ **An agent describing a stale state of the project is worse than an absent agent**: it gives false
+instructions with authority. When a phase ends, re-read the agents it concerns.
 
-## Le LLM local (optionnel)
+## The local LLM (optional)
 
-Si un serveur MCP `local-llm` est enregistré (LM Studio), il permet d'interroger un fichier **trop
-gros pour être lu** : il lit le fichier **chez lui** et ne renvoie que la réponse. Mesuré sur un
-projet précédent : **83 000 tokens lus en local → 675 renvoyés**.
+If a `local-llm` MCP server is registered (LM Studio), it makes it possible to query a file **too big
+to be read**: it reads the file **at its end** and returns only the answer. Measured on a previous
+project: **83,000 tokens read locally → 675 returned**.
 
-⚠ Trois garde-fous, appris par la mesure :
-1. **C'est lent** (~6-7 min pour 290 Ko) : lancer l'appel **avant** ce qu'on allait faire.
-2. **`max_tokens` trop bas tronque la réponse sans lever d'erreur.** Viser 1500-2500.
-3. **Bon sur du texte, à proscrire sur des chiffres et sur du code à éditer.** S'il existe un outil
-   déterministe, il gagne. Et pour localiser, `Grep` est instantané et exact.
+⚠ Three guard rails, learned by measurement:
+1. **It is slow** (~6-7 min for 290 KB): fire the call **before** whatever one was about to do.
+2. **A `max_tokens` set too low truncates the answer without raising an error.** Aim for 1500-2500.
+3. **Good on prose, to be banned on figures and on code to be edited.** If a deterministic tool
+   exists, it wins. And to locate something, `Grep` is instant and exact.
 
-⚠ Un agent déclare une liste `tools:` **fermée** : s'il n'y déclare pas l'outil MCP, il ne *peut
-pas* l'appeler, quelle que soit la consigne écrite ailleurs. *Une capacité qu'on documente sans la
-câbler n'existe pas.*
+⚠ An agent declares a **closed** `tools:` list: if it does not declare the MCP tool there, it *cannot*
+call it, whatever the instruction written elsewhere. *A capability documented without being wired does
+not exist.*

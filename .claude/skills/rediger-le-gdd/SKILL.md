@@ -1,209 +1,207 @@
 ---
 name: rediger-le-gdd
-description: Construire docs/GDD.md de Snake Snack pas à pas, par entretien avec l'auteur du jeu — une section à la fois, dans l'ordre, avec les commandes à lancer entre chaque et un exemple complet déroulé sur un Snake. À invoquer au démarrage d'un projet quand le GDD est encore le squelette à trous, et chaque fois qu'on s'apprête à implémenter un système dont la section du GDD est restée vide.
+description: Build Snake Snack's docs/GDD.md step by step, by interviewing the game's author — one section at a time, in order, with the commands to run between each and a full example worked through on a Snake. To be invoked at the start of a project when the GDD is still a skeleton full of holes, and every time one is about to implement a system whose GDD section has stayed empty.
 ---
 
-# Rédiger le GDD — Snake Snack
+# Writing the GDD — Snake Snack
 
-`docs/GDD.md` est la **source de vérité du design** : le code dit *comment*, le GDD dit **pourquoi**.
-Ce skill dit comment le remplir sans le transformer en roman d'intentions que personne ne relit.
+`docs/GDD.md` is the **source of truth for the design**: the code says *how*, the GDD says **why**.
+This skill says how to fill it in without turning it into a novel of intentions nobody re-reads.
 
-> **Un GDD ne se rédige pas d'un bloc avant de commencer.** Écrit en entier le premier jour, il
-> décrit un jeu qui n'existe pas encore et devient faux dès le premier prototype. Trois sections se
-> rédigent **avant la première ligne de code** ; les quatre autres s'écrivent au moment où la
-> décision est prise, et pas après.
+> **A GDD is not written in one block before starting.** Written whole on the first day, it describes a
+> game that does not exist yet and becomes false at the first prototype. Three sections are written
+> **before the first line of code**; the other four are written at the moment the decision is taken,
+> and not afterwards.
 
-## Ce qui se rédige quand
+## What gets written when
 
-| Quand | Sections | Pourquoi à ce moment |
+| When | Sections | Why at that moment |
 |---|---|---|
-| **Avant de coder** | §1 pitch · §2 boucle · §3 commandes | Sans le verbe, la boucle et les touches, il n'y a rien à implémenter |
-| **À chaque système construit** | §4 systèmes · §5 progression | Une valeur se justifie au moment où on la choisit, jamais de mémoire |
-| **En continu** | §6 mesuré · §7 écarté | §7 est la section qui évite de rouvrir dix fois le même débat |
+| **Before coding** | §1 pitch · §2 loop · §3 controls | Without the verb, the loop and the keys, there is nothing to implement |
+| **At every system built** | §4 systems · §5 progression | A value is justified at the moment it is chosen, never from memory |
+| **Continuously** | §6 measured · §7 rejected | §7 is the section that keeps the same debate from being reopened ten times |
 
-## L'ordre des commandes
+## The order of the commands
 
 ```
-1.  /rediger-le-gdd              ← ici : entretien, §1 à §3 remplies et commitées
-2.  demande au game-designer de détailler <le premier système>     → §4
-3.  demande au developpeur d'implémenter <ce système> + ses tests
-4.  /verifier-en-jeu             ← ce que le prototype dément revient en §4 et §7
-5.  /carte-projet                ← mettre la carte à jour, même commit
-    (répéter 2→5 par système ; §5 dès qu'il y a un deuxième cran de difficulté)
-6.  /publier-itch                ← 0.1.0, puis §6 se remplit avec de vraies parties
+1.  /rediger-le-gdd              ← here: interview, §1 to §3 filled in and committed
+2.  ask the game-designer to detail <the first system>     → §4
+3.  ask the developpeur to implement <that system> + its tests
+4.  /verifier-en-jeu             ← what the prototype disproves comes back into §4 and §7
+5.  /carte-projet                ← update the map, same commit
+    (repeat 2→5 per system; §5 as soon as there is a second difficulty step)
+6.  /publier-itch                ← 0.1.0, then §6 fills up with real games
 ```
 
-⚠ L'étape 4 n'est pas facultative. **Le GDD écrit avant le prototype est une hypothèse**, et une
-partie de ce qui s'y trouve à ce stade est fausse — ce qui est normal, à condition de revenir
-l'amender. Un GDD que le jeu qui tourne n'a jamais corrigé n'a jamais servi.
+⚠ Step 4 is not optional. **A GDD written before the prototype is a hypothesis**, and part of what it
+holds at that stage is false — which is normal, provided one comes back to amend it. A GDD the running
+game has never corrected has never served.
 
-## Comment mener l'entretien
+## How to conduct the interview
 
-Pour Claude, quand ce skill est invoqué :
+For Claude, when this skill is invoked:
 
-1. **Lire `docs/GDD.md` d'abord.** Ne jamais réécrire ce qui est déjà rempli ; repérer la première
-   section encore à l'état de commentaire `<!-- -->` et partir de là.
-2. **Une question à la fois**, via `AskUserQuestion`, avec **deux ou trois réponses déjà rédigées**
-   plus l'option libre. Une page blanche ne produit pas de design ; un choix entre trois formulations
-   concrètes, oui. C'est là qu'est le travail : proposer, pas interroger.
-3. **Écrire dans `docs/GDD.md` dès qu'une section est validée**, et committer. Une section validée
-   qui reste dans la conversation est perdue à la fin de la session.
-4. **Ne jamais inventer un chiffre.** Une valeur non essayée s'écrit `<!-- à mesurer -->` ou avec sa
-   provenance (« repris de *Blobby Volley* », « au jugé, à confirmer »). Un nombre écrit sans source
-   sera cité six mois plus tard comme s'il avait été mesuré.
-5. **Reformuler ce que l'auteur dit, en plus court.** Le GDD est relu par des agents : ce qui n'y
-   tient pas en cinq lignes n'y sera pas lu.
+1. **Read `docs/GDD.md` first.** Never rewrite what is already filled in; spot the first section still
+   in the state of a `<!-- -->` comment and start from there.
+2. **One question at a time**, through `AskUserQuestion`, with **two or three answers already written**
+   plus the free option. A blank page does not produce design; a choice between three concrete
+   formulations does. That is where the work is: proposing, not questioning.
+3. **Write into `docs/GDD.md` as soon as a section is validated**, and commit. A validated section left
+   in the conversation is lost at the end of the session.
+4. **Never invent a number.** A value not tried is written `<!-- to be measured -->` or with its
+   provenance ("taken from *Blobby Volley*", "by eye, to be confirmed"). A number written with no source
+   will be quoted six months later as if it had been measured.
+5. **Restate what the author says, shorter.** The GDD is re-read by agents: what does not fit there in
+   five lines will not be read there.
 
 ---
 
-# Les sept étapes, déroulées sur un Snake
+# The seven steps, worked through on a Snake
 
-L'exemple suivant construit le GDD complet d'un petit jeu de serpent. Il n'est pas là pour être
-copié : il montre **le niveau de précision attendu** à chaque section.
+The example below builds the complete GDD of a small snake game. It is not there to be copied: it shows
+**the level of precision expected** at each section.
 
-## Étape 1 — Le pitch (§1)
+## Step 1 — The pitch (§1)
 
-**Une phrase qui dit ce que le joueur *fait*.** Si le verbe principal n'y est pas, le pitch n'est pas
-encore trouvé — et si le pitch n'est pas trouvé, rien de ce qui suit ne peut l'être.
+**One sentence that says what the player *does*.** If the main verb is not in it, the pitch has not
+been found yet — and if the pitch has not been found, nothing that follows can be.
 
-Question à poser : *« En une phrase, qu'est-ce que le joueur fait, et qu'est-ce qui l'en empêche ? »*
+The question to ask: *"In one sentence, what does the player do, and what stands in their way?"*
 
-| ✗ Pas un pitch | ✓ Un pitch |
+| ✗ Not a pitch | ✓ A pitch |
 |---|---|
-| « Un jeu de serpent rétro en pixel art. » | « On dirige un serpent qui s'allonge à chaque bouchée, jusqu'à ce que son propre corps ne laisse plus de passage. » |
-| Décrit l'univers et le style ; aucun verbe de joueur | Verbe : diriger. Obstacle : soi-même |
+| "A retro snake game in pixel art." | "You steer a snake that grows with every bite, until its own body leaves no way through." |
+| Describes the universe and the style; no player verb | Verb: steer. Obstacle: yourself |
 
-**Le test** : la phrase contient-elle ce qui **s'oppose** au joueur ? « On mange des pommes » n'est
-pas un jeu. « Chaque pomme mangée réduit l'espace où l'on peut encore tourner » en est un.
+**The test**: does the sentence contain what **opposes** the player? "You eat apples" is not a game.
+"Every apple eaten shrinks the space where you can still turn" is one.
 
-## Étape 2 — La boucle de jeu (§2)
+## Step 2 — The game loop (§2)
 
-Le cycle que le joueur répète, du lancement à la fin de partie, **en cinq lignes**. Une boucle qui
-n'y tient pas est une boucle qu'on n'a pas encore comprise.
+The cycle the player repeats, from launch to the end of the game, **in five lines**. A loop that does
+not fit there is a loop not yet understood.
 
 ```
-apparition au centre, trois segments  →  orienter la tête, le serpent avance tout seul
-   →  atteindre la pomme : +1 segment, +1 point, une nouvelle pomme apparaît ailleurs
-   →  l'espace libre se réduit à chaque bouchée
-   →  la tête touche le corps (ou un mur) : mort, score affiché
-   →  relance immédiate : « j'aurais dû passer par la droite »
+spawn at the centre, three segments  →  orient the head, the snake moves on its own
+   →  reach the apple: +1 segment, +1 point, a new apple appears elsewhere
+   →  the free space shrinks with every bite
+   →  the head touches the body (or a wall): death, score shown
+   →  immediate restart: "I should have gone right"
 ```
 
-⚠ **La dernière flèche est la plus importante, et c'est celle qu'on oublie.** « Ce qui donne envie de
-relancer » n'est pas un bouton *Rejouer* : ici c'est le fait que la mort soit toujours attribuable à
-un virage précis, jamais à un aléa. Si cette ligne ne se remplit pas, le problème est dans le jeu,
-pas dans le document.
+⚠ **The last arrow is the most important, and it is the one that gets forgotten.** "What makes you want
+to start again" is not a *Replay* button: here it is the fact that death is always attributable to a
+precise turn, never to randomness. If that line cannot be filled in, the problem is in the game, not in
+the document.
 
-## Étape 3 — Les commandes (§3)
+## Step 3 — The controls (§3)
 
-La table du squelette se remplit **entièrement**, y compris les colonnes qui resteront vides : une
-case qui assume son vide (« — pas de manette en 0.1 ») vaut mieux qu'une colonne effacée dont
-personne ne sait si elle a été décidée ou oubliée.
+The skeleton's table is filled in **entirely**, including the columns that will stay empty: a cell that
+owns its emptiness ("— no gamepad in 0.1") is worth more than a deleted column, of which nobody knows
+whether it was decided or forgotten.
 
-| Action | Clavier | Manette | Tactile |
+| Action | Keyboard | Gamepad | Touch |
 |---|---|---|---|
-| Tourner (4 directions) | Flèches ou **ZQSD** | D-pad | Balayage dans la direction |
-| Pause | Échap | Start | Bouton en haut à droite |
-| Relancer après la mort | Espace | A | Toucher n'importe où |
+| Turn (4 directions) | Arrows or **WASD** | D-pad | Swipe in the direction |
+| Pause | Esc | Start | Button at the top right |
+| Restart after death | Space | A | Touch anywhere |
 
-⚠ **AZERTY.** `Key` et `KeyCode` désignent une **position sur un clavier QWERTY**. Les touches Z, Q,
-S, D d'un clavier français se déclarent donc `Key.W`, `Key.A`, `Key.S`, `Key.D` — écrire `Key.Z` pour
-la touche marquée Z vise en réalité le W. Aucune erreur n'est levée : le jeu répond simplement à la
-mauvaise touche.
+⚠ **AZERTY.** `Key` and `KeyCode` designate a **position on a QWERTY keyboard**. The Z, Q, S, D keys of
+a French keyboard are therefore declared `Key.W`, `Key.A`, `Key.S`, `Key.D` — writing `Key.Z` for the
+key marked Z in fact targets the W. No error is raised: the game simply answers the wrong key.
 
-⚠ **Invisible se lit inexistant.** Le demi-tour instantané est interdit (le serpent se mangerait à la
-nuque) — donc le refus doit **se voir**, sinon le joueur conclut que le jeu a raté son appui. Toute
-règle qui annule une entrée du joueur doit s'annoncer à l'écran.
+⚠ **Invisible reads as non-existent.** The instant reversal is forbidden (the snake would eat itself at
+the neck) — so the refusal must **be seen**, otherwise the player concludes the game missed their press.
+Any rule that cancels a player input must announce itself on screen.
 
-## Étape 4 — Les systèmes (§4)
+## Step 4 — The systems (§4)
 
-Un titre de niveau 3 par système. Pour chacun : **ce qu'il fait, ses valeurs, et ce qui les
-justifie**. Les valeurs chiffrées vivent dans `Assets/Scripts/Rules/` — le GDD porte le *pourquoi*,
-le code porte le nombre, et les deux se citent.
+One level-3 heading per system. For each: **what it does, its values, and what justifies them**. The
+numeric values live in `Assets/Scripts/Rules/` — the GDD carries the *why*, the code carries the number,
+and the two quote each other.
 
-C'est ici qu'on délègue, un système à la fois :
+This is where one delegates, one system at a time:
 
 ```
-demande au game-designer de spécifier le déplacement du serpent
-demande au developpeur d'implémenter Rules/Cadence.cs et ses tests
+ask the game-designer to specify the snake's movement
+ask the developpeur to implement Rules/Cadence.cs and its tests
 /verifier-en-jeu
 ```
 
-Exemple rédigé :
+A worked example:
 
-### Le pas de temps
+### The time step
 
-Le serpent avance d'**une case par tick**, 8 ticks/seconde (`Rules/Cadence.cs`). L'entrée n'oriente
-pas la tête immédiatement : elle **met en file** la direction, appliquée au tick suivant.
+The snake advances **one cell per tick**, 8 ticks/second (`Rules/Cadence.cs`). The input does not orient
+the head immediately: it **queues** the direction, applied on the following tick.
 
-*Pourquoi une file plutôt qu'une orientation directe* : à 8 ticks/s, deux virages tapés en moins de
-125 ms se recouvraient, et le second effaçait le premier — le joueur voyait le serpent ignorer un
-virage qu'il avait bien tapé. La file en retient **deux au maximum** ; au-delà, on ne joue plus, on
-tape en avance.
+*Why a queue rather than a direct orientation*: at 8 ticks/s, two turns typed less than 125 ms apart
+overlapped, and the second erased the first — the player saw the snake ignore a turn they had indeed
+typed. The queue holds **two at most**; beyond that, you are no longer playing, you are typing ahead.
 
-### La pomme
+### The apple
 
-Apparaît sur une case tirée uniformément **parmi les cases libres**, et non « au hasard sur la
-grille, puis on retire tant que c'est occupé » : sur une grille presque pleine, la seconde méthode
-fige le jeu pendant un temps indéterminé sans lever la moindre erreur.
+Appears on a cell drawn uniformly **among the free cells**, and not "at random on the grid, then redraw
+as long as it is occupied": on a nearly full grid, the second method freezes the game for an
+indeterminate time without raising the slightest error.
 
-## Étape 5 — Progression et difficulté (§5)
+## Step 5 — Progression and difficulty (§5)
 
-**Un cran de difficulté ajoute une règle nommée, pas un multiplicateur.** Le joueur doit pouvoir la
-lire avant de lancer, et comprendre après coup pourquoi il a perdu.
+**A difficulty step adds a named rule, not a multiplier.** The player must be able to read it before
+starting, and to understand afterwards why they lost.
 
-| ✗ Ce qu'on écrit spontanément | ✓ Ce qui tient |
+| ✗ What gets written spontaneously | ✓ What holds |
 |---|---|
-| « La vitesse augmente de 8 % par pomme » | **Murs** : au-delà de 10 pommes, les bords cessent de téléporter et tuent |
-| Ni lisible, ni nommable, ni anticipable | Une phrase, lue avant de lancer, qui change la façon de jouer |
+| "The speed goes up by 8 % per apple" | **Walls**: beyond 10 apples, the edges stop teleporting and kill |
+| Neither readable, nor nameable, nor foreseeable | One sentence, read before starting, that changes how you play |
 
-Vérifier aussi qu'une contrainte **ne distribue pas son antidote** : « la grille rétrécit, mais une
-pomme dorée la rouvre » ne durcit rien — elle déplace le jeu vers la course à la pomme dorée.
+Also check that a constraint **does not hand out its antidote**: "the grid shrinks, but a golden apple
+reopens it" hardens nothing — it moves the game towards the race for the golden apple.
 
-## Étape 6 — Ce qui a été mesuré (§6)
+## Step 6 — What has been measured (§6)
 
-Renvoyer vers `docs/TEST_REPORT.md` pour la donnée brute ; **consigner ici la conclusion**.
+Refer to `docs/TEST_REPORT.md` for the raw data; **record the conclusion here**.
 
-> **Tick à 8/s plutôt qu'à 10/s.** 20 parties appariées sur graines fixées, même joueur. Le score
-> médian ne bouge pas — le joueur s'adapte — mais **17 morts sur 20 à 10/s surviennent dans les
-> 300 ms qui suivent un virage**, contre 6 sur 20 à 8/s. Ce n'est pas la difficulté qui montait,
-> c'est la fenêtre d'entrée qui devenait plus courte que le temps de réaction. Retenu : 8/s.
+> **Tick at 8/s rather than 10/s.** 20 paired games on fixed seeds, same player. The median score does
+> not move — the player adapts — but **17 deaths out of 20 at 10/s happen within the 300 ms following a
+> turn**, against 6 out of 20 at 8/s. It was not the difficulty going up, it was the input window
+> becoming shorter than the reaction time. Chosen: 8/s.
 
-⚠ **Une partie isolée ne tranche rien** : la variance entre deux parties peut atteindre un facteur
-2,4 avant même que le réglage testé n'agisse. Un verdict se prend au banc apparié, sur le test des
-signes — l'effet va-t-il dans le même sens sur chaque paire ? — pas sur le delta médian.
+⚠ **A single game settles nothing**: the variance between two games can reach a factor of 2.4 before the
+setting under test even acts. A verdict is taken on a paired bench, using the sign test — does the
+effect go the same way on every pair? — not on the median delta.
 
-## Étape 7 — Ce qui a été écarté, et pourquoi (§7)
+## Step 7 — What has been rejected, and why (§7)
 
-La section la plus utile du document, et la seule que personne ne pense à écrire.
+The most useful section of the document, and the only one nobody thinks of writing.
 
-> **Bonus temporaires (ralenti, traverse-mur, aimant).** Écartés. Essayés en 0.2 : ils déplacent la
-> décision « par où passer » vers « atteindre le bonus », et la mort cesse d'être imputable à un
-> virage — ce que le pilier de la §2 interdit.
+> **Temporary bonuses (slow motion, wall-phasing, magnet).** Rejected. Tried in 0.2: they move the
+> decision "which way through" towards "reach the bonus", and death stops being attributable to a turn —
+> which the pillar of §2 forbids.
 >
-> **Deuxième serpent en local.** Reporté, pas écarté : demande un partage de clavier et une
-> condition de fin de partie qui n'existent pas. À rouvrir après la 1.0.
+> **A second snake in local play.** Deferred, not rejected: it requires a keyboard share and an
+> end-of-game condition that do not exist. To be reopened after 1.0.
 
-⚠ **Quand une conclusion est réfutée, la garder et la marquer comme telle** plutôt que la réécrire.
-Le raisonnement qui a mené à l'erreur a autant de valeur que la correction : c'est lui qui évite de
-refaire deux fois le même détour.
+⚠ **When a conclusion is refuted, keep it and mark it as such** rather than rewriting it. The reasoning
+that led to the mistake is worth as much as the correction: it is what keeps the same detour from being
+taken twice.
 
 ---
 
-## Les cinq défauts qu'on voit revenir
+## The five defects one sees coming back
 
-1. **Le GDD écrit en entier avant le prototype.** Il décrit un jeu qui n'existe pas ; personne ne le
-   corrige ensuite, et il finit par mentir avec autorité. Trois sections, puis du code.
-2. **Un pitch sans verbe.** « Un roguelite spatial atmosphérique » ne permet d'implémenter *rien*.
-3. **Des chiffres sans provenance.** Indiscernables d'une mesure au bout de trois mois.
-4. **La section « écarté » laissée vide.** Le même débat se rouvre à chaque session, avec les mêmes
-   arguments et la même conclusion.
-5. **Un GDD à jour du design, mais pas de ce qui l'a démenti.** Le document n'enregistre plus que les
-   succès : c'est devenu une plaquette, pas un outil de travail.
+1. **The GDD written whole before the prototype.** It describes a game that does not exist; nobody
+   corrects it afterwards, and it ends up lying with authority. Three sections, then code.
+2. **A pitch with no verb.** "An atmospheric space roguelite" makes it possible to implement *nothing*.
+3. **Numbers with no provenance.** Indistinguishable from a measurement after three months.
+4. **The "rejected" section left empty.** The same debate reopens at every session, with the same
+   arguments and the same conclusion.
+5. **A GDD up to date with the design, but not with what disproved it.** The document only records the
+   successes any more: it has become a brochure, not a working tool.
 
-## Après
+## Afterwards
 
-- `/carte-projet` — où vit ce que le GDD décrit, à mettre à jour dans le même commit.
-- `/verifier-en-jeu` — la seule chose qui puisse donner tort au GDD.
-- `docs/pitfalls/<domaine>.md` — à lire avant de coder le système qu'on vient de spécifier
-  (index : `docs/PITFALLS_UNITY.md`).
+- `/carte-projet` — where what the GDD describes lives, to be updated in the same commit.
+- `/verifier-en-jeu` — the only thing that can prove the GDD wrong.
+- `docs/pitfalls/<domain>.md` — to be read before coding the system just specified (index:
+  `docs/PITFALLS_UNITY.md`).

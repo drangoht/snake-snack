@@ -14,13 +14,13 @@
   </ItemGroup>
 
   <!--
-    La logique pure du jeu est compilée PAR CHEMIN dans l'assembly de test : un seul exemplaire du
-    code, lu par Unity d'un côté et par `dotnet test` de l'autre. Aucun moteur, aucun build, aucun
-    Unity installé n'est nécessaire — c'est ce qui permet de faire tourner ces tests en CI sur un
-    runner Linux, et à un hook de les rejouer en quelques secondes après chaque édition.
+    The game's pure logic is compiled BY PATH into the test assembly: a single copy of the code,
+    read by Unity on one side and by `dotnet test` on the other. No engine, no build and no
+    installed Unity are needed — that is what makes it possible to run these tests in CI on a Linux
+    runner, and a hook to replay them in a few seconds after every edit.
 
-    ⚠ Corollaire : un fichier de Rules/ qui écrirait `using UnityEngine` casse cette compilation.
-    C'est voulu — l'erreur arrive au bon moment, avant que la dépendance ne s'installe.
+    ⚠ Corollary: a file in Rules/ that wrote `using UnityEngine` breaks this compilation. That is
+    intended — the error comes at the right moment, before the dependency settles in.
   -->
   <ItemGroup>
     <Compile Include="..\Assets\Scripts\Rules\*.cs" />

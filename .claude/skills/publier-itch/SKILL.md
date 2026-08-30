@@ -1,78 +1,78 @@
 ---
 name: publier-itch
-description: Publier une nouvelle version de Snake Snack sur itch.io (build Unity → Butler push → commit du numéro de version). À invoquer quand l'utilisateur demande de « publier », « release », « pousser sur itch », « sortir une nouvelle version ». Enchaîne le build, le push et le commit via tools/release_itch.ps1.
+description: Publish a new version of Snake Snack on itch.io (Unity build → Butler push → commit of the version number). To be invoked when the user asks to "publish", "release", "push to itch", "ship a new version". Chains the build, the push and the commit through tools/release_itch.ps1.
 ---
 
-# Publier sur itch.io — Snake Snack
+# Publishing on itch.io — Snake Snack
 
-Distribution : **itch.io + Butler** (`Drangoht/snake-snack`). Un `butler push` donne
-l'auto-update aux joueurs de l'app itch (patch différentiel wharf) ; les joueurs web sont toujours à
-jour, la page servant le build courant. Runbook détaillé : `docs/RELEASE.md`. L'agent
-`release-manager` fait la même chose de bout en bout, devlog compris.
+Distribution: **itch.io + Butler** (`Drangoht/snake-snack`). A `butler push` gives auto-update to the
+players of the itch app (wharf differential patch); web players are always up to date, the page serving
+the current build. Detailed runbook: `docs/RELEASE.md`. The `release-manager` agent does the same thing
+end to end, devlog included.
 
-## Procédure (dans l'ordre)
+## Procedure (in order)
 
-### 1. Choisir le numéro de version
-Sémantique `MAJEUR.MINEUR.CORRECTIF`. La version courante est `bundleVersion` dans
-`ProjectSettings/ProjectSettings.asset` — **ne pas l'éditer à la main**, le script la pose lui-même.
-- **correctif** (x.y.**Z**) : bugfix, ajustement mineur ;
-- **mineur** (x.**Y**.0) : nouveau contenu, nouvelle mécanique ;
-- **majeur** (**X**.0.0) : refonte, rupture.
+### 1. Choose the version number
+Semantics `MAJOR.MINOR.PATCH`. The current version is `bundleVersion` in
+`ProjectSettings/ProjectSettings.asset` — **do not edit it by hand**, the script sets it itself.
+- **patch** (x.y.**Z**): bugfix, minor adjustment;
+- **minor** (x.**Y**.0): new content, new mechanic;
+- **major** (**X**.0.0): overhaul, breaking change.
 
-Si la nature n'est pas évidente, propose le bump et continue sans bloquer.
+If the nature is not obvious, propose the bump and carry on without blocking.
 
-### 2. Tout committer AVANT de lancer le script
-Le tampon de build (`v<version>-<sha>`) désigne le commit publié. Un arbre modifié produit un tampon
-suffixé `+`, qui ne correspond à **aucun commit** — le script le signale, il ne l'empêche pas.
+### 2. Commit everything BEFORE running the script
+The build stamp (`v<version>-<sha>`) designates the published commit. A modified tree produces a stamp
+suffixed with `+`, which matches **no commit** — the script reports it, it does not prevent it.
 
-⚠ **`Assets/Scenes/Game.unity` ressort modifiée à chaque build** (`SceneBuilder` renumérote tous les
-`fileID` : des milliers de lignes de diff pour une scène identique). L'écarter par
-`git checkout -- Assets/Scenes/Game.unity`, **sauf si `SceneBuilder.cs` a changé**.
+⚠ **`Assets/Scenes/Game.unity` comes out modified at every build** (`SceneBuilder` renumbers every
+`fileID`: thousands of diff lines for an identical scene). Discard it with
+`git checkout -- Assets/Scenes/Game.unity`, **unless `SceneBuilder.cs` changed**.
 
-### 3. Essai à blanc, puis publication
-Depuis la racine, **sans `-ExecutionPolicy Bypass`** (ce flag est refusé par le classifier auto et
-fait échouer l'appel) :
+### 3. Dry run, then publication
+From the root, **without `-ExecutionPolicy Bypass`** (that flag is refused by the automatic classifier
+and makes the call fail):
 ```
-& "tools/release_itch.ps1" -Version X.Y.Z -DryRun            # va jusqu'au staging, ne publie rien
-& "tools/release_itch.ps1" -Version X.Y.Z                    # canal web (defaut)
-& "tools/release_itch.ps1" -Version X.Y.Z -Target windows    # canal telechargeable
+& "tools/release_itch.ps1" -Version X.Y.Z -DryRun            # goes as far as staging, publishes nothing
+& "tools/release_itch.ps1" -Version X.Y.Z                    # web channel (default)
+& "tools/release_itch.ps1" -Version X.Y.Z -Target windows    # downloadable channel
 ```
-Timeout large : un build WebGL prend une dizaine de minutes.
+Generous timeout: a WebGL build takes ten minutes or so.
 
-Le script enchaîne : `bundleVersion` posée → build Unity (scène régénérée comprise) → vérification
-que le build porte **bien** la version demandée → staging propre → `butler push` → commit et push du
-numéro de version.
+The script chains: `bundleVersion` set → Unity build (regenerated scene included) → check that the
+build **really** carries the requested version → clean staging → `butler push` → commit and push of the
+version number.
 
-Paramètres utiles : `-SkipBuild` (re-push d'un build qu'on vient de construire soi-même — le script
-vérifie tout de même son tampon), `-Channel`, `-Itch user/slug`.
+Useful parameters: `-SkipBuild` (re-push of a build you have just made yourself — the script checks its
+stamp all the same), `-Channel`, `-Itch user/slug`.
 
-### 4. Vérifier
-- Sortie : « Publication OK — version X.Y.Z poussée ». Le tableau `butler status` peut afficher
-  l'ancienne version tant que le build est « processing » — c'est normal.
-- Ouvrir la page et lancer le jeu : le tampon en bas à droite doit porter la version publiée.
+### 4. Verify
+- Output: "Publish OK - version X.Y.Z pushed". The `butler status` table may show the old version as
+  long as the build is "processing" — that is normal.
+- Open the page and launch the game: the stamp at the bottom right must carry the published version.
 
-## Prérequis / pièges
-- **L'éditeur Unity doit être FERMÉ**, sinon le build en ligne de commande échoue.
-- **Butler authentifié** : fourni par l'app itch (dossier `broth`, détecté auto). Si « not
-  authorized », lancer une fois `"<butler.exe>" login` (chemin affiché par le script).
-- ⚠ **Une release a déjà expédié le binaire de la version PRÉCÉDENTE.** D'où la vérification du
-  tampon : le script exige que `build_stamp.json` porte la version demandée. Ne pas la contourner.
-- ⚠ **La date du build ne prouve rien** : Unity construit de façon incrémentale, un fichier identique
-  n'est pas réécrit. Seule la version embarquée tranche. (Et les métadonnées Windows d'un `.exe`
-  Unity décrivent le **moteur**, pas le jeu.)
-- ⚠ **Ne jamais tester `$?` après un exe natif en PowerShell 5.1** : `git`, Unity et Butler écrivent
-  leur progression sur stderr même quand tout va bien. Seul `$LASTEXITCODE` fait foi.
-- ⚠ **Le nom du canal décide si le fichier est jouable dans le navigateur** : `html5` (ou `html`, ou
-  `web`) est reconnu comme tel, tout autre nom produit une archive à télécharger — qui s'installe
-  parfaitement et ne se joue pas. Rien ne le signale.
+## Prerequisites / pitfalls
+- **The Unity editor must be CLOSED**, otherwise the command-line build fails.
+- **Butler authenticated**: provided by the itch app (`broth` folder, auto-detected). If "not
+  authorized", run `"<butler.exe>" login` once (path shown by the script).
+- ⚠ **One release has already shipped the binary of the PREVIOUS version.** Hence the stamp check: the
+  script requires `build_stamp.json` to carry the requested version. Do not bypass it.
+- ⚠ **The build's date proves nothing**: Unity builds incrementally, an identical file is not
+  rewritten. Only the embedded version settles it. (And the Windows metadata of a Unity `.exe` describe
+  the **engine**, not the game.)
+- ⚠ **Never test `$?` after a native exe in PowerShell 5.1**: `git`, Unity and Butler write their
+  progress on stderr even when all is well. Only `$LASTEXITCODE` is authoritative.
+- ⚠ **The channel's name decides whether the file is playable in the browser**: `html5` (or `html`, or
+  `web`) is recognised as such, any other name produces an archive to download — which installs
+  perfectly and does not play. Nothing reports it.
 
-## Prérequis côté itch.io, à faire UNE fois
-- *Kind of project* = **HTML** (tant que le projet est « Downloadable », le build web se télécharge
-  au lieu de se jouer), et le fichier coché **« This file will be played in the browser »**.
-- Case **Mobile friendly**, onglet **Classification**, **orientation** déclarée : ces trois réglages
-  ne sont dans aucun fichier du dépôt et se vérifient à la main.
+## Prerequisites on the itch.io side, to be done ONCE
+- *Kind of project* = **HTML** (as long as the project is "Downloadable", the web build downloads
+  instead of playing), and the file ticked **"This file will be played in the browser"**.
+- The **Mobile friendly** box, the **Classification** tab, the declared **orientation**: these three
+  settings are in no file of the repository and are checked by hand.
 
-## Après la release
-MAJ `README.md` / `CLAUDE.md` et le texte de la page store (`docs/ITCH_STORE_PAGE.md`) si la version
-change quelque chose de visible. Devlog : rédigé dans `docs/DEVLOG.md`, puis collé sur itch —
-⚠ **cocher « Published »**, sans quoi le billet reste en brouillon sans rien dire.
+## After the release
+Update `README.md` / `CLAUDE.md` and the store page's text (`docs/ITCH_STORE_PAGE.md`) if the version
+changes something visible. Devlog: written in `docs/DEVLOG.md`, then pasted on itch — ⚠ **tick
+"Published"**, without which the post stays a draft saying nothing about it.

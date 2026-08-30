@@ -1,53 +1,75 @@
 # Devlog — Snake Snack
 
-Source de vérité des notes de version : ce qui est **réellement sorti**, dans l'ordre décroissant.
-Chaque entrée est écrite ici avant d'être collée sur itch — rien n'est publié qui ne soit ici.
+The source of truth for release notes: what has **actually shipped**, newest first. Every entry is
+written here before being pasted on itch — nothing is published that is not here.
 
-Écrire **pour le joueur**, pas pour l'historique git : « les blobs ne restent plus collés au filet »
-et non « fix(BlobController): clamp horizontal velocity ».
+Write **for the player**, not for the git history: "the blobs no longer stick to the net" and not
+"fix(BlobController): clamp horizontal velocity".
 
-## v0.2.0 — Le serpent glisse, et il a perdu ses angles droits (2026-08-29)
+## v0.3.0 — The game speaks English (2026-08-30)
 
-**Nouveautés**
-- **Le serpent glisse d'une case à l'autre** au lieu de sauter. Les règles n'ont pas bougé d'un
-  millimètre — c'est toujours une case par tick, au même rythme — mais on le voit enfin se déplacer.
-- **Fini le papier millimétré** : le corps, la tête et la pomme ont des coins arrondis. Le serpent
-  du menu et celui de la partie sont enfin le même animal.
-- **Avaler se sent** : la tête gonfle sur la bouchée, le nouvel anneau apparaît d'un coup à la queue,
-  et le score fait un bond quand il monte.
-- **On voit enfin ce qui vous a tué** : la case fautive s'illumine, le jeu marque un très court temps
-  d'arrêt, et l'écran de fin n'arrive qu'après — le temps de comprendre.
+**News**
+- **The whole game is now in English** — menu, controls, pause and end screens. Nothing about how it
+  plays has changed.
+- **The keys are announced more accurately than before**: the game reads the physical WASD block, so
+  it now says "Arrows or WASD". On a French AZERTY keyboard those are the same four keys, printed
+  Z, Q, S, D — and the arrows work everywhere.
+- **The snake has a face.** Two eyes on the head, looking where it is going. They squash with it when
+  it swallows and lean with it in a turn.
+- **The apple pops in** instead of simply appearing, the head **leans into its turns**, and beating
+  your best score makes the number jump on the end screen.
 
-**Équilibrage**
-- Rien. Ni la vitesse, ni la grille, ni le score, ni le tirage des pommes n'ont changé : une partie
-  se joue exactement comme en 0.1.0.
+**Balance**
+- Nothing. Speed, grid, score and apple draw are untouched: a game plays exactly as in 0.2.0. Your
+  best score is kept.
 
-**Corrections**
-- Marteler Espace juste avant de mourir ne saute plus l'écran de fin. La partie repartait aussitôt,
-  sans qu'on ait vu ni son score ni ce qui l'avait arrêtée.
+**Fixes**
+- Nothing new; nothing was broken.
 
-**Toujours pas là** : le son et la musique.
+**Still not here**: sound and music.
 
-## v0.1.0 — Première version jouable (2026-08-28)
+## v0.2.0 — The snake glides, and it has lost its right angles (2026-08-29)
 
-**Nouveautés**
-- Le jeu de Snake au complet : un serpent qui s'allonge à chaque pomme, des murs qui tuent, un score
-  et un record qui survit à la fermeture du jeu.
-- Un menu principal — jouer, comment jouer, crédits — au clavier comme à la souris.
-- Une pause, et un demi-tour refusé qui **se voit** au lieu d'être avalé en silence.
-- Jouable directement dans le navigateur.
+**News**
+- **The snake glides from cell to cell** instead of jumping. The rules have not moved a millimetre —
+  it is still one cell per tick, at the same rhythm — but you can finally see it move.
+- **No more graph paper**: the body, the head and the apple have rounded corners. The snake in the
+  menu and the one in the game are finally the same animal.
+- **Swallowing feels like something**: the head swells on the bite, the new ring appears at the tail,
+  and the score jumps when it goes up.
+- **You finally see what killed you**: the offending cell lights up, the game holds for a very short
+  beat, and the end screen only arrives afterwards — time enough to understand.
 
-<!-- Gabarit d'une entrée, à copier en TÊTE de fichier :
+**Balance**
+- Nothing. Neither the speed, nor the grid, nor the score, nor the apple draw changed: a game plays
+  exactly as in 0.1.0.
 
-## vX.Y.Z — <résumé en quelques mots> (AAAA-MM-JJ)
+**Fixes**
+- Hammering Space just before dying no longer skips the end screen. The game used to restart
+  immediately, without you seeing either your score or what had stopped you.
 
-**Nouveautés**
-- …
+**Still not here**: sound and music.
 
-**Équilibrage**
-- …
+## v0.1.0 — First playable version (2026-08-28)
 
-**Corrections**
-- …
+**News**
+- The full game of Snake: a snake that grows with every apple, walls that kill, a score and a best
+  score that survives closing the game.
+- A main menu — play, how to play, credits — with keyboard as well as mouse.
+- A pause, and a refused reversal that **shows** instead of being swallowed in silence.
+- Playable straight in the browser.
+
+<!-- Template for an entry, to copy at the TOP of the file:
+
+## vX.Y.Z — <a few words of summary> (YYYY-MM-DD)
+
+**News**
+- ...
+
+**Balance**
+- ...
+
+**Fixes**
+- ...
 
 -->

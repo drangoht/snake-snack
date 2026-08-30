@@ -1,76 +1,75 @@
 ---
 name: carte-projet
-description: Carte/index de Snake Snack (Unity / C#). À invoquer AVANT toute exploration du code pour localiser un système, un écran, une donnée, un asset ou un outil sans repartir de zéro avec Glob/Grep. Contient aussi les checklists de câblage et les points d'entrée.
+description: Map/index of Snake Snack (Unity / C#). To be invoked BEFORE any exploration of the code, to locate a system, a screen, a piece of data, an asset or a tool without starting over from scratch with Glob/Grep. Also holds the wiring checklists and the entry points.
 ---
 
-# Carte du projet — Snake Snack
+# Project map — Snake Snack
 
-Cette carte dit **où** se trouve chaque chose. Pour le reste : `docs/GDD.md` (**pourquoi** le jeu est
-réglé ainsi ; §4 renvoie à `docs/gdd/<systeme>.md`) · `docs/PITFALLS_UNITY.md` (index des **pièges**,
-ouvrir le domaine) · `CLAUDE.md` (phase courante et
-conventions).
+This map says **where** each thing is. For the rest: `docs/GDD.md` (**why** the game is tuned this way;
+§4 refers to `docs/gdd/<system>.md`) · `docs/PITFALLS_UNITY.md` (index of the **pitfalls**, open the
+domain) · `CLAUDE.md` (current phase and conventions).
 
-> **Maintenir cette carte à jour** : dès que tu ajoutes, supprimes ou renommes un système, un écran,
-> une donnée ou un outil, mets à jour la section concernée **dans le même commit**. Une carte périmée
-> est pire qu'absente — elle donne une réponse fausse avec autorité. En cas de doute, vérifie le
-> fichier avant de l'affirmer ; ne recopie pas aveuglément.
+> **Keep this map up to date**: as soon as you add, remove or rename a system, a screen, a piece of data
+> or a tool, update the section concerned **in the same commit**. A stale map is worse than an absent
+> one — it gives a false answer with authority. When in doubt, check the file before asserting it; do
+> not copy blindly.
 
-> ⚠ **Plafond : ~150 lignes.** Cette carte est chargée en entier à chaque invocation, et elle grossit
-> avec le projet. Elle dit **où**, en une ligne par entrée. Le *comment* appartient au code, le
-> *pourquoi* au GDD, et un défaut qui ne lève aucune erreur appartient à `docs/pitfalls/`. Au-delà
-> du plafond, sortir une section dans un fichier voisin plutôt que d'allonger.
+> ⚠ **Ceiling: ~150 lines.** This map is loaded whole at every invocation, and it grows with the
+> project. It says **where**, one line per entry. The *how* belongs to the code, the *why* to the GDD,
+> and a defect that raises no error belongs to `docs/pitfalls/`. Beyond the ceiling, move a section out
+> into a neighbouring file rather than lengthening this one.
 
-## Arborescence
+## Tree
 
 ```
 Assets/
-  Editor/                     Scripts d'éditeur — NE PARTENT PAS dans le build
-    BuildTools.cs             Builds Windows et web, tampon de build, garde-cache web
-    RenderPipelineSetup.cs    Active URP sur tous les niveaux de qualité
-    SceneBuilder.cs           ⚠ Construit la scène ENTIÈREMENT par code — la scène est un artefact
+  Editor/                     Editor scripts — DO NOT SHIP in the build
+    BuildTools.cs             Windows and web builds, build stamp, web cache guard
+    RenderPipelineSetup.cs    Enables URP on every quality level
+    SceneBuilder.cs           ⚠ Builds the scene ENTIRELY from code — the scene is an artefact
   Scripts/
-    Core/                     Socle : BuildInfo, réglages, types partagés
-    Rules/                    ⚠ Logique PURE testable — aucun `using UnityEngine`. Voir `references/rules.md`
-    Gameplay/                 MonoBehaviour : entités, contrôles, physique
-    UI/                       Écrans, HUD, menus
-  Settings/                   Assets URP (pipeline, renderer 2D, réglages globaux)
-  Resources/                  Chargé PAR CHEMIN à l'exécution — embarqué EN ENTIER dans le binaire
-  Art/                        Sources consommées par GUID (planches d'animation, prefabs)
-  Scenes/Game.unity           ⚠ ARTEFACT régénéré par SceneBuilder — ne pas éditer à la main
-  WebGLTemplates/SnakeSnack/  Page hôte du build web — ⚠ la moitié du portage mobile vit ici
-  StreamingAssets/            Fichiers bruts lus au démarrage (tuning JSON, localisation)
-ProjectSettings/              bundleVersion (posée par le script de release), icônes, URP
-tests/                        xUnit — compile Assets/Scripts/Rules/ PAR CHEMIN. `dotnet test`
-tools/                        Build, publication, serveur web local, pilotage du jeu — voir `references/data-outils.md`
-docs/                         GDD, pièges, rapports de test, devlog — voir `references/data-outils.md`
-.claude/                      Agents, skills, hooks (versionnés au même titre que le code)
+    Core/                     Groundwork: BuildInfo, settings, shared types
+    Rules/                    ⚠ PURE testable logic — no `using UnityEngine`. See `references/rules.md`
+    Gameplay/                 MonoBehaviour: entities, controls, physics
+    UI/                       Screens, HUD, menus
+  Settings/                   URP assets (pipeline, 2D renderer, global settings)
+  Resources/                  Loaded BY PATH at runtime — embedded WHOLE in the binary
+  Art/                        Sources consumed by GUID (animation sheets, prefabs)
+  Scenes/Game.unity           ⚠ ARTEFACT regenerated by SceneBuilder — do not edit by hand
+  WebGLTemplates/SnakeSnack/  Host page of the web build — ⚠ half of the mobile port lives here
+  StreamingAssets/            Raw files read at startup (JSON tuning, localisation)
+ProjectSettings/              bundleVersion (set by the release script), icons, URP
+tests/                        xUnit — compiles Assets/Scripts/Rules/ BY PATH. `dotnet test`
+tools/                        Build, publishing, local web server, game driving — see `references/data-outils.md`
+docs/                         GDD, pitfalls, test reports, devlog — see `references/data-outils.md`
+.claude/                      Agents, skills, hooks (versioned in the same way as the code)
 ```
 
-## Où est le détail
+## Where the detail is
 
-Cette page dit **quelle couche** ouvrir ; le détail par fichier vit à côté, et **on n'ouvre que la
-couche concernée** — c'est tout l'intérêt du découpage.
+This page says **which layer** to open; the per-file detail lives alongside, and **only the layer
+concerned is opened** — that is the whole point of the split.
 
-| Ce qu'on cherche | Ouvrir |
+| What you are looking for | Open |
 |---|---|
-| Une règle chiffrée, une décision de jeu testée (cadence, grille, score, pomme, aléa) | `.claude/skills/carte-projet/references/rules.md` |
-| Un `MonoBehaviour`, la scène, l'affichage, l'entrée clavier, le HUD | `.claude/skills/carte-projet/references/moteur.md` |
-| Un JSON de tuning, un script `tools/`, un document de `docs/` | `.claude/skills/carte-projet/references/data-outils.md` |
+| A numbered rule, a tested game decision (tick rate, grid, score, apple, randomness) | `.claude/skills/carte-projet/references/rules.md` |
+| A `MonoBehaviour`, the scene, the rendering, keyboard input, the HUD | `.claude/skills/carte-projet/references/moteur.md` |
+| A tuning JSON, a `tools/` script, a `docs/` document | `.claude/skills/carte-projet/references/data-outils.md` |
 
-⚠ Ces trois fichiers se maintiennent comme cette page : une ligne par entrée, dans le commit qui
-change ce qu'ils décrivent.
+⚠ These three files are maintained like this page: one line per entry, in the commit that changes what
+they describe.
 
 
-## Checklists de câblage
+## Wiring checklists
 
-Un contenu ajouté « à moitié » ne lève aucune erreur : il est simplement inerte. Tenir ici la liste
-des points à toucher pour chaque type d'ajout.
+Content added "halfway" raises no error: it is simply inert. Keep here the list of the points to touch
+for each kind of addition.
 
-**Ajouter un élément de contenu** (exemple à adapter) :
-1. La donnée (JSON / ScriptableObject).
-2. La règle correspondante dans `Rules/` **et son test**.
-3. Le câblage moteur (`Gameplay/`).
-4. Le **son** — ⚠ une entrée absente de la table audio est muette, sans erreur.
-5. Le **sprite** — ⚠ vérifier `Resources/` vs `Art/`, se tromper n'affiche rien d'anormal.
-6. Le **texte** (nom, description) et sa clé de localisation.
-7. La mise à jour de cette carte, dans le même commit.
+**Adding a piece of content** (an example to adapt):
+1. The data (JSON / ScriptableObject).
+2. The matching rule in `Rules/` **and its test**.
+3. The engine wiring (`Gameplay/`).
+4. The **sound** — ⚠ an entry missing from the audio table is silent, with no error.
+5. The **sprite** — ⚠ check `Resources/` vs `Art/`, getting it wrong displays nothing abnormal.
+6. The **text** (name, description) and its localisation key.
+7. Updating this map, in the same commit.

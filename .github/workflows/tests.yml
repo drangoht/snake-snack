@@ -1,8 +1,8 @@
-name: Tests unitaires
+name: Unit tests
 
-# Les tests couvrent Assets/Scripts/Rules/ — de la logique pure sans dépendance moteur, compilée
-# directement dans l'assembly de test (voir tests/SnakeSnack.Tests.csproj). Aucun moteur ni
-# build n'est nécessaire : un runner Linux suffit, et le job tourne en une poignée de secondes.
+# The tests cover Assets/Scripts/Rules/ — pure logic with no engine dependency, compiled directly
+# into the test assembly (see tests/SnakeSnack.Tests.csproj). No engine and no build are needed:
+# a Linux runner is enough, and the job runs in a handful of seconds.
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Une PR qui reçoit plusieurs pushes n'occupe qu'un runner : les runs précédents sont annulés.
+# A PR receiving several pushes occupies a single runner: the previous runs are cancelled.
 concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
@@ -24,28 +24,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Récupérer le dépôt
+      - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Installer le SDK .NET 8
+      - name: Install the .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: Cache des paquets NuGet
+      - name: Cache the NuGet packages
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('tests/*.csproj') }}
           restore-keys: nuget-${{ runner.os }}-
 
-      - name: Restaurer les dépendances
+      - name: Restore the dependencies
         run: dotnet restore tests/SnakeSnack.Tests.csproj
 
-      - name: Compiler
+      - name: Build
         run: dotnet build tests/SnakeSnack.Tests.csproj --configuration Release --no-restore
 
-      - name: Exécuter les tests
+      - name: Run the tests
         run: |
           set -o pipefail
           dotnet test tests/SnakeSnack.Tests.csproj \
@@ -56,18 +56,18 @@ jobs:
             --results-directory TestResults \
             | tee test-output.txt
 
-      - name: Résumé
+      - name: Summary
         if: always()
         run: |
           {
-            echo "### Tests unitaires"
+            echo "### Unit tests"
             echo ""
             if grep -qE '^\s*(Passed!|Reussi!)' test-output.txt 2>/dev/null; then
               echo '```'
               grep -E '^\s*(Passed!|Failed!|Reussi!|Echec)' test-output.txt
               echo '```'
             else
-              echo "Échec — voir le journal du job et l'artefact \`test-results\`."
+              echo "Failed — see the job log and the \`test-results\` artefact."
               echo ""
               echo '```'
               grep -E '^\s*(Failed|Echec|error)' test-output.txt | head -30 || true
@@ -75,7 +75,7 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Publier les résultats en cas d'échec
+      - name: Publish the results on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:

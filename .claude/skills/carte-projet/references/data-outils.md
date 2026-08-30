@@ -1,48 +1,48 @@
-# Carte — données, outils et documents
+# Map — data, tools and documents
 
 ## §Data
 
-| Où | Quoi |
+| Where | What |
 |---|---|
-| `Assets/StreamingAssets/reglages.json` | Cadence, plafond de rattrapage, dimensions de grille, profondeur de file, durées du retour de refus, **graine des pommes** (`0` = une neuve à chaque partie ; toute autre valeur = mode banc, mêmes pommes à chaque partie) |
-| `Assets/Scripts/Rules/ReglagesJeu.cs` | Le schéma correspondant + `Valider()`, qui **corrige jamais en silence** |
-| `Assets/Scripts/Core/ChargeurReglages.cs` | La lecture côté moteur |
+| `Assets/StreamingAssets/settings.json` | Tick rate, catch-up cap, grid dimensions, queue depth, durations of the rejection feedback, **apple seed** (`0` = a fresh one at every game; any other value = bench mode, the same apples at every game) |
+| `Assets/Scripts/Rules/GameSettings.cs` | The matching schema + `Validate()`, which **never corrects silently** |
+| `Assets/Scripts/Core/SettingsLoader.cs` | The reading on the engine side |
 
-⚠ Le fichier lu à l'exécution est celui **du build** (`Build/Windows/SnakeSnack_Data/StreamingAssets/`),
-pas celui d'`Assets/` : c'est ce qui permet de régler la cadence sans reconstruire. Un rebuild écrase
-le premier par le second.
+⚠ The file read at runtime is the **build's** one (`Build/Windows/SnakeSnack_Data/StreamingAssets/`),
+not the one in `Assets/`: that is what makes it possible to tune the tick rate without rebuilding. A
+rebuild overwrites the former with the latter.
 
-⚠ Champs en `camelCase` dans `ReglagesJeu` — `JsonUtility` associe les clés du JSON aux *champs* par
-leur nom exact. Les renommer en PascalCase ferait retomber chaque valeur sur son défaut, sans erreur.
+⚠ Fields in `camelCase` in `GameSettings` — `JsonUtility` matches the JSON keys to the *fields* by their
+exact name. Renaming them to PascalCase would make every value fall back to its default, with no error.
 
-⚠ En WebGL, `StreamingAssets` est une URL : le chargeur n'y lit rien et rend les valeurs du GDD.
+⚠ Under WebGL, `StreamingAssets` is a URL: the loader reads nothing there and returns the GDD's values.
 
-## §Outils — `tools/`
+## §Tools — `tools/`
 
-| Outil | Ce qu'il fait |
+| Tool | What it does |
 |---|---|
-| `build.ps1` | **Construit** (Windows/web), et `-Lancer` enchaîne sur la capture. Seul appelant d'Unity |
-| `configurer.ps1` | Dit où sont Unity, Python, dotnet, butler — et ce qui manque |
-| `environnement.ps1` | Résout et mémorise ces chemins (`local.settings.json`, hors git). À dot-sourcer |
-| `release_itch.ps1` | Publie une version (build → butler push → commit). Skill `/publier-itch` |
-| `serve_web.py` | Sert `Build/Web` **sans cache navigateur** — indispensable après un rebuild |
-| `piloter_jeu.py` | Lance le build Windows, injecte des touches, capture la fenêtre |
-| `generer_illustration_serpent.py` | **Produit** `Assets/Resources/Illustrations/serpent-menu.png` (le serpent du menu). Lit la palette dans `UiPalette.cs`, ne recopie aucune couleur. `--apercu` l'écrit sur le fond réel du jeu |
-| `generer_polices.py` | **Produit** les deux `.ttf` de `Assets/Resources/Polices/` en instanciant le Nunito variable amont. `--verifier` revalide la `cmap` sans rien réécrire |
+| `build.ps1` | **Builds** (Windows/web), and `-Run` chains on to the capture. The only caller of Unity |
+| `configure.ps1` | Says where Unity, Python, dotnet and butler are — and what is missing |
+| `environment.ps1` | Resolves and remembers those paths (`local.settings.json`, outside git). To be dot-sourced |
+| `release_itch.ps1` | Publishes a version (build → butler push → commit). `/publier-itch` skill |
+| `serve_web.py` | Serves `Build/Web` **with no browser cache** — indispensable after a rebuild |
+| `drive_game.py` | Launches the Windows build, injects keys, captures the window |
+| `generate_snake_illustration.py` | **Produces** `Assets/Resources/Illustrations/snake-menu.png` (the menu's snake). Reads the palette from `UiPalette.cs`, copies no colour. `--preview` writes it on the game's real background |
+| `generate_fonts.py` | **Produces** the two `.ttf` of `Assets/Resources/Fonts/` by instancing the upstream variable Nunito. `--check` revalidates the `cmap` without rewriting anything |
 
-⚠ **Aucun chemin d'outil externe en dur nulle part** : `Unity.exe` n'est pas au même endroit d'une
-machine à l'autre. Tout passe par `environnement.ps1`.
+⚠ **No external tool path hard-coded anywhere**: `Unity.exe` is not in the same place from one machine
+to the next. Everything goes through `environment.ps1`.
 
 ## §Docs
 
 | Question | Document |
 |---|---|
-| Phase courante, conventions | `CLAUDE.md` (chargé automatiquement) |
-| *Pourquoi* le jeu est réglé ainsi | `docs/GDD.md` — le remplir : skill `/rediger-le-gdd` |
-| Quels pièges guettent | `docs/pitfalls/<domaine>.md` (index : `docs/PITFALLS_UNITY.md`) |
-| Ce qui a été testé / mesuré | `docs/TEST_REPORT.md` |
-| Ce qui est réellement sorti | `docs/DEVLOG.md` |
-| Publier | `docs/RELEASE.md` + skill `/publier-itch` |
-| Le texte de la page store | `docs/ITCH_STORE_PAGE.md` |
-| L'identité visuelle (palette, typo, contraste) | `docs/ART.md` |
-| Un brief détaillé, l'historique des décisions visuelles | `docs/art/` |
+| Current phase, conventions | `CLAUDE.md` (loaded automatically) |
+| *Why* the game is tuned this way | `docs/GDD.md` — to fill it: `/rediger-le-gdd` skill |
+| Which pitfalls lie in wait | `docs/pitfalls/<domain>.md` (index: `docs/PITFALLS_UNITY.md`) |
+| What has been tested / measured | `docs/TEST_REPORT.md` |
+| What has actually shipped | `docs/DEVLOG.md` |
+| Publishing | `docs/RELEASE.md` + `/publier-itch` skill |
+| The store page's text | `docs/ITCH_STORE_PAGE.md` |
+| The visual identity (palette, typography, contrast) | `docs/ART.md` |
+| A detailed brief, the history of the visual decisions | `docs/art/` |
