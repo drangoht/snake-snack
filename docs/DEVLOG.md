@@ -6,6 +6,33 @@ written here before being pasted on itch — nothing is published that is not he
 Write **for the player**, not for the git history: "the blobs no longer stick to the net" and not
 "fix(BlobController): clamp horizontal velocity".
 
+## v0.4.0 — It plays on a phone (2026-08-30)
+
+**News**
+- **The game is playable with a finger.** Hold the device in landscape: **swipe anywhere** on the
+  playfield to turn, or use the **directional pad** in the right-hand margin. Both work, all the time —
+  take whichever you prefer.
+- **A pause button**, top left. Tap anywhere to resume; press the button again from the pause to go
+  back to the menu.
+- **Tap to play again** on the end screen. One press, zero waiting, exactly as the space bar.
+- **The instructions no longer name keys you do not have.** On a phone the game says "swipe or use the
+  pad", not "press Esc".
+- **The controls cost the playfield nothing.** They sit in the margin the grid already left empty: not
+  one cell had to shrink to make room.
+
+**Balance**
+- Nothing. Same speed, same grid, same score, same apple draw — a game plays exactly as in 0.3.0, and
+  your best score is kept.
+
+**Fixes**
+- Nothing new; nothing was broken.
+
+**Still not here**: sound and music.
+
+⚠ **Honest note**: the touch controls have been tested with a simulated finger, not yet on a real
+phone. If something feels wrong on yours — a key too small, a swipe that does not take — that is worth
+telling me, and it is exactly the feedback this was waiting for.
+
 ## v0.3.0 — The game speaks English (2026-08-30)
 
 **News**
