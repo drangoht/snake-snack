@@ -3,36 +3,35 @@ using UnityEngine;
 namespace SnakeSnack
 {
     /// <summary>
-    /// Carte d'identité du binaire : le numéro de version publié et le commit dont il est issu.
+    /// The binary's identity card: the published version number and the commit it came from.
     ///
-    /// <para>Le tampon affiché en bas de l'écran n'est pas là pour le joueur mais pour le
-    /// <b>rapport de bug</b> : sans lui, une capture d'écran ne dit pas quelle version elle montre,
-    /// et une partie de test peut porter sur un build périmé sans que personne ne s'en aperçoive —
-    /// ce qui compte double pour une page web, où le navigateur sert volontiers un ancien fichier
-    /// depuis son cache.</para>
+    /// <para>The stamp shown at the bottom of the screen is not there for the player but for the
+    /// <b>bug report</b>: without it, a screenshot does not say which version it shows, and a test
+    /// session can run on a stale build without anyone noticing — which counts double for a web
+    /// page, where the browser happily serves an old file from its cache.</para>
     ///
-    /// <para>La version vient des réglages du projet ; le SHA vit dans une ressource écrite par le
-    /// build lui-même, et non compilée en dur : il doit désigner le commit dont ce binaire est
-    /// issu, connu au dernier moment.</para>
+    /// <para>The version comes from the project settings; the SHA lives in a resource written by the
+    /// build itself rather than compiled in: it must name the commit this binary came from, known at
+    /// the last moment.</para>
     /// </summary>
     public static class BuildInfo
     {
-        /// <summary>Ressource écrite par le build : une ligne, le SHA court.</summary>
+        /// <summary>Resource written by the build: one line, the short SHA.</summary>
         public const string ResourcePath = "build_sha";
 
         static string sha;
 
-        /// <summary>Version du projet, telle qu'elle sera publiée.</summary>
+        /// <summary>Project version, as it will be published.</summary>
         public static string Version => Application.version;
 
         /// <summary>
-        /// SHA court du commit dont ce binaire est issu — suffixé <c>+</c> si l'arbre de travail
-        /// portait des modifications, <c>dev</c> si git n'a rien pu dire.
+        /// Short SHA of the commit this binary came from — suffixed with <c>+</c> if the working
+        /// tree carried changes, <c>dev</c> if git could say nothing.
         /// </summary>
         /// <remarks>
-        /// Les trois cas ne disent pas la même chose : un SHA nu désigne un commit qu'on peut
-        /// ressortir ; un SHA suffixé prévient que le binaire ne correspond à <b>aucun</b> commit ;
-        /// « dev » avoue une ignorance, là où un SHA périmé prétendrait savoir.
+        /// The three cases do not say the same thing: a bare SHA names a commit that can be checked
+        /// out again; a suffixed SHA warns that the binary matches <b>no</b> commit; "dev" admits
+        /// ignorance, where a stale SHA would claim knowledge.
         /// </remarks>
         public static string GitSha
         {
@@ -46,7 +45,7 @@ namespace SnakeSnack
             }
         }
 
-        /// <summary>Ce qui s'affiche à l'écran : <c>v1.2.0-a1b2c3d</c>.</summary>
+        /// <summary>What is shown on screen: <c>v1.2.0-a1b2c3d</c>.</summary>
         public static string Label => $"v{Version}-{GitSha}";
     }
 }

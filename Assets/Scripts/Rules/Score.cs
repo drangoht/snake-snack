@@ -1,90 +1,91 @@
 namespace SnakeSnack.Rules
 {
     /// <summary>
-    /// Le score de la partie en cours et le record de toutes les parties (GDD §4.5).
+    /// The score of the current game and the best of every game (GDD §4.5).
     /// </summary>
     /// <remarks>
-    /// ⚠ <b>Le record monte PENDANT la partie</b>, dès que le score courant le dépasse — pas à la
-    /// mort. Le score est monotone croissant : attendre la fin ferait afficher un record inférieur
-    /// au score affiché juste à côté, ce qui se lit comme un défaut d'affichage et non comme une
-    /// règle. Et le record d'un onglet fermé en cours de partie serait perdu.
+    /// ⚠ <b>The best score rises DURING the game</b>, as soon as the current score passes it — not
+    /// on death. The score is monotonically increasing: waiting for the end would display a best
+    /// score lower than the score shown right next to it, which reads as a display defect rather
+    /// than a rule. And the best score of a tab closed mid-game would be lost.
     ///
-    /// <para>⚠ <b>« Record battu » se juge contre le record d'AVANT la partie</b>, jamais contre
-    /// <see cref="Record"/> : celui-ci vient d'être relevé par le score courant, les comparer
-    /// donnerait toujours faux. C'est ce prédicat qui déclenche la mention « nouveau record » de
-    /// l'écran de fin, sans laquelle deux nombres égaux côte à côte passent pour un bug (§4.5).</para>
+    /// <para>⚠ <b>"Best beaten" is judged against the best score from BEFORE the game</b>, never
+    /// against <see cref="Best"/>: that one has just been raised by the current score, so comparing
+    /// them would always be false. It is this predicate that triggers the "new best" line on the end
+    /// screen, without which two equal numbers side by side look like a bug (§4.5).</para>
     ///
-    /// <para>La lecture et l'écriture persistantes vivent hors de <c>Rules/</c> : cette classe reçoit
-    /// le record connu à la construction et n'a aucune idée d'où il vient.</para>
+    /// <para>Persistent reading and writing live outside <c>Rules/</c>: this class receives the
+    /// known best score at construction and has no idea where it came from.</para>
     /// </remarks>
     public sealed class Score
     {
         private int _points;
-        private int _record;
-        private int _recordAvantLaPartie;
+        private int _best;
+        private int _bestBeforeTheGame;
 
-        /// <param name="recordConnu">
-        /// Record lu au démarrage. ⚠ <b>Normalisé, jamais refusé</b> : le jeu ne doit pas refuser de
-        /// démarrer pour un compteur (§4.5), et en WebGL ce stockage peut disparaître ou revenir
-        /// abîmé.
+        /// <param name="knownBest">
+        /// Best score read at startup. ⚠ <b>Normalised, never rejected</b>: the game must not refuse
+        /// to start over a counter (§4.5), and in WebGL that storage can disappear or come back
+        /// damaged.
         /// </param>
-        public Score(int recordConnu = 0)
+        public Score(int knownBest = 0)
         {
-            _record = NormaliserRecord(recordConnu);
-            _recordAvantLaPartie = _record;
+            _best = NormaliseBest(knownBest);
+            _bestBeforeTheGame = _best;
             _points = 0;
         }
 
-        /// <summary>Pommes mangées dans la partie en cours, +1 par pomme, rien d'autre (§4.5).</summary>
+        /// <summary>Apples eaten in the current game, +1 per apple, nothing else (§4.5).</summary>
         public int Points
         {
             get { return _points; }
         }
 
-        /// <summary>Le plus haut score jamais atteint, la partie en cours comprise.</summary>
-        public int Record
+        /// <summary>The highest score ever reached, current game included.</summary>
+        public int Best
         {
-            get { return _record; }
+            get { return _best; }
         }
 
         /// <summary>
-        /// Vrai dès que la partie en cours a dépassé le record qu'elle a trouvé en commençant.
+        /// True as soon as the current game has passed the best score it found when it started.
         /// </summary>
         /// <remarks>
-        /// ⚠ <b>Égaler le record ne le bat pas.</b> Le joueur qui refait exactement son meilleur
-        /// score voit bien deux nombres identiques, sans mention « nouveau record » : il n'a rien
-        /// battu. Ce cas est le seul où l'égalité des deux nombres n'est pas la trace d'un record
-        /// neuf, et il est écrit exprès plutôt que déduit d'une comparaison à <see cref="Record"/>.
+        /// ⚠ <b>Matching the best score does not beat it.</b> A player who exactly repeats their
+        /// personal best does see two identical numbers, with no "new best" line: they beat nothing.
+        /// This is the only case where the two numbers being equal is not the mark of a fresh best,
+        /// and it is written on purpose rather than deduced from a comparison with
+        /// <see cref="Best"/>.
         /// </remarks>
-        public bool RecordBattu
+        public bool BestBeaten
         {
-            get { return _points > _recordAvantLaPartie; }
+            get { return _points > _bestBeforeTheGame; }
         }
 
         /// <summary>
-        /// Remet le score à zéro pour une nouvelle partie. Le record, lui, survit.
+        /// Resets the score to zero for a new game. The best score survives.
         /// </summary>
-        public void NouvellePartie()
+        public void NewGame()
         {
             _points = 0;
-            _recordAvantLaPartie = _record;
+            _bestBeforeTheGame = _best;
         }
 
         /// <summary>
-        /// Compte une pomme mangée.
+        /// Counts one apple eaten.
         /// </summary>
         /// <returns>
-        /// Vrai si le record vient de monter d'un cran — c'est le signal qui déclenche l'écriture
-        /// persistante, et il est rendu ici pour que l'appelant n'ait pas à comparer le record à sa
-        /// valeur précédente qu'il aurait fallu retenir de son côté.
+        /// True if the best score has just gone up a notch — that is the signal which triggers the
+        /// persistent write, and it is returned here so the caller does not have to compare the best
+        /// score with a previous value it would have had to remember on its own side.
         /// </returns>
-        public bool CompterUnePomme()
+        public bool CountApple()
         {
             _points++;
 
-            if (_points > _record)
+            if (_points > _best)
             {
-                _record = _points;
+                _best = _points;
                 return true;
             }
 
@@ -92,29 +93,29 @@ namespace SnakeSnack.Rules
         }
 
         /// <summary>
-        /// Le record utilisable à partir d'une valeur venue du stockage.
+        /// The usable best score from a value that came out of storage.
         /// </summary>
         /// <remarks>
-        /// ⚠ Un record absent ou abîmé <b>repart de zéro sans erreur bloquante</b> (§4.5). Une
-        /// valeur négative n'est pas un score possible : elle vient d'un stockage corrompu ou d'une
-        /// clé écrite par autre chose, et la laisser passer afficherait « Record -1 » à l'écran.
+        /// ⚠ A missing or damaged best score <b>restarts from zero with no blocking error</b>
+        /// (§4.5). A negative value is not a possible score: it comes from corrupted storage or from
+        /// a key written by something else, and letting it through would show "Best -1" on screen.
         /// </remarks>
-        public static int NormaliserRecord(int valeur)
+        public static int NormaliseBest(int value)
         {
-            return valeur < 0 ? 0 : valeur;
+            return value < 0 ? 0 : value;
         }
 
         /// <summary>
-        /// Longueur du serpent pour ce score (§4.5 : la longueur vaut <c>3 + score</c>).
+        /// Snake length for this score (§4.5: length equals <c>3 + score</c>).
         /// </summary>
         /// <remarks>
-        /// Cette égalité est la raison pour laquelle le jeu n'affiche <b>pas</b> la longueur : ce
-        /// serait un second nombre à lire pour la même information. Elle est écrite ici pour être
-        /// vérifiable par un test plutôt que rappelée dans un commentaire.
+        /// That equality is the reason the game does <b>not</b> display length: it would be a second
+        /// number to read for the same information. It is written here so it can be checked by a
+        /// test rather than recalled in a comment.
         /// </remarks>
-        public static int LongueurDuSerpent(int points)
+        public static int SnakeLength(int points)
         {
-            return Grille.LongueurInitiale + NormaliserRecord(points);
+            return Grid.InitialLength + NormaliseBest(points);
         }
     }
 }

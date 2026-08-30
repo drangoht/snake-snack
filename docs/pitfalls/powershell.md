@@ -1,14 +1,13 @@
-# Pièges — PowerShell (scripts de build et de release)
+# Pitfalls — PowerShell (build and release scripts)
 
 
-**⚠ Ne JAMAIS tester `$?` après un exécutable natif en PowerShell 5.1.** `git`, Unity et Butler
-écrivent leur progression sur **stderr même quand tout va bien**, ce qui met `$?` à `$false` alors
-que le code retour vaut 0. Le script de release annonçait « git push échoue » à **chaque release
-réussie**. Seul `$LASTEXITCODE` fait foi.
+**⚠ NEVER test `$?` after a native executable in PowerShell 5.1.** `git`, Unity and Butler write
+their progress on **stderr even when all is well**, which sets `$?` to `$false` while the return code
+is 0. The release script announced "git push failed" on **every successful release**. Only
+`$LASTEXITCODE` is authoritative.
 
-**⚠ `$ErrorActionPreference = 'Stop'` est un piège dans un script de build**, pour la même raison :
-la moindre ligne de progression sur stderr avorte le script.
+**⚠ `$ErrorActionPreference = 'Stop'` is a trap in a build script**, for the same reason: the
+slightest progress line on stderr aborts the script.
 
-**⚠ Un script de release qu'on ne peut essayer qu'en publiant ne se teste jamais qu'en production.**
-D'où `-DryRun`, qui va jusqu'au dossier de distribution et s'arrête avant tout effet visible.
-
+**⚠ A release script that can only be tried by publishing is only ever tested in production.** Hence
+`-DryRun`, which goes as far as the distribution folder and stops before any visible effect.

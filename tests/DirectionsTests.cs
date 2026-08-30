@@ -4,73 +4,73 @@ using Xunit;
 namespace SnakeSnack.Tests;
 
 /// <summary>
-/// Les opérations pures sur les directions — ici le sens du virage (docs/art/juicy.md §9).
+/// The pure operations on directions — here the sign of a turn (docs/art/juicy.md §9).
 /// </summary>
 /// <remarks>
-/// Une inclinaison du mauvais côté ne lève rien et ne se voit pas non plus : à 8° sur 125 ms,
-/// personne ne dira « elle penche à l'envers », le jeu paraîtra seulement un peu bizarre. D'où ces
-/// tests, qui fixent le signe une fois pour toutes.
+/// A tilt on the wrong side raises nothing and does not show either: at 8° over 125 ms, nobody will
+/// say "it leans the wrong way", the game will merely feel slightly odd. Hence these tests, which
+/// pin the sign down once and for all.
 /// </remarks>
 public class DirectionsTests
 {
     /// <summary>
-    /// Le signe suit la convention d'Unity : Z croissant tourne dans le sens anti-horaire, donc un
-    /// virage à gauche rend +1.
+    /// The sign follows Unity's convention: increasing Z turns counter-clockwise, so a left turn
+    /// returns +1.
     /// </summary>
     [Theory]
-    [InlineData(Direction.Nord, Direction.Ouest)]
-    [InlineData(Direction.Ouest, Direction.Sud)]
-    [InlineData(Direction.Sud, Direction.Est)]
-    [InlineData(Direction.Est, Direction.Nord)]
-    public void UnVirageAGaucheRendPlusUn(Direction avant, Direction apres)
+    [InlineData(Direction.North, Direction.West)]
+    [InlineData(Direction.West, Direction.South)]
+    [InlineData(Direction.South, Direction.East)]
+    [InlineData(Direction.East, Direction.North)]
+    public void ALeftTurnReturnsPlusOne(Direction before, Direction after)
     {
-        Assert.Equal(1, Directions.SensDuVirage(avant, apres));
+        Assert.Equal(1, Directions.TurnSign(before, after));
     }
 
     [Theory]
-    [InlineData(Direction.Nord, Direction.Est)]
-    [InlineData(Direction.Est, Direction.Sud)]
-    [InlineData(Direction.Sud, Direction.Ouest)]
-    [InlineData(Direction.Ouest, Direction.Nord)]
-    public void UnVirageADroiteRendMoinsUn(Direction avant, Direction apres)
+    [InlineData(Direction.North, Direction.East)]
+    [InlineData(Direction.East, Direction.South)]
+    [InlineData(Direction.South, Direction.West)]
+    [InlineData(Direction.West, Direction.North)]
+    public void ARightTurnReturnsMinusOne(Direction before, Direction after)
     {
-        Assert.Equal(-1, Directions.SensDuVirage(avant, apres));
+        Assert.Equal(-1, Directions.TurnSign(before, after));
     }
 
     [Fact]
-    public void AllerToutDroitNEstPasUnVirage()
+    public void GoingStraightOnIsNotATurn()
     {
-        foreach (Direction direction in Directions.Toutes())
+        foreach (Direction direction in Directions.All())
         {
-            Assert.Equal(0, Directions.SensDuVirage(direction, direction));
+            Assert.Equal(0, Directions.TurnSign(direction, direction));
         }
     }
 
     /// <summary>
-    /// ⚠ Le demi-tour n'arrive pas en jeu (la file le refuse au tick, GDD §4.2) — mais s'il
-    /// arrivait, pencher d'un côté plutôt que de l'autre serait une invention : les deux quarts de
-    /// tour sont également faux. Zéro veut dire « rien à montrer ».
+    /// ⚠ A reversal does not happen in play (the queue rejects it at the tick, GDD §4.2) — but if it
+    /// did, leaning one way rather than the other would be an invention: both quarter turns are
+    /// equally wrong. Zero means "nothing to show".
     /// </summary>
     [Fact]
-    public void UnDemiTourNePencheDAucunCote()
+    public void AReversalLeansNeitherWay()
     {
-        foreach (Direction direction in Directions.Toutes())
+        foreach (Direction direction in Directions.All())
         {
-            Assert.Equal(0, Directions.SensDuVirage(direction, Directions.Oppose(direction)));
+            Assert.Equal(0, Directions.TurnSign(direction, Directions.Opposite(direction)));
         }
     }
 
-    /// <summary>Le virage inverse penche de l'autre côté, exactement — jamais d'asymétrie.</summary>
+    /// <summary>The reverse turn leans the other way, exactly — never an asymmetry.</summary>
     [Fact]
-    public void LeVirageInverseRendLeSensOppose()
+    public void TheReverseTurnReturnsTheOppositeSign()
     {
-        foreach (Direction avant in Directions.Toutes())
+        foreach (Direction before in Directions.All())
         {
-            foreach (Direction apres in Directions.Toutes())
+            foreach (Direction after in Directions.All())
             {
                 Assert.Equal(
-                    -Directions.SensDuVirage(avant, apres),
-                    Directions.SensDuVirage(apres, avant));
+                    -Directions.TurnSign(before, after),
+                    Directions.TurnSign(after, before));
             }
         }
     }

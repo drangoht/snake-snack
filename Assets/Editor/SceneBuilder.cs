@@ -12,29 +12,29 @@ using SnakeSnack.UI;
 namespace SnakeSnack.EditorTools
 {
     /// <summary>
-    /// Construit la scène de jeu <b>entièrement par code</b>, puis l'écrit sur disque.
+    /// Builds the game scene <b>entirely in code</b>, then writes it to disk.
     ///
-    /// <para>C'est le choix structurant du gabarit : la scène est un <b>artefact</b>, régénéré à
-    /// chaque build, et non un fichier qu'on édite à la souris. En échange, tout le jeu se pilote
-    /// sans jamais ouvrir l'éditeur — un agent peut modifier une position, relancer le build en
-    /// batchmode et regarder le résultat, ce qu'un fichier <c>.unity</c> édité manuellement rend
+    /// <para>This is the template's structural choice: the scene is an <b>artefact</b>, regenerated
+    /// on every build, and not a file edited with a mouse. In exchange, the whole game can be driven
+    /// without ever opening the editor — an agent can change a position, relaunch the build in
+    /// batchmode and look at the result, which a hand-edited <c>.unity</c> file makes
     /// impossible.</para>
     /// </summary>
     /// <remarks>
-    /// ⚠ Conséquence à connaître : <c>Assets/Scenes/Game.unity</c> ressort <b>modifié après chaque
-    /// build</b>, parce que la régénération renumérote tous les <c>fileID</c> — des milliers de
-    /// lignes de diff pour une scène identique. L'écarter (<c>git checkout --</c>) sauf si
-    /// <c>SceneBuilder.cs</c> a changé, auquel cas la régénération porte une vraie différence.
-    /// <c>BuildTools.HasLocalChanges</c> l'exclut déjà du constat de propreté de l'arbre.
+    /// ⚠ A consequence worth knowing: <c>Assets/Scenes/Game.unity</c> comes out <b>modified after
+    /// every build</b>, because regeneration renumbers every <c>fileID</c> — thousands of diff lines
+    /// for an identical scene. Discard it (<c>git checkout --</c>) unless <c>SceneBuilder.cs</c> has
+    /// changed, in which case the regeneration carries a real difference.
+    /// <c>BuildTools.HasLocalChanges</c> already excludes it from the working-tree cleanliness check.
     ///
-    /// ⚠ Ne rien ajouter ici qui dépende d'un asset absent : un build en batchmode échoue sur une
-    /// référence nulle sans qu'on puisse la voir dans l'éditeur.
+    /// ⚠ Add nothing here that depends on a missing asset: a batchmode build fails on a null
+    /// reference without any way to see it in the editor.
     /// </remarks>
     public static class SceneBuilder
     {
         public const string ScenePath = "Assets/Scenes/Game.unity";
 
-        [MenuItem("Snake Snack/Regenerer la scene")]
+        [MenuItem("Snake Snack/Regenerate the scene")]
         public static void Build()
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -44,37 +44,37 @@ namespace SnakeSnack.EditorTools
             BuildEventSystem();
             BuildStampCanvas();
 
-            // ---- Le jeu commence ici -------------------------------------------------------
-            BuildJeu();
+            // ---- The game starts here ------------------------------------------------------
+            BuildGame();
             // ---------------------------------------------------------------------------------
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
 
-            Debug.Log($"Scene regeneree : {ScenePath}");
+            Debug.Log($"Scene regenerated: {ScenePath}");
         }
 
         /// <summary>
-        /// Pose l'unique objet de jeu. Tout le reste — aire, serpent, HUD — est construit au
-        /// démarrage par <see cref="JeuSnake"/> lui-même.
+        /// Places the single game object. Everything else — playfield, snake, HUD — is built at
+        /// startup by <see cref="SnakeGame"/> itself.
         /// </summary>
         /// <remarks>
-        /// ⚠ Rien n'est sérialisé dans la scène au-delà de ce composant : une référence sérialisée
-        /// perdue à la régénération ne lèverait rien, elle produirait seulement un écran incomplet.
+        /// ⚠ Nothing is serialised in the scene beyond this component: a serialised reference lost on
+        /// regeneration would raise nothing, it would only produce an incomplete screen.
         /// </remarks>
-        static void BuildJeu()
+        static void BuildGame()
         {
-            var go = new GameObject("Jeu");
-            go.AddComponent<JeuSnake>();
+            var go = new GameObject("Game");
+            go.AddComponent<SnakeGame>();
         }
 
         /// <remarks>
-        /// ⚠ <c>orthographicSize = 360</c> — la moitié de la hauteur du cadre de référence 720 px :
-        /// une unité monde vaut alors <b>exactement un pixel</b> de ce cadre, ce que
-        /// <see cref="SnakeSnack.Rules.Plateau"/> suppose partout (tailles de case, ancrage du
-        /// pictogramme). Toute autre valeur afficherait un jeu « pas tout à fait à la bonne
-        /// échelle », sans qu'aucun calcul ne soit faux.
+        /// ⚠ <c>orthographicSize = 360</c> — half the height of the 720 px reference frame: one world
+        /// unit is then <b>exactly one pixel</b> of that frame, which
+        /// <see cref="SnakeSnack.Rules.Board"/> assumes everywhere (cell sizes, pictogram anchoring).
+        /// Any other value would show a game that is "not quite the right scale", without a single
+        /// calculation being wrong.
         /// </remarks>
         static void BuildCamera()
         {
@@ -83,19 +83,19 @@ namespace SnakeSnack.EditorTools
             camera.orthographic = true;
             camera.orthographicSize = 360f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = UiPalette.Fond;
+            camera.backgroundColor = UiPalette.Background;
             camera.transform.position = new Vector3(0f, 0f, -10f);
             go.tag = "MainCamera";
 
-            // Les données URP de la caméra sont un composant à part : sans lui, la caméra tombe sur
-            // des valeurs par défaut et ignore le renderer 2D.
+            // The camera's URP data is a separate component: without it, the camera falls back on
+            // defaults and ignores the 2D renderer.
             go.AddComponent<UniversalAdditionalCameraData>();
         }
 
         /// <summary>
-        /// ⚠ La lumière globale n'est pas décorative : sous le Renderer 2D, un sprite en
-        /// <c>Sprite-Lit-Default</c> sans aucune <c>Light2D</c> est rendu <b>noir</b>. Le jeu
-        /// s'affiche alors entièrement sombre, sans la moindre erreur en console.
+        /// ⚠ The global light is not decorative: under the 2D Renderer, a sprite in
+        /// <c>Sprite-Lit-Default</c> with no <c>Light2D</c> at all is rendered <b>black</b>. The game
+        /// then displays entirely dark, without the slightest console error.
         /// </summary>
         static void BuildGlobalLight()
         {
@@ -107,8 +107,8 @@ namespace SnakeSnack.EditorTools
         }
 
         /// <summary>
-        /// ⚠ <c>InputSystemUIInputModule</c> et non <c>StandaloneInputModule</c> : avec le package
-        /// Input System actif, l'ancien module ne reçoit rien et l'UI cesse simplement de répondre.
+        /// ⚠ <c>InputSystemUIInputModule</c> and not <c>StandaloneInputModule</c>: with the Input
+        /// System package active, the old module receives nothing and the UI simply stops responding.
         /// </summary>
         static void BuildEventSystem()
         {
@@ -118,9 +118,8 @@ namespace SnakeSnack.EditorTools
         }
 
         /// <summary>
-        /// Le tampon de build vit sur son <b>propre</b> canevas plutôt que dans le HUD : le HUD
-        /// s'éteint dès qu'un menu s'ouvre, et c'est justement sur les menus que la plupart des
-        /// captures d'écran sont prises.
+        /// The build stamp lives on its <b>own</b> canvas rather than in the HUD: the HUD goes dark as
+        /// soon as a menu opens, and menus are exactly where most screenshots are taken.
         /// </summary>
         static void BuildStampCanvas()
         {

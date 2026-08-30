@@ -1,9 +1,9 @@
-# guard.ps1 -- hook PreToolUse : refuse les commandes destructrices ou irreversibles.
+# guard.ps1 -- PreToolUse hook: refuses destructive or irreversible commands.
 #
-# Recoit le JSON du hook sur stdin, repond un JSON de decision sur stdout.
-# Complete les regles `deny` de settings.json : celles-ci matchent par PREFIXE, alors que ce script
-# inspecte la ligne de commande entiere -- chainages compris, ce qui est justement la maniere dont
-# une commande dangereuse passe inapercue.
+# Receives the hook JSON on stdin, answers a decision JSON on stdout.
+# Complements the `deny` rules of settings.json: those match by PREFIX, whereas this script inspects
+# the whole command line -- chained commands included, which is precisely how a dangerous command
+# slips through unnoticed.
 
 $ErrorActionPreference = 'Stop'
 
@@ -27,32 +27,32 @@ try { $data = $raw | ConvertFrom-Json } catch { exit 0 }
 $cmd = $data.tool_input.command
 if ([string]::IsNullOrWhiteSpace($cmd)) { exit 0 }
 
-# La racine du projet est deduite de l'emplacement du hook : .claude\hooks\ -> deux crans plus haut.
-# Rien a substituer a l'installation, et le garde-fou suit le projet s'il est deplace.
+# The project root is derived from the hook's location: .claude\hooks\ -> two levels up. Nothing to
+# substitute at install time, and the guard follows the project if it is moved.
 $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
-# Le TEXTE des messages (heredoc, -m "...") n'est pas execute : l'exclure de l'analyse, sinon un
-# message de commit qui CITE une commande dangereuse bloque le commit.
+# The TEXT of messages (heredoc, -m "...") is not executed: exclude it from the analysis, otherwise a
+# commit message that QUOTES a dangerous command blocks the commit.
 $cmd = [regex]::Replace($cmd, "(?s)<<-?\s*['`"]?(\w+)['`"]?.*?(\r?\n\1|$)", ' ')
 $cmd = [regex]::Replace($cmd, '(?s)(-m|--message)\s+"(?:[^"\\]|\\.)*"', ' ')
 $cmd = [regex]::Replace($cmd, "(?s)(-m|--message)\s+'[^']*'", ' ')
 
-# --- Git : reecriture d'historique et pertes de travail non poussees ---------
+# --- Git: history rewriting and loss of unpushed work ------------------------
 if ($cmd -match '(?i)git\s+push\b' -and
     $cmd -match '(?i)(--force(?!-with-lease)|\s-f\b)') {
-    Deny "git push --force interdit. Utiliser --force-with-lease, ou pousser normalement."
+    Deny "git push --force is forbidden. Use --force-with-lease, or push normally."
 }
 if ($cmd -match '(?i)git\s+reset\s+--hard') {
-    Deny "git reset --hard interdit : detruit le travail non commite. Utiliser git stash ou git restore <fichier>."
+    Deny "git reset --hard is forbidden: it destroys uncommitted work. Use git stash or git restore <file>."
 }
 if ($cmd -match '(?i)git\s+clean\s+-[a-z]*[fx]') {
-    Deny "git clean -f/-x interdit : supprime les fichiers non suivis sans corbeille."
+    Deny "git clean -f/-x is forbidden: it deletes untracked files with no recycle bin."
 }
 if ($cmd -match '(?i)git\s+branch\s+-D\b') {
-    Deny "git branch -D interdit : suppression forcee de branche. Utiliser -d (fusionnee uniquement)."
+    Deny "git branch -D is forbidden: forced branch deletion. Use -d (merged only)."
 }
 
-# --- Suppressions recursives hors du projet ----------------------------------
+# --- Recursive deletions outside the project ---------------------------------
 $isRecursiveDelete =
     ($cmd -match '(?i)Remove-Item' -and $cmd -match '(?i)-Recurse') -or
     ($cmd -match '(?i)\brm\s+-[a-z]*r') -or
@@ -60,34 +60,34 @@ $isRecursiveDelete =
     ($cmd -match '(?i)\brd\s+/s')
 
 if ($isRecursiveDelete) {
-    # Les chemins arrivent en backslash (PowerShell), slash (Bash) ou forme MSYS (/c/Users/...).
-    # On normalise tout en backslash avant de tester.
+    # Paths arrive in backslash (PowerShell), slash (Bash) or MSYS form (/c/Users/...). We normalise
+    # everything to backslashes before testing.
     $norm = $cmd -replace '/', '\'
     $norm = [regex]::Replace($norm, '(?<![A-Za-z0-9])\\([A-Za-z])\\', '$1:\')
 
     if ($norm -match '(?i)(\s|["''])[A-Za-z]:\\+(["'']|\s|$)') {
-        Deny "Suppression recursive a la racine d'un disque : refusee."
+        Deny "Recursive deletion at the root of a drive: refused."
     }
     if ($norm -match '(?i)(\$HOME|%USERPROFILE%|~\\|[A-Za-z]:\\Users\\)') {
-        Deny "Suppression recursive visant le dossier utilisateur : refusee."
+        Deny "Recursive deletion targeting the user folder: refused."
     }
     if ($norm -match '(?i)[A-Za-z]:\\(Windows|Program Files|ProgramData)') {
-        Deny "Suppression recursive visant un dossier systeme : refusee."
+        Deny "Recursive deletion targeting a system folder: refused."
     }
     if ($norm -match '\.\.\\') {
-        Deny "Suppression recursive avec remontee de repertoire (..) : refusee. Utiliser un chemin explicite."
+        Deny "Recursive deletion with a directory climb (..): refused. Use an explicit path."
     }
-    # Tout chemin absolu qui sort du projet.
+    # Any absolute path that leaves the project.
     foreach ($m in [regex]::Matches($norm, '(?i)[A-Za-z]:\\[^\s"'']*')) {
         if (-not $m.Value.StartsWith($projectRoot, [StringComparison]::OrdinalIgnoreCase)) {
-            Deny "Suppression recursive hors du projet ($($m.Value)) : refusee."
+            Deny "Recursive deletion outside the project ($($m.Value)): refused."
         }
     }
 }
 
-# --- Destruction de support / effacement securise ----------------------------
+# --- Media destruction / secure erasure --------------------------------------
 if ($cmd -match '(?i)\b(Format-Volume|Clear-Disk|diskpart|cipher\s+/w|Initialize-Disk)\b') {
-    Deny "Commande de destruction de support disque : refusee."
+    Deny "Disk media destruction command: refused."
 }
 
 exit 0

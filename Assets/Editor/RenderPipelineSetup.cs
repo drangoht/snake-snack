@@ -7,32 +7,32 @@ using UnityEngine.Rendering.Universal;
 namespace SnakeSnack.EditorTools
 {
     /// <summary>
-    /// Active le Universal Render Pipeline sur <b>tous</b> les niveaux de qualité.
+    /// Enables the Universal Render Pipeline on <b>every</b> quality level.
     ///
-    /// <para>Le Built-in Render Pipeline est déprécié depuis Unity 6 ; un jeu 2D passe par le
-    /// Renderer 2D d'URP, qui rend les sprites et ouvre l'accès à l'éclairage 2D.</para>
+    /// <para>The Built-in Render Pipeline has been deprecated since Unity 6; a 2D game goes through
+    /// URP's 2D Renderer, which draws sprites and opens access to 2D lighting.</para>
     /// </summary>
     /// <remarks>
-    /// ⚠ Unity range le pipeline actif dans <c>QualitySettings</c> <b>niveau par niveau</b> : ne
-    /// renseigner que <c>GraphicsSettings.defaultRenderPipeline</c> laisse les autres niveaux en
-    /// Built-in, et le jeu bascule de pipeline dès que le joueur change de qualité — sans erreur.
+    /// ⚠ Unity stores the active pipeline in <c>QualitySettings</c> <b>level by level</b>: filling in
+    /// only <c>GraphicsSettings.defaultRenderPipeline</c> leaves the other levels on Built-in, and the
+    /// game switches pipeline as soon as the player changes quality — with no error.
     ///
-    /// ⚠ Sous le Renderer 2D, les sprites prennent <c>Sprite-Lit-Default</c> : sans une
-    /// <c>Light2D</c> globale dans la scène, tout le décor est rendu <b>noir</b>.
-    /// <see cref="SceneBuilder"/> en pose une.
+    /// ⚠ Under the 2D Renderer, sprites take <c>Sprite-Lit-Default</c>: without a global
+    /// <c>Light2D</c> in the scene, the whole set is rendered <b>black</b>. <see cref="SceneBuilder"/>
+    /// places one.
     /// </remarks>
     public static class RenderPipelineSetup
     {
         public const string PipelineAssetPath = "Assets/Settings/UniversalRP.asset";
         public const string GlobalSettingsPath = "Assets/Settings/UniversalRenderPipelineGlobalSettings.asset";
 
-        [MenuItem("Snake Snack/Activer le pipeline URP")]
+        [MenuItem("Snake Snack/Enable the URP pipeline")]
         public static void Apply()
         {
             var pipeline = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(PipelineAssetPath);
             if (pipeline == null)
             {
-                Debug.LogError("Pipeline URP introuvable : " + PipelineAssetPath);
+                Debug.LogError("URP pipeline not found: " + PipelineAssetPath);
                 return;
             }
 
@@ -47,9 +47,9 @@ namespace SnakeSnack.EditorTools
             }
             QualitySettings.SetQualityLevel(previousLevel, false);
 
-            // Les réglages globaux portent notamment le volume profile par défaut. Sans cette
-            // affectation explicite, l'éditeur en fabriquerait un au premier lancement.
-            // UniversalRenderPipelineGlobalSettings est internal : on passe par la classe de base.
+            // The global settings notably carry the default volume profile. Without this explicit
+            // assignment, the editor would fabricate one on first launch.
+            // UniversalRenderPipelineGlobalSettings is internal: we go through the base class.
             var globalSettings = AssetDatabase.LoadAssetAtPath<RenderPipelineGlobalSettings>(GlobalSettingsPath);
             if (globalSettings != null)
             {
@@ -57,11 +57,11 @@ namespace SnakeSnack.EditorTools
             }
             else
             {
-                Debug.LogWarning("Reglages globaux URP introuvables : " + GlobalSettingsPath);
+                Debug.LogWarning("URP global settings not found: " + GlobalSettingsPath);
             }
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"URP actif sur {levelCount} niveau(x) de qualite : {PipelineAssetPath}");
+            Debug.Log($"URP active on {levelCount} quality level(s): {PipelineAssetPath}");
         }
     }
 }

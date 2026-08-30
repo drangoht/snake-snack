@@ -4,189 +4,189 @@ using Xunit;
 namespace SnakeSnack.Tests;
 
 /// <summary>
-/// Le score et le record (GDD §4.5).
+/// The score and the best score (GDD §4.5).
 /// </summary>
 public class ScoreTests
 {
     [Fact]
-    public void UnePartieCommenceAZero()
+    public void AGameStartsAtZero()
     {
         var score = new Score();
 
         Assert.Equal(0, score.Points);
-        Assert.Equal(0, score.Record);
-        Assert.False(score.RecordBattu);
+        Assert.Equal(0, score.Best);
+        Assert.False(score.BestBeaten);
     }
 
     [Fact]
-    public void ChaquePommeVautExactementUnPoint()
+    public void EveryAppleIsWorthExactlyOnePoint()
     {
         var score = new Score();
 
         for (int i = 1; i <= 5; i++)
         {
-            score.CompterUnePomme();
+            score.CountApple();
             Assert.Equal(i, score.Points);
         }
     }
 
     /// <summary>
-    /// Le §4.5 : « le record monte pendant la partie, dès que le score courant le dépasse — pas à la
-    /// mort ». Un record qui resterait sous le score affiché à côté de lui se lit comme un bug.
+    /// §4.5: "the best score rises during the game, as soon as the current score passes it — not on
+    /// death". A best score sitting below the score displayed next to it reads as a bug.
     /// </summary>
     [Fact]
-    public void LeRecordMonteAvecLeScoreDesQuIlEstDepasse()
+    public void TheBestScoreRisesWithTheScoreAsSoonAsItIsPassed()
     {
         var score = new Score(2);
 
-        score.CompterUnePomme();
-        Assert.Equal(2, score.Record);
+        score.CountApple();
+        Assert.Equal(2, score.Best);
 
-        score.CompterUnePomme();
-        Assert.Equal(2, score.Record);
+        score.CountApple();
+        Assert.Equal(2, score.Best);
 
-        score.CompterUnePomme();
-        Assert.Equal(3, score.Record);
+        score.CountApple();
+        Assert.Equal(3, score.Best);
         Assert.Equal(3, score.Points);
     }
 
     /// <summary>
-    /// Le retour de <c>CompterUnePomme</c> est le signal d'écriture persistante : il ne doit être
-    /// vrai qu'aux ticks où le record change réellement de valeur, sinon le jeu écrit le stockage à
-    /// chaque pomme de chaque partie.
+    /// The return value of <c>CountApple</c> is the persistent-write signal: it must be true only on
+    /// the ticks where the best score really changes value, otherwise the game writes to storage on
+    /// every apple of every game.
     /// </summary>
     [Fact]
-    public void LeSignalDeMonteeDuRecordNEstVraiQuAuTickOuIlChange()
+    public void TheBestScoreSignalIsOnlyTrueOnTheTickItChanges()
     {
         var score = new Score(2);
 
-        Assert.False(score.CompterUnePomme());
-        Assert.False(score.CompterUnePomme());
-        Assert.True(score.CompterUnePomme());
-        Assert.True(score.CompterUnePomme());
+        Assert.False(score.CountApple());
+        Assert.False(score.CountApple());
+        Assert.True(score.CountApple());
+        Assert.True(score.CountApple());
     }
 
     [Fact]
-    public void LeRecordSurvitAUneNouvellePartie()
+    public void TheBestScoreSurvivesANewGame()
     {
         var score = new Score();
-        score.CompterUnePomme();
-        score.CompterUnePomme();
-        score.CompterUnePomme();
+        score.CountApple();
+        score.CountApple();
+        score.CountApple();
 
-        score.NouvellePartie();
+        score.NewGame();
 
         Assert.Equal(0, score.Points);
-        Assert.Equal(3, score.Record);
-        Assert.False(score.RecordBattu);
+        Assert.Equal(3, score.Best);
+        Assert.False(score.BestBeaten);
     }
 
     [Fact]
-    public void UneMauvaisePartieNeFaitPasDescendreLeRecord()
+    public void ABadGameDoesNotLowerTheBestScore()
     {
         var score = new Score(5);
-        score.NouvellePartie();
+        score.NewGame();
 
-        score.CompterUnePomme();
-        score.CompterUnePomme();
+        score.CountApple();
+        score.CountApple();
 
         Assert.Equal(2, score.Points);
-        Assert.Equal(5, score.Record);
-        Assert.False(score.RecordBattu);
+        Assert.Equal(5, score.Best);
+        Assert.False(score.BestBeaten);
     }
 
     /// <summary>
-    /// ⚠ Le cas qui se perd quand on écrit <c>RecordBattu</c> comme <c>Points == Record</c> : égaler
-    /// son meilleur score met bien les deux nombres à la même valeur, mais ne bat rien. Afficher
-    /// « nouveau record » ici ferait mentir le seul moment gratifiant du jeu.
+    /// ⚠ The case that gets lost when <c>BestBeaten</c> is written as <c>Points == Best</c>:
+    /// matching your personal best does put both numbers at the same value, but beats nothing.
+    /// Showing "new best" here would make the game's only rewarding moment lie.
     /// </summary>
     [Fact]
-    public void EgalerLeRecordNeLeBatPas()
+    public void MatchingTheBestScoreDoesNotBeatIt()
     {
         var score = new Score(2);
-        score.NouvellePartie();
+        score.NewGame();
 
-        score.CompterUnePomme();
-        score.CompterUnePomme();
+        score.CountApple();
+        score.CountApple();
 
-        Assert.Equal(score.Record, score.Points);
-        Assert.False(score.RecordBattu);
+        Assert.Equal(score.Best, score.Points);
+        Assert.False(score.BestBeaten);
     }
 
     [Fact]
-    public void DepasserLeRecordDUnSeulPointLeBat()
+    public void PassingTheBestScoreByASinglePointBeatsIt()
     {
         var score = new Score(2);
-        score.NouvellePartie();
+        score.NewGame();
 
-        score.CompterUnePomme();
-        score.CompterUnePomme();
-        score.CompterUnePomme();
+        score.CountApple();
+        score.CountApple();
+        score.CountApple();
 
-        Assert.True(score.RecordBattu);
-        Assert.Equal(3, score.Record);
+        Assert.True(score.BestBeaten);
+        Assert.Equal(3, score.Best);
     }
 
     /// <summary>
-    /// La toute première partie d'un joueur, record inconnu à zéro : la première pomme bat déjà le
-    /// record. C'est voulu — sinon la mention n'apparaîtrait jamais lors de la partie qui découvre
-    /// le jeu.
+    /// A player's very first game, unknown best score at zero: the first apple already beats the
+    /// best. That is intended — otherwise the line would never appear during the game that
+    /// discovers the game.
     /// </summary>
     [Fact]
-    public void LaPremierePommeDeLaPremierePartieBatLeRecord()
+    public void TheFirstAppleOfTheFirstGameBeatsTheBestScore()
     {
         var score = new Score();
 
-        score.CompterUnePomme();
+        score.CountApple();
 
-        Assert.True(score.RecordBattu);
+        Assert.True(score.BestBeaten);
     }
 
     /// <summary>
-    /// Un record illisible repart de zéro <b>sans erreur bloquante</b> (§4.5) : le jeu ne doit
-    /// jamais refuser de démarrer pour un compteur.
+    /// An unreadable best score restarts from zero <b>with no blocking error</b> (§4.5): the game
+    /// must never refuse to start over a counter.
     /// </summary>
     [Theory]
     [InlineData(-1, 0)]
     [InlineData(int.MinValue, 0)]
     [InlineData(0, 0)]
     [InlineData(14, 14)]
-    public void UnRecordAbimeRepartDeZeroSansLever(int lu, int attendu)
+    public void ADamagedBestScoreRestartsFromZeroWithoutThrowing(int read, int expected)
     {
-        Assert.Equal(attendu, Score.NormaliserRecord(lu));
-        Assert.Equal(attendu, new Score(lu).Record);
+        Assert.Equal(expected, Score.NormaliseBest(read));
+        Assert.Equal(expected, new Score(read).Best);
     }
 
     /// <summary>
-    /// L'invariant du §4.5 — <c>longueur == 3 + score</c> — vérifié sur le vrai serpent plutôt
-    /// qu'affirmé en commentaire : c'est lui qui justifie de ne PAS afficher la longueur, et il
-    /// casserait en silence le jour où la croissance passerait au tick suivant.
+    /// The invariant of §4.5 — <c>length == 3 + score</c> — checked on the real snake rather than
+    /// asserted in a comment: it is what justifies NOT displaying length, and it would break
+    /// silently the day growth moved to the next tick.
     /// </summary>
     [Fact]
-    public void LaLongueurDuSerpentVautToujoursTroisPlusLeScore()
+    public void TheSnakeLengthIsAlwaysThreePlusTheScore()
     {
-        Grille grille = Grille.ParDefaut;
-        var serpent = new Serpent(grille.PoseDeDepart().Segments);
+        Grid grid = Grid.Default;
+        var snake = new Snake(grid.StartingPose().Segments);
         var score = new Score();
 
-        Assert.Equal(Score.LongueurDuSerpent(score.Points), serpent.Longueur);
+        Assert.Equal(Score.SnakeLength(score.Points), snake.Length);
 
-        // Une pomme posée droit devant la tête à chaque tick : le serpent mange à tous les coups,
-        // et la grille par défaut laisse dix pas vers l'est avant le mur.
+        // An apple placed straight ahead of the head on every tick: the snake eats every time, and
+        // the default grid leaves ten steps eastwards before the wall.
         for (int i = 0; i < 8; i++)
         {
-            Case pomme = Directions.Avance(serpent.Tete, Direction.Est);
+            Cell apple = Directions.Advance(snake.Head, Direction.East);
 
-            bool mange;
-            Assert.Equal(ResultatDeplacement.Avance, serpent.Avancer(Direction.Est, grille, pomme, out mange));
-            Assert.True(mange);
+            bool ate;
+            Assert.Equal(MoveResult.Moved, snake.Advance(Direction.East, grid, apple, out ate));
+            Assert.True(ate);
 
-            score.CompterUnePomme();
+            score.CountApple();
 
-            Assert.Equal(Score.LongueurDuSerpent(score.Points), serpent.Longueur);
+            Assert.Equal(Score.SnakeLength(score.Points), snake.Length);
         }
 
         Assert.Equal(8, score.Points);
-        Assert.Equal(11, serpent.Longueur);
+        Assert.Equal(11, snake.Length);
     }
 }

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
 
   <!--
-    ⚠ CE FICHIER EST LA MOITIÉ DU PORTAGE MOBILE.
-    Unity ne peut rien contre ce qui se passe AVANT lui : le zoom du navigateur, le défilement de
-    la page, le geste de retour depuis le bord, l'appui long qui ouvre un menu système, la barre
-    d'URL qui mange le bas de l'écran — donc les commandes tactiles qui s'y trouvent. Aucun de ces
-    défauts ne se voit dans l'éditeur, aucun ne lève d'erreur, et chacun rend le jeu injouable au
-    doigt. Ils se règlent tous ici, en CSS et en quelques écouteurs.
+    ⚠ THIS FILE IS HALF OF THE MOBILE PORT.
+    Unity can do nothing about what happens BEFORE it: browser zoom, page scrolling, the back gesture
+    from the edge, the long press that opens a system menu, the URL bar that eats the bottom of the
+    screen — and therefore the touch controls that live there. None of these defects shows in the
+    editor, none raises an error, and each one makes the game unplayable with a finger. They are all
+    settled here, in CSS and a few listeners.
 
-    `maximum-scale=1` + `user-scalable=no` : sans eux, un double-appui pour agir ZOOME la page.
-    `viewport-fit=cover` : le canevas passe sous l'encoche plutôt que de laisser deux bandes.
+    `maximum-scale=1` + `user-scalable=no`: without them, a double tap to act ZOOMS the page.
+    `viewport-fit=cover`: the canvas goes under the notch instead of leaving two bars.
   -->
   <meta name="viewport"
         content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
@@ -22,26 +22,25 @@
   <meta name="theme-color" content="#1a1a2e">
 
   <!--
-    ⚠⚠ CETTE PAGE NE DOIT JAMAIS ÊTRE MISE EN CACHE — et c'est le maillon dont dépendent tous les
-    autres. Elle est la seule à porter l'identifiant de build qui invalide le chargeur, le wasm et
-    les données. Gardée en cache, elle continue de désigner les fichiers de l'ancien build : le
-    garde-cache existe, il est correct, et il ne s'applique jamais. Elle pèse quelques kilo-octets,
-    la retélécharger à chaque lancement ne coûte rien.
+    ⚠⚠ THIS PAGE MUST NEVER BE CACHED — and it is the link every other one depends on. It is the only
+    file carrying the build id that invalidates the loader, the wasm and the data. Kept in cache, it
+    keeps naming the files of the old build: the cache guard exists, it is correct, and it never
+    applies. It weighs a few kilobytes, re-downloading it on every launch costs nothing.
 
-    ⚠ Ces balises ne suffisent pas en local : Chrome les ignore pour le document principal. C'est
-    pourquoi `tools/serve_web.py` envoie de vraies en-têtes HTTP.
+    ⚠ These tags are not enough locally: Chrome ignores them for the main document. That is why
+    `tools/serve_web.py` sends real HTTP headers.
   -->
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
   <title>{{{ PRODUCT_NAME }}}</title>
-  <meta name="description" content="Le classique jeu de Snake">
+  <meta name="description" content="The classic game of Snake">
   <style>
     :root {
-      --fond: #1a1a2e;
-      --fond-clair: #2a2a45;
-      --encre: #d9d9f2;
+      --background: #1a1a2e;
+      --background-light: #2a2a45;
+      --ink: #d9d9f2;
       --accent: #44ffee;
     }
 
@@ -49,19 +48,19 @@
       margin: 0;
       height: 100%;
       overflow: hidden;
-      background: var(--fond);
+      background: var(--background);
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      color: var(--encre);
+      color: var(--ink);
 
-      /* Le doigt ne fait JAMAIS défiler, zoomer ni rafraîchir : il joue. `touch-action: none`
-         supprime au passage le délai de 300 ms que certains navigateurs gardent pour distinguer
-         un appui d'un double-appui — délai qui se ressent comme une entrée molle. */
+      /* A finger NEVER scrolls, zooms or refreshes: it plays. `touch-action: none` also removes the
+         300 ms delay some browsers keep to tell a tap from a double tap — a delay that feels like
+         mushy input. */
       touch-action: none;
       overscroll-behavior: none;
 
       -webkit-user-select: none;
       user-select: none;
-      -webkit-touch-callout: none;   /* appui long = menu « copier l'image » sur iOS, sinon */
+      -webkit-touch-callout: none;   /* long press = "copy image" menu on iOS, otherwise */
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -69,30 +68,30 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(160deg, var(--fond) 0%, var(--fond-clair) 100%);
+      background: linear-gradient(160deg, var(--background) 0%, var(--background-light) 100%);
     }
 
     canvas {
       display: block;
-      background: var(--fond);
+      background: var(--background);
       image-rendering: auto;
       outline: none;
       touch-action: none;
     }
 
-    /* Sur mobile, le jeu prend tout : le cadre 16/9 centré est un luxe de fenêtre de bureau, et
-       sur un téléphone il rendrait les commandes tactiles plus petites pour rien. `dvh` suit la
-       barre d'URL qui se rétracte — sans quoi le bas du jeu, donc les commandes, se retrouve
-       caché derrière elle ; `100%` reste le repli des navigateurs qui l'ignorent. */
+    /* On mobile the game takes everything: the centred 16:9 frame is a desktop-window luxury, and on
+       a phone it would only make the touch controls smaller for nothing. `dvh` follows the URL bar as
+       it retracts — without which the bottom of the game, hence the controls, ends up hidden behind
+       it; `100%` remains the fallback for browsers that ignore it. */
     body.mobile canvas {
       width: 100vw !important;
       height: 100% !important;
       height: 100dvh !important;
     }
 
-    /* -------------------------------------------------------------- attente */
+    /* -------------------------------------------------------------- loading */
 
-    .voile {
+    .veil {
       position: fixed;
       inset: 0;
       display: flex;
@@ -100,16 +99,16 @@
       align-items: center;
       justify-content: center;
       gap: 1.4rem;
-      background: linear-gradient(160deg, var(--fond) 0%, var(--fond-clair) 100%);
+      background: linear-gradient(160deg, var(--background) 0%, var(--background-light) 100%);
       transition: opacity 0.4s ease;
     }
 
-    .voile.parti {
+    .veil.gone {
       opacity: 0;
       pointer-events: none;
     }
 
-    .carte {
+    .card {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -120,9 +119,9 @@
       border: 1px solid rgba(255, 255, 255, 0.10);
     }
 
-    .titre { margin: 0; font-size: 1.35rem; letter-spacing: 0.02em; }
+    .title { margin: 0; font-size: 1.35rem; letter-spacing: 0.02em; }
 
-    .barre {
+    .bar {
       width: min(60vw, 380px);
       height: 10px;
       border-radius: 999px;
@@ -130,7 +129,7 @@
       overflow: hidden;
     }
 
-    .jauge {
+    .gauge {
       height: 100%;
       width: 0;
       border-radius: 999px;
@@ -140,8 +139,8 @@
 
     .note { margin: 0; font-size: 0.9rem; opacity: 0.7; text-align: center; }
 
-    /* Message d'erreur : discret, mais lisible sans ouvrir la console. */
-    .alerte {
+    /* Error message: discreet, but readable without opening the console. */
+    .alert {
       position: fixed;
       left: 50%;
       bottom: 1.2rem;
@@ -159,87 +158,87 @@
 <body>
   <canvas id="unity-canvas" width="{{{ WIDTH }}}" height="{{{ HEIGHT }}}" tabindex="-1"></canvas>
 
-  <div class="voile" id="attente">
-    <div class="carte">
-      <p class="titre" id="etat">Chargement…</p>
-      <div class="barre"><div class="jauge" id="jauge"></div></div>
-      <p class="note" id="commandes">Fleches pour se deplacer, Espace pour agir.</p>
+  <div class="veil" id="loading">
+    <div class="card">
+      <p class="title" id="state">Loading...</p>
+      <div class="bar"><div class="gauge" id="gauge"></div></div>
+      <p class="note" id="controls">Arrows to move, Space to act.</p>
     </div>
   </div>
 
-  <div class="alerte" id="alerte"></div>
+  <div class="alert" id="alert"></div>
 
-  <!-- ?v=__BUILD_ID__ : posé par BuildTools.StampWebCacheBuster après le build. Sans lui, le
-       navigateur ressert le chargeur d'un build et le wasm d'un autre — un mélange qui ne
-       ressemble pas à un cache, mais à un jeu cassé. -->
+  <!-- ?v=__BUILD_ID__ : written by BuildTools.StampWebCacheBuster after the build. Without it, the
+       browser serves the loader of one build and the wasm of another — a mix that does not look like
+       a cache, but like a broken game. -->
   <script src="Build/{{{ LOADER_FILENAME }}}?v=__BUILD_ID__"></script>
   <script>
     var canvas = document.querySelector("#unity-canvas");
-    var attente = document.querySelector("#attente");
-    var jauge = document.querySelector("#jauge");
-    var etat = document.querySelector("#etat");
-    var alerte = document.querySelector("#alerte");
-    var commandes = document.querySelector("#commandes");
+    var loading = document.querySelector("#loading");
+    var gauge = document.querySelector("#gauge");
+    var state = document.querySelector("#state");
+    var alertBox = document.querySelector("#alert");
+    var controls = document.querySelector("#controls");
 
-    // Un navigateur mobile, ou une machine sans souris. `maxTouchPoints` est le seul test fiable :
-    // la chaîne d'agent utilisateur ment (mode bureau d'un téléphone, iPad qui se déclare Mac).
-    // Il décide de trois choses : le cadrage, la note d'accueil, et le rapport de pixels.
+    // A mobile browser, or a machine with no mouse. `maxTouchPoints` is the only reliable test: the
+    // user-agent string lies (desktop mode of a phone, an iPad declaring itself a Mac). It decides
+    // three things: the framing, the welcome note, and the pixel ratio.
     var mobile = (navigator.maxTouchPoints || 0) > 1 ||
                  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (mobile) {
       document.body.classList.add("mobile");
-      // ⚠ Une note qui parle d'un clavier est la première phrase que lit un joueur mobile — et
-      // elle lui décrit un périphérique qu'il n'a pas.
-      commandes.textContent = "Tenez l'appareil en largeur — les commandes s'affichent à l'écran.";
+      // ⚠ A note that talks about a keyboard is the first sentence a mobile player reads — and it
+      // describes a device they do not have.
+      controls.textContent = "Hold the device in landscape - the controls appear on screen.";
     }
 
-    // Le jeu est composé pour du 16/9 : sur un écran de bureau on garde ce cadre et on centre,
-    // plutôt que d'étirer l'image à la fenêtre. Sur mobile, le CSS ci-dessus prend le relais.
+    // The game is composed for 16:9: on a desktop screen we keep that frame and centre it, rather
+    // than stretching the image to the window. On mobile, the CSS above takes over.
     var ratio = {{{ WIDTH }}} / {{{ HEIGHT }}};
 
-    function cadrer() {
+    function frame() {
       if (mobile) return;
 
-      var largeur = window.innerWidth;
-      var hauteur = window.innerHeight;
-      if (largeur / hauteur > ratio) largeur = Math.round(hauteur * ratio);
-      else hauteur = Math.round(largeur / ratio);
-      canvas.style.width = largeur + "px";
-      canvas.style.height = hauteur + "px";
+      var width = window.innerWidth;
+      var height = window.innerHeight;
+      if (width / height > ratio) width = Math.round(height * ratio);
+      else height = Math.round(width / ratio);
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
     }
 
-    cadrer();
-    window.addEventListener("resize", cadrer);
-    // La rotation d'un téléphone ne produit pas toujours un `resize` au bon moment.
-    window.addEventListener("orientationchange", cadrer);
+    frame();
+    window.addEventListener("resize", frame);
+    // Rotating a phone does not always produce a `resize` at the right moment.
+    window.addEventListener("orientationchange", frame);
 
-    // Les touches du jeu font défiler la page si on les laisse au navigateur :
-    // la barre d'espace saute d'un écran, les flèches suivent le curseur, Tab sort du canevas.
-    var confisquees = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "Tab"];
+    // The game's keys scroll the page if they are left to the browser: the space bar jumps a screen,
+    // the arrows follow the cursor, Tab leaves the canvas.
+    var captured = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "Tab"];
     window.addEventListener("keydown", function (e) {
-      if (confisquees.indexOf(e.key) >= 0) e.preventDefault();
+      if (captured.indexOf(e.key) >= 0) e.preventDefault();
     }, { passive: false });
 
-    // Un navigateur ne laisse pas un son démarrer avant que la page ait été touchée. Unity ouvre
-    // son contexte audio suspendu : sans ce réveil, la musique ne se déclenche qu'au hasard d'un clic.
-    function reveillerAudio() {
+    // A browser will not let a sound start before the page has been touched. Unity opens its audio
+    // context suspended: without this wake-up, music only starts on a chance click.
+    function wakeAudio() {
       var ctx = window.WEBAudio && window.WEBAudio.audioContext;
       if (ctx && ctx.state !== "running") ctx.resume();
     }
-    ["pointerdown", "touchstart", "keydown"].forEach(function (nom) {
-      window.addEventListener(nom, reveillerAudio);
+    ["pointerdown", "touchstart", "keydown"].forEach(function (name) {
+      window.addEventListener(name, wakeAudio);
     });
 
-    // Le clavier ne parvient au jeu que si la toile a le focus.
-    function donnerLeClavier() { canvas.focus(); }
-    window.addEventListener("pointerdown", donnerLeClavier);
-    window.addEventListener("focus", donnerLeClavier);
+    // The keyboard only reaches the game if the canvas has focus.
+    function giveKeyboard() { canvas.focus(); }
+    window.addEventListener("pointerdown", giveKeyboard);
+    window.addEventListener("focus", giveKeyboard);
 
-    function signaler(message, type) {
+    function report(message, type) {
       if (type === "error") {
-        alerte.textContent = message;
-        alerte.style.display = "block";
+        alertBox.textContent = message;
+        alertBox.style.display = "block";
       }
       console.log(message);
     }
@@ -252,58 +251,57 @@
       companyName: "{{{ COMPANY_NAME }}}",
       productName: "{{{ PRODUCT_NAME }}}",
       productVersion: "{{{ PRODUCT_VERSION }}}",
-      showBanner: signaler,
+      showBanner: report,
     };
 
-    // ⚠ LE RÉGLAGE DE PERFORMANCE LE PLUS RENTABLE DU PORTAGE MOBILE.
-    // Un téléphone récent annonce un rapport de pixels de 3 : Unity rendrait alors NEUF fois plus
-    // de pixels que la dalle logique n'en montre, sur un GPU qui vaut le dixième d'une carte de
-    // bureau. Un jeu 2D n'a presque rien à y gagner, et la cadence, elle, s'effondre sans qu'aucune
-    // erreur ne le dise.
+    // ⚠ THE MOST PROFITABLE PERFORMANCE SETTING OF THE MOBILE PORT.
+    // A recent phone announces a pixel ratio of 3: Unity would then render NINE times more pixels
+    // than the logical panel shows, on a GPU worth a tenth of a desktop card. A 2D game has almost
+    // nothing to gain from it, and the frame rate collapses without any error saying so.
     if (mobile) config.devicePixelRatio = 1;
 
-    createUnityInstance(canvas, config, function (avancement) {
-      jauge.style.width = (avancement * 100) + "%";
+    createUnityInstance(canvas, config, function (progress) {
+      gauge.style.width = (progress * 100) + "%";
     }).then(function (instance) {
-      // Exposée pour le pilotage depuis la console / Claude in Chrome.
-      window.jeu = instance;
-      attente.classList.add("parti");
-      donnerLeClavier();
-      reveillerAudio();
-      installerGestesMobiles(instance);
-    }).catch(function (erreur) {
-      etat.textContent = "Le jeu n'a pas pu démarrer.";
-      signaler(erreur, "error");
+      // Exposed for driving from the console / Claude in Chrome.
+      window.game = instance;
+      loading.classList.add("gone");
+      giveKeyboard();
+      wakeAudio();
+      installMobileGestures(instance);
+    }).catch(function (error) {
+      state.textContent = "The game could not start.";
+      report(error, "error");
     });
 
     /**
-     * Les trois gestes du navigateur qu'il faut désarmer, et le seul qu'il faut armer.
+     * The three browser gestures that must be disarmed, and the only one that must be armed.
      */
-    function installerGestesMobiles(instance) {
-      // 1. L'appui long ouvre le menu contextuel par-dessus le jeu. Il ne se supprime qu'ici :
-      //    `-webkit-touch-callout` ne couvre qu'iOS.
+    function installMobileGestures(instance) {
+      // 1. A long press opens the context menu on top of the game. It can only be removed here:
+      //    `-webkit-touch-callout` only covers iOS.
       canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); }, { passive: false });
 
-      // 2. Le double-appui zoome encore sur iOS malgré la balise viewport — c'est un geste séparé,
-      //    et il tombe exactement sur le rythme d'un joueur qui appuie deux fois de suite.
+      // 2. A double tap still zooms on iOS despite the viewport tag — it is a separate gesture, and
+      //    it lands exactly on the rhythm of a player tapping twice in a row.
       canvas.addEventListener("gesturestart", function (e) { e.preventDefault(); }, { passive: false });
 
-      // 3. Le glissement depuis le bord déclenche « page précédente » sur Android — et glisser
-      //    d'un bord est justement ce qu'on fait sur une commande collée au bord. Un `touchmove`
-      //    non passif est le seul moyen de le retenir.
+      // 3. Swiping from the edge triggers "previous page" on Android — and swiping from an edge is
+      //    exactly what you do on a control glued to the edge. A non-passive `touchmove` is the only
+      //    way to hold it back.
       canvas.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
 
       if (!mobile) return;
 
-      // 4. Le plein écran, lui, doit être ARMÉ — et il exige un geste de l'utilisateur : l'appeler
-      //    au chargement échoue silencieusement. Une seule fois, au premier contact ; ensuite le
-      //    joueur reste maître, le geste système de sortie continue de fonctionner.
-      //    Sur iPhone l'API n'existe pas : le `try` évite qu'une exception n'arrête le script.
-      var arme = true;
+      // 4. Full screen, on the other hand, must be ARMED — and it requires a user gesture: calling it
+      //    at load time fails silently. Once only, on the first contact; after that the player stays
+      //    in charge, and the system exit gesture keeps working.
+      //    On iPhone the API does not exist: the `try` keeps an exception from stopping the script.
+      var armed = true;
       canvas.addEventListener("pointerdown", function () {
-        if (!arme) return;
-        arme = false;
-        try { instance.SetFullscreen(1); } catch (e) { /* iOS : pas de plein écran, on joue quand même */ }
+        if (!armed) return;
+        armed = false;
+        try { instance.SetFullscreen(1); } catch (e) { /* iOS: no full screen, we play anyway */ }
       });
     }
   </script>

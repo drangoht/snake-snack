@@ -1,0 +1,12 @@
+{
+  "ticksPerSecond": 8.0,
+  "catchUpCap": 1,
+  "gridWidth": 21,
+  "gridHeight": 15,
+  "queueDepth": 2,
+  "seed": 0,
+  "rejectionDisplaySeconds": 0.25,
+  "rejectionExtensionCapSeconds": 0.5,
+  "pauseTextSeconds": 1.5,
+  "rejectionFadeSeconds": 0.06
+}

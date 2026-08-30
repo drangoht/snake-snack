@@ -4,63 +4,63 @@ using UnityEngine;
 namespace SnakeSnack.EditorTools
 {
     /// <summary>
-    /// Impose les réglages d'import des illustrations de <c>Assets/Resources/Illustrations/</c>.
+    /// Forces the import settings of the illustrations in <c>Assets/Resources/Illustrations/</c>.
     /// </summary>
     /// <remarks>
-    /// ⚠ <b>Sans cette classe, l'illustration du menu ne s'afficherait pas — sans la moindre
-    /// erreur.</b> <c>ProjectSettings/EditorSettings.asset</c> porte <c>m_DefaultBehaviorMode: 0</c>
-    /// (mode 3D) : un <c>.png</c> importé y devient une <b>texture</b>, pas un sprite.
-    /// <c>Resources.Load&lt;Sprite&gt;</c> rend alors <c>null</c>, l'<c>Image</c> du menu reste vide,
-    /// et rien n'est journalisé. C'est exactement le piège de <c>docs/pitfalls/assets-import.md</c>,
-    /// aggravé par le fait que le PNG est produit par un script et importé en batchmode : personne
-    /// n'ouvre l'inspecteur pour s'apercevoir du réglage.
+    /// ⚠ <b>Without this class, the menu illustration would not display — with no error at all.</b>
+    /// <c>ProjectSettings/EditorSettings.asset</c> carries <c>m_DefaultBehaviorMode: 0</c> (3D mode):
+    /// a <c>.png</c> imported there becomes a <b>texture</b>, not a sprite.
+    /// <c>Resources.Load&lt;Sprite&gt;</c> then returns <c>null</c>, the menu's <c>Image</c> stays
+    /// empty, and nothing is logged. That is exactly the trap of
+    /// <c>docs/pitfalls/assets-import.md</c>, made worse by the fact that the PNG is produced by a
+    /// script and imported in batchmode: nobody opens the inspector to notice the setting.
     ///
-    /// <para>Un <c>AssetPostprocessor</c> plutôt qu'un <c>.meta</c> écrit à la main : le
-    /// <c>.meta</c> serait réécrit au premier réimport et la règle ne survivrait pas à la
-    /// régénération du PNG. Ici, la règle est dans le dépôt, en clair, et s'applique à toute
-    /// illustration future.</para>
+    /// <para>An <c>AssetPostprocessor</c> rather than a hand-written <c>.meta</c>: the <c>.meta</c>
+    /// would be rewritten on the first reimport and the rule would not survive the PNG being
+    /// regenerated. Here the rule is in the repository, in plain sight, and applies to every future
+    /// illustration.</para>
     ///
-    /// <para>⚠ Ne concerne QUE <c>Resources/Illustrations/</c>. Le reste des assets garde les
-    /// réglages par défaut du projet — une règle d'import globale se paie sur des fichiers qu'on
-    /// n'avait pas en tête au moment de l'écrire.</para>
+    /// <para>⚠ Concerns ONLY <c>Resources/Illustrations/</c>. The rest of the assets keep the
+    /// project's default settings — a global import rule gets paid for on files you did not have in
+    /// mind when you wrote it.</para>
     /// </remarks>
     public sealed class ImportIllustrations : AssetPostprocessor
     {
-        private const string Dossier = "Assets/Resources/Illustrations/";
+        private const string Folder = "Assets/Resources/Illustrations/";
 
         private void OnPreprocessTexture()
         {
-            if (!assetPath.StartsWith(Dossier, System.StringComparison.Ordinal))
+            if (!assetPath.StartsWith(Folder, System.StringComparison.Ordinal))
             {
                 return;
             }
 
-            var importateur = (TextureImporter)assetImporter;
+            var importer = (TextureImporter)assetImporter;
 
-            importateur.textureType = TextureImporterType.Sprite;
-            importateur.spriteImportMode = SpriteImportMode.Single;
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
 
-            // ⚠ 1 pixel par unité, comme le carré blanc de FormesPrimitives : une unité monde vaut
-            // exactement un pixel du cadre 1280x720 dans tout le projet. L'illustration du menu est
-            // posée dans un Canvas, où ce réglage n'a aucun effet — mais une illustration posée un
-            // jour dans la scène s'afficherait, avec la valeur par défaut de 100, cent fois trop
-            // petite, et le premier réflexe serait de corriger l'échelle au lieu de l'import.
-            importateur.spritePixelsPerUnit = 1f;
+            // ⚠ 1 pixel per unit, like the white square of PrimitiveShapes: one world unit is exactly
+            // one pixel of the 1280x720 frame throughout the project. The menu illustration sits in a
+            // Canvas, where this setting has no effect — but an illustration placed one day in the
+            // scene would display, with the default of 100, a hundred times too small, and the first
+            // reflex would be to fix the scale rather than the import.
+            importer.spritePixelsPerUnit = 1f;
 
-            importateur.alphaIsTransparency = true;
-            importateur.mipmapEnabled = false;
-            importateur.wrapMode = TextureWrapMode.Clamp;
+            importer.alphaIsTransparency = true;
+            importer.mipmapEnabled = false;
+            importer.wrapMode = TextureWrapMode.Clamp;
 
-            // Bilinéaire, contrairement au carré blanc du rendu (qui est en Point) : l'illustration
-            // est dessinée avec des bords anticrénelés par le générateur Python, et un filtrage en
-            // Point les rendrait crénelés dès que la page itch redimensionne le cadre.
-            importateur.filterMode = FilterMode.Bilinear;
+            // Bilinear, unlike the renderer's white square (which is Point): the illustration is drawn
+            // with antialiased edges by the Python generator, and Point filtering would make them
+            // jagged as soon as the itch page resizes the frame.
+            importer.filterMode = FilterMode.Bilinear;
 
-            // Non compressée : le dessin est fait d'aplats de la palette, et DXT5 fait baver les
-            // bords entre deux aplats voisins. 512x512 en RGBA32 pèse 1 Mo dans le binaire, ce qui
-            // reste sans commune mesure avec le reste du build web.
-            importateur.textureCompression = TextureImporterCompression.Uncompressed;
-            importateur.maxTextureSize = 1024;
+            // Uncompressed: the drawing is made of flat palette areas, and DXT5 bleeds the edges
+            // between two neighbouring areas. 512x512 in RGBA32 weighs 1 MB in the binary, which is
+            // nothing next to the rest of the web build.
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.maxTextureSize = 1024;
         }
     }
 }

@@ -1,13 +1,11 @@
-# Pièges — Audio
+# Pitfalls — Audio
 
 
-**⚠ Une entrée absente de la table de correspondance est MUETTE.** [hérité] Quatorze armes l'ont été
-sans que rien ne le dise. Écrire un audit qui compare la liste du contenu à la table des sons.
+**⚠ An entry missing from the lookup table is SILENT.** [inherited] Fourteen weapons were, with
+nothing to say so. Write an audit that compares the content list with the sound table.
 
-**⚠ Le navigateur ne laisse aucun son démarrer avant un geste de l'utilisateur.** Unity ouvre son
-contexte audio suspendu : sans le réveil posé dans le gabarit WebGL, la musique ne se déclenche qu'au
-hasard d'un clic.
+**⚠ The browser lets no sound start before a user gesture.** Unity opens its audio context suspended:
+without the wake-up placed in the WebGL template, music only starts on a chance click.
 
-**⚠ Un log de `PlayOneShot` prouve une intention, pas un son.** Pour prouver que l'audio sort du
-mixeur : `AudioListener.GetOutputData(buffer, 0)` et logger le RMS.
-
+**⚠ A `PlayOneShot` log proves an intention, not a sound.** To prove audio comes out of the mixer:
+`AudioListener.GetOutputData(buffer, 0)` and log the RMS.

@@ -1,9 +1,10 @@
-# run-rules-tests.ps1 -- hook PostToolUse : rejoue les tests unitaires quand la logique pure de
-# Assets/Scripts/Rules/ (ou les tests eux-memes) vient d'etre modifiee.
+# run-rules-tests.ps1 -- PostToolUse hook: replays the unit tests when the pure logic of
+# Assets/Scripts/Rules/ (or the tests themselves) has just been modified.
 #
-# Tourne en asynchrone ; sort en code 2 si les tests cassent, ce qui REVEILLE Claude avec le detail
-# de l'echec. C'est tout l'interet : une regression de regle est signalee dans la minute, sans
-# qu'on ait besoin d'y penser -- et sans build Unity, puisque Rules/ ne depend pas du moteur.
+# Runs asynchronously; exits with code 2 if the tests break, which WAKES Claude up with the detail of
+# the failure. That is the whole point: a rule regression is reported within the minute, without
+# anyone having to think about it -- and with no Unity build, since Rules/ does not depend on the
+# engine.
 
 $ErrorActionPreference = 'Stop'
 
@@ -22,18 +23,18 @@ if ($norm -notmatch '(?i)\\Assets\\Scripts\\Rules\\.*\.cs$' -and
     exit 0
 }
 
-# Racine deduite de l'emplacement du hook : rien a substituer a l'installation.
+# Root derived from the hook's location: nothing to substitute at install time.
 $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $csproj = Get-ChildItem -Path (Join-Path $projectRoot 'tests') -Filter '*.Tests.csproj' -ErrorAction SilentlyContinue |
           Select-Object -First 1
 if (-not $csproj) { exit 0 }
 
-# ⚠ Pas de test de $? apres un exe natif : dotnet ecrit sur stderr meme quand tout va bien.
+# ⚠ No test of $? after a native exe: dotnet writes on stderr even when all is well.
 $output = & dotnet test $csproj.FullName --nologo --verbosity quiet 2>&1 | Out-String
 
 if ($LASTEXITCODE -ne 0) {
     $tail = ($output -split "`n" | Select-Object -Last 25) -join "`n"
-    [Console]::Error.WriteLine("Les tests unitaires echouent apres modification de $norm :`n$tail")
+    [Console]::Error.WriteLine("The unit tests fail after modifying $norm :`n$tail")
     exit 2
 }
 

@@ -1,24 +1,24 @@
-"""Sert le build web en local, SANS cache navigateur.
+"""Serves the web build locally, WITHOUT browser caching.
 
-Pourquoi cet outil plutôt que `python -m http.server`
------------------------------------------------------
-Les fichiers de sortie WebGL d'Unity portent toujours le même nom d'un build à l'autre
-(`web.wasm.unityweb`, `web.data.unityweb`). Le serveur intégré de Python n'envoie aucun
-`Cache-Control` : le navigateur applique alors son heuristique de fraîcheur et sert ce qu'il a en
-mémoire. Après un rebuild, il peut donc associer le `.data` d'un build au `.wasm` d'un autre.
+Why this tool rather than `python -m http.server`
+-------------------------------------------------
+Unity's WebGL output files always carry the same name from one build to the next
+(`web.wasm.unityweb`, `web.data.unityweb`). Python's built-in server sends no `Cache-Control`: the
+browser then applies its freshness heuristic and serves what it has in memory. After a rebuild, it
+can therefore pair the `.data` of one build with the `.wasm` of another.
 
-Le symptôme n'est pas « version périmée ». C'est, au démarrage :
+The symptom is not "stale version". It is, at startup:
 
-    Chargement impossible : RuntimeError: memory access out of bounds
+    Cannot load: RuntimeError: memory access out of bounds
       at wasm://wasm/0b2ac7ce:wasm-function[97296]:0x1712ca9
-      ... trois cents lignes d'offsets, pas un seul nom de méthode ...
+      ... three hundred lines of offsets, not a single method name ...
 
-Une heure a déjà été perdue à chercher ça dans le code du jeu. Le build pose bien un garde-cache
-(`BuildTools.StampWebCacheBuster`), mais il vit dans `index.html` — et si la page hôte elle-même
-sort du cache, le garde-cache désigne encore les fichiers de l'ancien build. Un mécanisme
-d'invalidation transporté par une ressource cachable s'auto-annule : il faut une racine non
-cachable, et seule une vraie en-tête HTTP l'obtient. Les balises `http-equiv` du HTML ne suffisent
-pas, Chrome les ignore pour le document principal.
+An hour has already been lost looking for that in the game's code. The build does place a cache
+guard (`BuildTools.StampWebCacheBuster`), but it lives in `index.html` — and if the host page itself
+comes out of the cache, the guard still names the files of the old build. An invalidation mechanism
+carried by a cacheable resource cancels itself out: it needs a non-cacheable root, and only a real
+HTTP header gets one. The HTML `http-equiv` tags are not enough, Chrome ignores them for the main
+document.
 
 Usage
 -----
@@ -26,8 +26,8 @@ Usage
     py tools/serve_web.py --port 9000
     py tools/serve_web.py --dir Build/Web
 
-⚠ Si le jeu reste cassé alors que ce serveur tourne, le cache du navigateur est déjà pollué par une
-session précédente : changer de port donne une origine neuve, donc un cache vierge.
+⚠ If the game stays broken while this server is running, the browser cache is already polluted by an
+earlier session: changing port gives a fresh origin, hence a clean cache.
 """
 
 from __future__ import annotations
@@ -39,17 +39,17 @@ import pathlib
 
 
 class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
-    """Sert les fichiers en interdisant tout cache, et en annonçant les types dont Unity a besoin."""
+    """Serves files while forbidding any caching, and announcing the types Unity needs."""
 
     def end_headers(self) -> None:
-        # ⚠ `no-store` VISÉ, pas global. Appliqué à tout, le `.data` (souvent des dizaines de Mo) se
-        # retélécharge à chaque lancement et le jeu met une minute à démarrer. Or le défaut ne
-        # concerne jamais que la page hôte et les fichiers du moteur — ceux dont le nom ne change
-        # pas d'un build à l'autre. Le reste peut être caché sans risque.
+        # ⚠ `no-store` TARGETED, not global. Applied to everything, the `.data` (often tens of MB) is
+        # re-downloaded on every launch and the game takes a minute to start. But the defect only
+        # ever concerns the host page and the engine files — the ones whose names do not change from
+        # one build to the next. The rest can be cached safely.
         if self._must_not_be_cached():
-            # `no-store` et non `no-cache` : le second autorise le stockage et se contente d'exiger
-            # une revalidation, que le navigateur peut sauter (retour arrière, restauration
-            # d'onglet). Ici on veut qu'il ne garde rien.
+            # `no-store` and not `no-cache`: the second allows storage and merely requires
+            # revalidation, which the browser may skip (back button, tab restore). Here we want it to
+            # keep nothing.
             self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
             self.send_header("Pragma", "no-cache")
             self.send_header("Expires", "0")
@@ -59,19 +59,19 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
     def _must_not_be_cached(self) -> bool:
         path = self.path.split("?", 1)[0].rstrip("/")
 
-        # La page hôte : c'est elle qui porte l'identifiant de build qui invalide tout le reste.
-        # Cachée, elle continue de désigner les fichiers de l'ancien build — le garde-cache existe
-        # alors, il est correct, et il ne s'applique jamais.
+        # The host page: it is what carries the build id that invalidates everything else. Cached, it
+        # keeps naming the files of the old build — the cache guard then exists, it is correct, and
+        # it never applies.
         if path in ("", "/index.html"):
             return True
 
-        # Les quatre fichiers du moteur, dont le nom est identique d'un build à l'autre.
+        # The four engine files, whose names are identical from one build to the next.
         return path.startswith("/Build/")
 
     def guess_type(self, path):
-        # Unity produit des `.unityweb` que le serveur de Python ne connaît pas. Le type importe peu
-        # ici (le repli JS de décompression est actif), mais un type explicite évite qu'un
-        # navigateur tente de les interpréter.
+        # Unity produces `.unityweb` files that Python's server does not know. The type matters
+        # little here (the JS decompression fallback is on), but an explicit type keeps a browser
+        # from trying to interpret them.
         if str(path).endswith(".unityweb"):
             return "application/octet-stream"
         if str(path).endswith(".wasm"):
@@ -79,45 +79,45 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
         return super().guess_type(path)
 
     def log_message(self, fmt: str, *args) -> None:
-        # Le journal par requête noie la sortie : un build web fait des centaines de requêtes.
-        # On ne garde que les erreurs.
+        # A per-request log drowns the output: a web build makes hundreds of requests. We keep only
+        # the errors.
         status = args[1] if len(args) > 1 else ""
         if str(status).startswith(("4", "5")):
             super().log_message(fmt, *args)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Sert le build web sans cache navigateur.")
+    parser = argparse.ArgumentParser(description="Serves the web build without browser caching.")
     parser.add_argument("--port", type=int, default=8080)
     parser.add_argument("--dir", default="Build/Web")
     args = parser.parse_args()
 
     root = pathlib.Path(args.dir).resolve()
     if not (root / "index.html").exists():
-        print(f"!! {root} ne contient pas index.html - le build web a-t-il ete fait ?")
+        print(f"!! {root} does not contain index.html - has the web build been made?")
         return 1
 
     handler = functools.partial(NoCacheHandler, directory=str(root))
 
-    # `allow_reuse_address` : sans lui, relancer le serveur juste apres l'avoir arrete echoue
-    # pendant la temporisation TIME_WAIT — ce qui pousse a changer de port et brouille le diagnostic.
+    # `allow_reuse_address`: without it, restarting the server right after stopping it fails during
+    # the TIME_WAIT delay — which pushes people to change port and muddies the diagnosis.
     http.server.ThreadingHTTPServer.allow_reuse_address = True
 
-    # ⚠⚠ MULTI-THREAD OBLIGATOIRE, et ce n'est pas une optimisation.
-    # `socketserver.TCPServer` traite UNE requete a la fois. Le navigateur garde ses connexions
-    # ouvertes et un jeu qui precharge ses StreamingAssets en parallele bloque alors ses propres
-    # requetes : le prechargement n'aboutit jamais, le jeu reste sur sa barre de demarrage -- qui
-    # semble meme reculer. Aucune erreur, ni cote navigateur, ni cote serveur.
+    # ⚠⚠ MULTI-THREADING IS MANDATORY, and it is not an optimisation.
+    # `socketserver.TCPServer` handles ONE request at a time. The browser keeps its connections open
+    # and a game preloading its StreamingAssets in parallel then blocks its own requests: the preload
+    # never completes, the game sits on its startup bar -- which even appears to go backwards. No
+    # error, neither on the browser side nor on the server side.
     with http.server.ThreadingHTTPServer(("", args.port), handler) as httpd:
-        print(f"Snake Snack (web) : http://localhost:{args.port}/")
-        print(f"  dossier  : {root}")
-        print( "  cache    : desactive (Cache-Control: no-store)")
-        print( "  tactile  : ajouter ?touch pour forcer les controles au doigt")
-        print( "  Ctrl+C pour arreter.")
+        print(f"Snake Snack (web): http://localhost:{args.port}/")
+        print(f"  folder   : {root}")
+        print( "  cache    : disabled (Cache-Control: no-store)")
+        print( "  touch    : add ?touch to force finger controls")
+        print( "  Ctrl+C to stop.")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
-            print("\nArrete.")
+            print("\nStopped.")
 
     return 0
 

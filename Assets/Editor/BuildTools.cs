@@ -11,12 +11,12 @@ using Debug = UnityEngine.Debug;
 namespace SnakeSnack.EditorTools
 {
     /// <summary>
-    /// Génération des builds Windows et web, utilisable depuis le menu de l'éditeur ou en ligne de
-    /// commande (<c>-executeMethod</c>).
+    /// Produces the Windows and web builds, usable from the editor menu or from the command line
+    /// (<c>-executeMethod</c>).
     ///
-    /// <para>Tout ce qui compte pour un build est posé <b>ici, par du code</b>, et non laissé aux
-    /// réglages de l'éditeur : un réglage fait à la souris ne vaut que sur le poste où il a été
-    /// fait, et se perd au premier clone du dépôt.</para>
+    /// <para>Everything that matters to a build is set <b>here, in code</b>, and not left to editor
+    /// settings: a setting made with a mouse only holds on the machine where it was made, and is lost
+    /// on the first clone of the repository.</para>
     /// </summary>
     public static class BuildTools
     {
@@ -25,9 +25,9 @@ namespace SnakeSnack.EditorTools
         const string ExecutableName = "SnakeSnack.exe";
         const string ShaAssetPath = "Assets/Resources/build_sha.txt";
 
-        // ------------------------------------------------------------------ points d'entrée CLI
+        // ------------------------------------------------------------------ CLI entry points
 
-        /// <summary>Pipeline URP + scène régénérée + build Windows. Point d'entrée en ligne de commande.</summary>
+        /// <summary>URP pipeline + regenerated scene + Windows build. Command-line entry point.</summary>
         public static void RebuildEverything()
         {
             RenderPipelineSetup.Apply();
@@ -35,7 +35,7 @@ namespace SnakeSnack.EditorTools
             BuildWindows();
         }
 
-        /// <summary>Pipeline URP + scène régénérée + build web. Point d'entrée en ligne de commande.</summary>
+        /// <summary>URP pipeline + regenerated scene + web build. Command-line entry point.</summary>
         public static void RebuildWeb()
         {
             RenderPipelineSetup.Apply();
@@ -45,7 +45,7 @@ namespace SnakeSnack.EditorTools
 
         // ------------------------------------------------------------------ Windows
 
-        [MenuItem("Snake Snack/Compiler le build Windows")]
+        [MenuItem("Snake Snack/Build for Windows")]
         public static void BuildWindows()
         {
             ConfigurePlayerSettings();
@@ -65,24 +65,25 @@ namespace SnakeSnack.EditorTools
 
             if (summary.result == BuildResult.Succeeded)
             {
-                // Le script de publication cherche cette phrase exacte dans le journal : un code
-                // retour nul ne distingue pas « construit » de « rien à faire ».
-                Debug.Log($"Build Windows reussi : {summary.outputPath} ({summary.totalSize / 1024 / 1024} Mo)");
+                // ⚠ CONTRACT WITH tools/build.ps1: it searches the log for this exact phrase. A zero
+                // exit code does not tell "built" apart from "nothing to do". Changing the wording
+                // here means changing it there, in the same commit.
+                Debug.Log($"Windows build succeeded: {summary.outputPath} ({summary.totalSize / 1024 / 1024} MB)");
                 WriteBuildStamp(OutputDirectory);
             }
             else
             {
-                Debug.LogError($"Build Windows en echec : {summary.result} ({summary.totalErrors} erreurs)");
+                Debug.LogError($"Windows build failed: {summary.result} ({summary.totalErrors} errors)");
             }
         }
 
         // ------------------------------------------------------------------ web
 
         /// <summary>
-        /// Compile la version jouable dans un navigateur. Sortie : <c>Build/Web</c>, à pousser telle
-        /// quelle sur itch.io.
+        /// Builds the browser-playable version. Output: <c>Build/Web</c>, to be pushed to itch.io as
+        /// it is.
         /// </summary>
-        [MenuItem("Snake Snack/Compiler la version web")]
+        [MenuItem("Snake Snack/Build the web version")]
         public static void BuildWeb()
         {
             ConfigurePlayerSettings();
@@ -93,7 +94,7 @@ namespace SnakeSnack.EditorTools
             var options = new BuildPlayerOptions
             {
                 scenes = new[] { SceneBuilder.ScenePath },
-                // ⚠ En WebGL, Unity attend un DOSSIER et non un fichier : il y écrit index.html et Build/.
+                // ⚠ On WebGL, Unity expects a FOLDER and not a file: it writes index.html and Build/ there.
                 locationPathName = WebOutputDirectory,
                 target = BuildTarget.WebGL,
                 options = BuildOptions.None
@@ -104,64 +105,64 @@ namespace SnakeSnack.EditorTools
 
             if (summary.result != BuildResult.Succeeded)
             {
-                Debug.LogError($"Build web en echec : {summary.result} ({summary.totalErrors} erreurs)");
+                Debug.LogError($"Web build failed: {summary.result} ({summary.totalErrors} errors)");
                 return;
             }
 
-            Debug.Log($"Build web reussi : {summary.outputPath} ({summary.totalSize / 1024 / 1024} Mo)");
+            // ⚠ CONTRACT WITH tools/build.ps1, same as above.
+            Debug.Log($"Web build succeeded: {summary.outputPath} ({summary.totalSize / 1024 / 1024} MB)");
             WriteBuildStamp(WebOutputDirectory);
             StampWebCacheBuster(WebOutputDirectory);
         }
 
         /// <summary>
-        /// Réglages du lecteur web. Chacun corrige un défaut qui ne se voit pas à la compilation :
-        /// ils produisent un jeu qui démarre, puis se comporte mal.
+        /// Web player settings. Each one fixes a defect that does not show at compile time: they
+        /// produce a game that starts, then misbehaves.
         /// </summary>
         static void ApplyWebSettings()
         {
             NamedBuildTarget web = NamedBuildTarget.WebGL;
 
-            // Brotli comprime nettement mieux que gzip sur du WebAssembly, mais le navigateur ne sait
-            // le décompresser que si le serveur annonce l'encodage. Le repli JS rend le build
-            // indépendant de cette configuration : il tourne sur itch.io comme sur n'importe quel
-            // hébergement statique.
+            // Brotli compresses WebAssembly markedly better than gzip, but the browser can only
+            // decompress it if the server announces the encoding. The JS fallback makes the build
+            // independent of that configuration: it runs on itch.io as on any static host.
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
             PlayerSettings.WebGL.decompressionFallback = true;
 
-            // Sans ce cache, l'audio et les textures du .data se retéléchargent à chaque visite.
+            // Without this cache, the audio and textures of the .data are re-downloaded on every visit.
             PlayerSettings.WebGL.dataCaching = true;
 
-            // À relever si le jeu alloue beaucoup : trop bas, le tas croît par paliers en cours de
-            // partie (micro-freezes) ; trop haut, le chargement coûte plus cher.
+            // To raise if the game allocates a lot: too low, the heap grows in steps during play
+            // (micro-freezes); too high, loading costs more.
             PlayerSettings.WebGL.initialMemorySize = 128;
             PlayerSettings.WebGL.maximumMemorySize = 512;
 
-            // ⚠ WebGL est la seule plateforme dont le niveau de stripping par défaut est le plus
-            // agressif. L'Input System résout ses couches de contrôle par réflexion : au niveau
-            // élevé, le jeu démarre normalement et ne répond plus au clavier.
+            // ⚠ WebGL is the only platform whose default stripping level is the most aggressive one.
+            // The Input System resolves its control layouts by reflection: at the high level, the game
+            // starts normally and no longer responds to the keyboard.
             PlayerSettings.SetManagedStrippingLevel(web, ManagedStrippingLevel.Low);
 
-            // Les exceptions explicitement levées gardent leur pile dans la console du navigateur :
-            // seul moyen d'instruire un défaut qu'on ne reproduit pas hors du navigateur.
+            // Explicitly thrown exceptions keep their stack in the browser console: the only way to
+            // investigate a defect that cannot be reproduced outside the browser.
             PlayerSettings.WebGL.exceptionSupport = WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
 
-            // La toile par défaut d'Unity est en 960 x 600 (16/10) : un jeu composé pour du 16/9 s'y
-            // retrouve bordé de bandes. Ces deux valeurs alimentent aussi le cadrage de la page hôte.
+            // Unity's default canvas is 960 x 600 (16:10): a game composed for 16:9 ends up with bars
+            // on it. These two values also feed the framing of the host page.
             PlayerSettings.defaultWebScreenWidth = 1280;
             PlayerSettings.defaultWebScreenHeight = 720;
 
-            // Le gabarit du projet : Assets/WebGLTemplates/SnakeSnack/. Il porte le cadrage, la
-            // confiscation des touches détournées par le navigateur, le réveil du contexte audio,
-            // les gardes tactiles et la garde-cache.
+            // The project's template: Assets/WebGLTemplates/SnakeSnack/. It carries the framing, the
+            // capture of keys the browser hijacks, the audio-context wake-up, the touch guards and the
+            // cache guard.
             PlayerSettings.WebGL.template = "PROJECT:SnakeSnack";
             PlayerSettings.WebGL.powerPreference = WebGLPowerPreference.HighPerformance;
 
-            Debug.Log($"Reglages web : tas {PlayerSettings.WebGL.initialMemorySize} Mo, " +
-                      $"{PlayerSettings.WebGL.compressionFormat} (repli {PlayerSettings.WebGL.decompressionFallback}), " +
-                      $"stripping Low, gabarit {PlayerSettings.WebGL.template}.");
+            Debug.Log($"Web settings: heap {PlayerSettings.WebGL.initialMemorySize} MB, " +
+                      $"{PlayerSettings.WebGL.compressionFormat} (fallback {PlayerSettings.WebGL.decompressionFallback}), " +
+                      $"stripping Low, template {PlayerSettings.WebGL.template}.");
         }
 
-        [MenuItem("Snake Snack/Appliquer les reglages du projet")]
+        [MenuItem("Snake Snack/Apply the project settings")]
         public static void ConfigurePlayerSettings()
         {
             PlayerSettings.companyName = "Drangoht";
@@ -175,18 +176,17 @@ namespace SnakeSnack.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        // ------------------------------------------------------------------ tampon de build
+        // ------------------------------------------------------------------ build stamp
 
         /// <summary>
-        /// Pose l'identité git du code qu'on s'apprête à construire, dans la ressource que le jeu lit
-        /// pour afficher son tampon. Appelé <b>avant</b> le build, sans quoi le binaire embarquerait
-        /// la valeur précédente.
+        /// Records the git identity of the code about to be built, in the resource the game reads to
+        /// show its stamp. Called <b>before</b> the build, without which the binary would embed the
+        /// previous value.
         /// </summary>
         /// <remarks>
-        /// Écrite ici et non par le script de publication : posée seulement au moment de publier,
-        /// elle resterait ensuite en place, et tout build local suivant afficherait le SHA de la
-        /// dernière release — un garde-fou de fraîcheur qui se trompe est pire que pas de garde-fou,
-        /// puisqu'on lui fait confiance.
+        /// Written here and not by the release script: set only at publishing time, it would then stay
+        /// in place, and every later local build would show the SHA of the last release — a freshness
+        /// guard that lies is worse than no guard, since it is trusted.
         /// </remarks>
         static void StampGitSha()
         {
@@ -194,8 +194,8 @@ namespace SnakeSnack.EditorTools
 
             if (sha.Length == 0)
             {
-                // Pas de dépôt, ou pas de git dans le PATH : « dev » avoue l'ignorance, là où un SHA
-                // périmé prétendrait savoir.
+                // No repository, or no git in PATH: "dev" admits ignorance, where a stale SHA would
+                // claim knowledge.
                 sha = "dev";
             }
             else if (HasLocalChanges())
@@ -209,26 +209,26 @@ namespace SnakeSnack.EditorTools
             bool isNew = !File.Exists(full);
             File.WriteAllText(full, sha);
 
-            // Le fichier est ignoré par git : sur un clone frais il n'existe pas encore, et la base
-            // d'assets ne le connaît donc pas — un ImportAsset seul ne l'y ferait pas entrer.
+            // The file is ignored by git: on a fresh clone it does not exist yet, so the asset
+            // database does not know it — an ImportAsset alone would not bring it in.
             if (isNew) AssetDatabase.Refresh();
 
-            // Sans réimport, le build embarquerait la valeur que la base d'assets a en mémoire.
+            // Without a reimport, the build would embed the value the asset database has in memory.
             AssetDatabase.ImportAsset(ShaAssetPath, ImportAssetOptions.ForceUpdate);
 
-            Debug.Log($"Identite git : {sha}");
+            Debug.Log($"Git identity: {sha}");
         }
 
         /// <summary>
-        /// Le dépôt porte-t-il des modifications autres que celles que le build pose lui-même ?
+        /// Does the repository carry changes other than the ones the build itself writes?
         /// </summary>
         /// <remarks>
-        /// Trois fichiers sont exclus du constat parce qu'ils sont des <b>artefacts</b> et non des
-        /// sources : le tampon et le numéro de version, posés juste avant de construire, et la scène,
-        /// que <see cref="SceneBuilder"/> régénère de zéro (donc avec de nouveaux identifiants
-        /// d'objets, donc un diff garanti). Sans ces exclusions, tout build se déclarerait issu d'un
-        /// arbre modifié, y compris sur un dépôt parfaitement propre — et l'avertissement qui doit
-        /// signaler un vrai écart ne voudrait plus rien dire.
+        /// Three files are excluded from the check because they are <b>artefacts</b> and not sources:
+        /// the stamp and the version number, written just before building, and the scene, which
+        /// <see cref="SceneBuilder"/> regenerates from scratch (hence with new object identifiers,
+        /// hence a guaranteed diff). Without those exclusions, every build would declare itself built
+        /// from a modified tree, including on a perfectly clean repository — and the warning meant to
+        /// report a real discrepancy would stop meaning anything.
         /// </remarks>
         static bool HasLocalChanges()
         {
@@ -237,7 +237,7 @@ namespace SnakeSnack.EditorTools
                 string entry = line.Trim();
                 if (entry.Length == 0) continue;
 
-                // « XY chemin » : le statut tient sur les deux premières colonnes.
+                // "XY path": the status fits in the first two columns.
                 string path = entry.Length > 2 ? entry.Substring(2).Trim().Replace('\\', '/') : "";
 
                 if (path.EndsWith("Assets/Resources/build_sha.txt", StringComparison.Ordinal)) continue;
@@ -250,13 +250,12 @@ namespace SnakeSnack.EditorTools
             return false;
         }
 
-        /// <summary>Écrit, à côté du build, la carte d'identité de ce qui vient d'être construit.</summary>
+        /// <summary>Writes, next to the build, the identity card of what has just been built.</summary>
         /// <remarks>
-        /// C'est le seul contrôle honnête de fraîcheur : les métadonnées d'un binaire Unity décrivent
-        /// le <i>moteur</i> et non le jeu, et l'horodatage ne vaut pas mieux, le build étant
-        /// incrémental — un fichier identique n'est pas réécrit. Ce tampon-ci est produit par le
-        /// build : il ne peut pas annoncer une version que le build n'a pas posée. Le script de
-        /// publication le lit avant de pousser.
+        /// It is the only honest freshness check: the metadata of a Unity binary describes the
+        /// <i>engine</i> and not the game, and the timestamp is no better, the build being incremental
+        /// — an identical file is not rewritten. This stamp is produced by the build: it cannot
+        /// announce a version the build did not put there. The release script reads it before pushing.
         /// </remarks>
         static void WriteBuildStamp(string directory)
         {
@@ -271,23 +270,23 @@ namespace SnakeSnack.EditorTools
                           "}\n";
 
             File.WriteAllText(Path.Combine(directory, "build_stamp.json"), json);
-            Debug.Log($"Tampon de build : v{PlayerSettings.bundleVersion}-{sha}");
+            Debug.Log($"Build stamp: v{PlayerSettings.bundleVersion}-{sha}");
         }
 
-        /// <summary>Remplace <c>__BUILD_ID__</c> dans la page par une empreinte propre à ce build.</summary>
+        /// <summary>Replaces <c>__BUILD_ID__</c> in the page with a fingerprint unique to this build.</summary>
         /// <remarks>
-        /// Sans elle, un navigateur qui a déjà vu la page ressert le chargeur d'un build et le wasm
-        /// d'un autre : le jeu ne démarre plus, et le seul indice est un message d'erreur qui ne
-        /// change pas alors que le build, lui, a changé. L'horodatage s'ajoute au SHA parce que deux
-        /// builds locaux d'affilée partagent le même commit et doivent quand même se distinguer ; il
-        /// invalide aussi le cache IndexedDB d'Unity, qui indexe par URL.
+        /// Without it, a browser that has already seen the page serves the loader of one build and the
+        /// wasm of another: the game no longer starts, and the only clue is an error message that does
+        /// not change while the build does. The timestamp is added to the SHA because two local builds
+        /// in a row share the same commit and must still be told apart; it also invalidates Unity's
+        /// IndexedDB cache, which is indexed by URL.
         /// </remarks>
         static void StampWebCacheBuster(string directory)
         {
             string indexPath = Path.Combine(directory, "index.html");
             if (!File.Exists(indexPath))
             {
-                Debug.LogWarning("index.html introuvable : pas de garde-cache posee.");
+                Debug.LogWarning("index.html not found: no cache guard placed.");
                 return;
             }
 
@@ -296,14 +295,14 @@ namespace SnakeSnack.EditorTools
 
             if (!html.Contains("__BUILD_ID__"))
             {
-                // Le gabarit a été modifié sans que le jeton y survive : le dire fort, sans quoi le
-                // défaut ne se manifestera que chez un joueur, sous la forme d'un jeu qui ne démarre pas.
-                Debug.LogWarning("__BUILD_ID__ absent du gabarit : le navigateur pourra melanger deux builds.");
+                // The template was modified without the token surviving: say it loudly, otherwise the
+                // defect will only show up on a player's machine, as a game that does not start.
+                Debug.LogWarning("__BUILD_ID__ missing from the template: the browser may mix two builds.");
                 return;
             }
 
             File.WriteAllText(indexPath, html.Replace("__BUILD_ID__", buildId));
-            Debug.Log($"Garde-cache : {buildId}");
+            Debug.Log($"Cache guard: {buildId}");
         }
 
         static string ReadSha()
@@ -312,7 +311,7 @@ namespace SnakeSnack.EditorTools
             return asset != null && asset.text.Trim().Length > 0 ? asset.text.Trim() : "dev";
         }
 
-        /// <summary>Exécute une commande git à la racine du projet. Chaîne vide si git est indisponible.</summary>
+        /// <summary>Runs a git command at the project root. Empty string if git is unavailable.</summary>
         static string Git(string arguments)
         {
             try
@@ -335,7 +334,7 @@ namespace SnakeSnack.EditorTools
             }
             catch (Exception error)
             {
-                Debug.LogWarning($"git indisponible : {error.Message}");
+                Debug.LogWarning($"git unavailable: {error.Message}");
                 return string.Empty;
             }
         }

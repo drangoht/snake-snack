@@ -3,105 +3,103 @@ using UnityEngine;
 namespace SnakeSnack.UI
 {
     /// <summary>
-    /// ⚠ <b>LE SEUL ENDROIT DU DÉPÔT OÙ UNE COULEUR EST ÉCRITE EN DUR.</b> Douze rôles nommés,
-    /// tranchés par <c>docs/ART.md</c> §1 (détail et preuves de contraste : <c>docs/art/palette.md</c>).
+    /// ⚠ <b>THE ONLY PLACE IN THE REPOSITORY WHERE A COLOUR IS WRITTEN DOWN.</b> Twelve named roles,
+    /// ruled on by <c>docs/ART.md</c> §1 (detail and contrast proofs: <c>docs/art/palette.md</c>).
     /// </summary>
     /// <remarks>
-    /// <para>Un sprite, un shader, un <c>Image</c> ou un <c>Text</c> référencent le <b>rôle</b>, jamais
-    /// un <c>#RRGGBB</c> recopié : c'est ce qui permet de retoucher toute l'identité visuelle sans
-    /// relire un seul appelant.</para>
+    /// <para>A sprite, a shader, an <c>Image</c> or a <c>Text</c> references the <b>role</b>, never a
+    /// copied <c>#RRGGBB</c>: that is what allows the whole visual identity to be retouched without
+    /// re-reading a single caller.</para>
     ///
-    /// <para>⚠ <b>Le projet est en espace colorimétrique Gamma</b> (<c>ProjectSettings.asset</c> :
-    /// <c>m_ActiveColorSpace: 0</c>) : les octets se posent tels quels, aucune reconversion linéaire.
-    /// Si le projet passe un jour en Linear, ces valeurs sont à rouvrir — pas à « corriger » par
-    /// anticipation.</para>
+    /// <para>⚠ <b>The project is in Gamma colour space</b> (<c>ProjectSettings.asset</c>:
+    /// <c>m_ActiveColorSpace: 0</c>): bytes are laid down as-is, with no linear reconversion. If the
+    /// project ever moves to Linear, these values must be reopened — not "fixed" pre-emptively.</para>
     ///
-    /// <para>⚠ <b>Jamais une information portée par la seule couleur</b> (ART §4) : tout ce qui se
-    /// distingue ici se distingue AUSSI par la forme ou la position (la tête est plus grosse que le
-    /// corps, la pomme est un losange plus petit qu'une case, le pictogramme est barré, le bord de
-    /// l'aire est un trait continu). La paire la plus faible en luminance, pomme contre corps
-    /// (1,07 : 1), ne tient QUE par la forme — voir <c>docs/art/palette.md</c> §1.5.</para>
+    /// <para>⚠ <b>Never information carried by colour alone</b> (ART §4): everything distinguished
+    /// here is ALSO distinguished by shape or position (the head is bigger than the body, the apple
+    /// is a diamond smaller than a cell, the pictogram is barred, the playfield edge is a continuous
+    /// line). The weakest luminance pair, apple against body (1.07 : 1), holds by shape ALONE — see
+    /// <c>docs/art/palette.md</c> §1.5.</para>
     /// </remarks>
     public static class UiPalette
     {
-        /// <summary>Fond du cadre, hors aire de jeu — les marges latérales du GDD §4.3.</summary>
+        /// <summary>Frame background, outside the playfield — the side margins of GDD §4.3.</summary>
         /// <remarks>
-        /// Slate quasi noir, jamais un noir pur : un <c>#000000</c> strict s'écrase sur les écrans
-        /// bas de gamme et rend <see cref="TraitDeGrille"/> invisible chez une partie du public itch.
+        /// Near-black slate, never pure black: a strict <c>#000000</c> crushes on low-end screens and
+        /// makes <see cref="GridLine"/> invisible for part of the itch audience.
         /// </remarks>
-        public static readonly Color Fond = Octets(0x0A, 0x0E, 0x13);
+        public static readonly Color Background = FromBytes(0x0A, 0x0E, 0x13);
 
-        /// <summary>Fond de l'aire de jeu : légèrement plus clair, pour que l'aire se détache.</summary>
-        public static readonly Color AireDeJeu = Octets(0x12, 0x18, 0x21);
+        /// <summary>Playfield background: slightly lighter, so the playfield stands out.</summary>
+        public static readonly Color Playfield = FromBytes(0x12, 0x18, 0x21);
 
-        /// <summary>Traits de la grille : présents mais discrets — ils aident à compter, pas à lire.</summary>
-        public static readonly Color TraitDeGrille = Octets(0x1C, 0x25, 0x30);
+        /// <summary>Grid lines: present but discreet — they help you count, not read.</summary>
+        public static readonly Color GridLine = FromBytes(0x1C, 0x25, 0x30);
 
         /// <summary>
-        /// Bordure de l'aire de jeu. <b>Ambre</b> : c'est le mur qui tue (GDD §2), et la seule couleur
-        /// « alerte » posée à demeure sur tout l'écran. 8,06 : 1 contre <see cref="AireDeJeu"/>.
+        /// Playfield border. <b>Amber</b>: this is the wall that kills (GDD §2), and the only "alert"
+        /// colour permanently on screen. 8.06 : 1 against <see cref="Playfield"/>.
         /// </summary>
-        public static readonly Color BordureAire = Octets(0xE3, 0xA2, 0x3A);
+        public static readonly Color PlayfieldBorder = FromBytes(0xE3, 0xA2, 0x3A);
 
         /// <summary>
-        /// Corps du serpent. Vert moyen : le serpent est le joueur — ni danger ni objectif, donc la
-        /// seule couleur du jeu qui ne signale rien.
+        /// Snake body. Mid green: the snake is the player — neither danger nor goal, so the only
+        /// colour in the game that signals nothing.
         /// </summary>
-        public static readonly Color CorpsSerpent = Octets(0x4E, 0x93, 0x58);
+        public static readonly Color SnakeBody = FromBytes(0x4E, 0x93, 0x58);
 
         /// <summary>
-        /// Tête du serpent — même vert tiré vers le clair, ET plus grosse : la case qui compte le plus
-        /// au tick reste la plus lisible, sans que l'information tienne à la seule couleur.
+        /// Snake head — the same green pulled towards light, AND bigger: the cell that matters most
+        /// at the tick stays the most readable, without the information hanging on colour alone.
         /// </summary>
-        public static readonly Color TeteSerpent = Octets(0xD8, 0xF5, 0xC4);
+        public static readonly Color SnakeHead = FromBytes(0xD8, 0xF5, 0xC4);
 
         /// <summary>
-        /// La pomme. Rouge chaud, seule couleur de ce hue dans le jeu. ⚠ Elle se distingue du serpent
-        /// par sa <b>forme</b> (un losange, contre des carrés) et par sa <b>taille</b> avant de se
-        /// distinguer par sa couleur : contre <see cref="CorpsSerpent"/> le contraste de luminance
-        /// tombe à 1,07 : 1, et rouge/vert est justement la paire qu'une deutéranopie confond.
+        /// The apple. Warm red, the only colour of that hue in the game. ⚠ It is distinguished from
+        /// the snake by its <b>shape</b> (a diamond, against squares) and by its <b>size</b> before
+        /// it is distinguished by colour: against <see cref="SnakeBody"/> the luminance contrast
+        /// falls to 1.07 : 1, and red/green is precisely the pair deuteranopia confuses.
         /// </summary>
-        public static readonly Color Pomme = Octets(0xE5, 0x47, 0x3B);
+        public static readonly Color Apple = FromBytes(0xE5, 0x47, 0x3B);
 
         /// <summary>
-        /// Pictogramme de refus : le signal le plus clair de l'écran, il doit primer. Blanc pur
-        /// <b>réservé</b> — aucun autre rôle n'atteint cette valeur, y compris <see cref="TexteHud"/>.
-        /// Le chevron d'un demi-tour tombe toujours sur le corps du serpent (ART §5.6), d'où 3,72 : 1
-        /// contre <see cref="CorpsSerpent"/>.
+        /// Rejection pictogram: the clearest signal on screen, it must dominate. Pure white,
+        /// <b>reserved</b> — no other role reaches that value, including <see cref="HudText"/>. The
+        /// chevron of a reversal always falls on the snake's body (ART §5.6), hence 3.72 : 1 against
+        /// <see cref="SnakeBody"/>.
         /// </summary>
-        public static readonly Color Pictogramme = Octets(0xFF, 0xFF, 0xFF);
+        public static readonly Color Pictogram = FromBytes(0xFF, 0xFF, 0xFF);
 
-        /// <summary>Texte principal du HUD : blanc légèrement froid, jamais aussi saturé que le pictogramme.</summary>
-        public static readonly Color TexteHud = Octets(0xE7, 0xED, 0xF2);
+        /// <summary>Main HUD text: slightly cool white, never as saturated as the pictogram.</summary>
+        public static readonly Color HudText = FromBytes(0xE7, 0xED, 0xF2);
 
-        /// <summary>Texte secondaire (rappel des touches) : gris-bleu de la famille du fond, hiérarchie sous <see cref="TexteHud"/>.</summary>
-        public static readonly Color TexteSecondaire = Octets(0x87, 0x92, 0xA0);
+        /// <summary>Secondary text (key reminder): a blue-grey from the background family, ranked below <see cref="HudText"/>.</summary>
+        public static readonly Color SecondaryText = FromBytes(0x87, 0x92, 0xA0);
 
         /// <summary>
-        /// Voile assombrissant l'écran de pause. Opaque à 62 % : la grille reste lisible dessous.
-        /// Achromatique à dessein — un voile teinté entrerait en concurrence avec les quatre couleurs
-        /// chaudes du jeu.
+        /// Scrim darkening the pause screen. 62 % opaque: the grid stays readable underneath.
+        /// Achromatic on purpose — a tinted scrim would compete with the game's four warm colours.
         /// </summary>
-        public static readonly Color VoileDePause = new Color(0f, 0f, 0f, 0.62f);
+        public static readonly Color PauseScrim = new Color(0f, 0f, 0f, 0.62f);
 
         /// <summary>
-        /// Tampon de build : présent pour le rapport de bug, discret pour le joueur. Blanc à 45 %,
-        /// achromatique pour rester lisible quel que soit le fond réel qu'il recouvre.
+        /// Build stamp: present for the bug report, discreet for the player. White at 45 %,
+        /// achromatic so it stays readable whatever background it actually covers.
         /// </summary>
-        public static readonly Color TamponDeBuild = new Color(1f, 1f, 1f, 0.45f);
+        public static readonly Color BuildStamp = new Color(1f, 1f, 1f, 0.45f);
 
         /// <summary>
-        /// Un code hexa d'<c>ART.md</c> §1 posé octet par octet.
+        /// A hex code from <c>ART.md</c> §1, laid down byte by byte.
         /// </summary>
         /// <remarks>
-        /// Les octets sont écrits en <c>0xNN</c> pour se relire tels quels contre le brief. Division
-        /// par 255 sans conversion sRGB → linéaire : le projet est en Gamma (voir la remarque de
-        /// classe). <c>ColorUtility.TryParseHtmlString</c> est volontairement évité — il renvoie un
-        /// booléen que personne ne teste, et une chaîne mal frappée passerait en noir sans rien lever.
+        /// Bytes are written as <c>0xNN</c> so they can be read back against the brief as-is. Divided
+        /// by 255 with no sRGB → linear conversion: the project is in Gamma (see the class remark).
+        /// <c>ColorUtility.TryParseHtmlString</c> is deliberately avoided — it returns a boolean
+        /// nobody tests, and a mistyped string would go through as black without raising anything.
         /// </remarks>
-        private static Color Octets(byte rouge, byte vert, byte bleu)
+        private static Color FromBytes(byte red, byte green, byte blue)
         {
-            return new Color(rouge / 255f, vert / 255f, bleu / 255f, 1f);
+            return new Color(red / 255f, green / 255f, blue / 255f, 1f);
         }
     }
 }

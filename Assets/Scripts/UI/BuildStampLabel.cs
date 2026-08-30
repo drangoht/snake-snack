@@ -4,10 +4,10 @@ using UnityEngine.UI;
 namespace SnakeSnack
 {
     /// <summary>
-    /// Ecrit le tampon de build dans son texte, au lancement.
+    /// Writes the build stamp into its text, at startup.
     ///
-    /// <para>Pose par <c>SceneBuilder.BuildStampCanvas</c> sur son propre canevas : le HUD s'eteint
-    /// des qu'un menu s'ouvre, et c'est justement la que les captures d'ecran sont prises.</para>
+    /// <para>Placed by <c>SceneBuilder.BuildStampCanvas</c> on its own canvas: the HUD goes dark as
+    /// soon as a menu opens, and that is exactly where screenshots are taken.</para>
     /// </summary>
     [RequireComponent(typeof(Text))]
     public class BuildStampLabel : MonoBehaviour
