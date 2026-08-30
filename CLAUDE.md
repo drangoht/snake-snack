@@ -28,7 +28,7 @@ same commit.** That file is what keeps a bug from coming back six months later.
 
 **Phase 1 — make the game presentable** (since 2026-08-28)
 
-Mechanics, menu, GDD, itch page and two web builds (0.1.0, 0.2.0) are done. ⚠ The itch page exists but
+Mechanics, menu, GDD, itch page and three web builds (0.1.0 → 0.3.0) are done. ⚠ The itch page exists but
 stays in **Draft**: only the author makes it public, and he set the work below as his condition.
 
 - [x] The whole **juice** (`docs/art/juicy.md` P1→P3) and the head's **face**

@@ -9,9 +9,9 @@ Unity 6000.5.6f1 · C# · URP 2D · Input System · published on
 best, pause, death, refusal of the U-turn — the game opens on a **main menu** navigable with the
 keyboard as well as the mouse, and **the feel is finished**: the snake glides, squashes when it
 swallows, leans into its turns and looks where it is going; the apple pops in, the cell that kills you
-lights up before the end screen. Two web versions have shipped (0.1.0, 0.2.0), the itch page stays
-**in Draft**. Remaining before making it public: the graphical assets, the sound effects and the
-music.
+lights up before the end screen. The whole game — interface, code and documentation — is in English.
+Three web versions have shipped (0.1.0, 0.2.0, 0.3.0), the itch page stays **in Draft**. Remaining
+before making it public: the graphical assets, the sound effects and the music.
 
 > This repository was born from the
 > **[unity-game-template-with-claude](https://github.com/drangoht/unity-game-template-with-claude)**

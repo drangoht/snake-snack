@@ -81,11 +81,13 @@ To check by hand after every publish; they were wrong for several versions on an
 - [ ] **Classification** tab: genre, tags, **player count**, multiplayer mode
 - [x] **Cover 630 × 500** — the only image seen by visitors who do not open the page.
       Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be
-      regenerated when the page's language changes.
-- [x] **Screenshots** — three, taken IN the browser on the itch page itself.
+      regenerated when the page's language changes. Regenerated in English on 2026-08-30
+      ("It grows with every bite.") — ⚠ **the new file is on disk, not yet uploaded**: replacing it
+      goes through the dashboard.
+- [ ] **Screenshots** — three, taken IN the browser on the itch page itself.
       ⚠ The in-game ones show the game's rendering: **to be regenerated at every visible change**,
-      otherwise the page announces a snake the game no longer shows. They currently show the French
-      interface and a snake with no face.
+      otherwise the page announces a snake the game no longer shows. Those online still show the
+      French interface and a snake with no face: they predate 0.3.0 and are now wrong twice over.
 
 ⚠ **Visibility**: the page has been in **Draft** since it was created (2026-08-28). Nothing is public
 until the author clicks "Publish" themselves.
