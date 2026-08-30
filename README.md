@@ -5,11 +5,13 @@ Le classique jeu de Snake
 Unity 6000.5.6f1 · C# · URP 2D · Input System · publié sur
 [itch.io](https://Drangoht.itch.io/snake-snack).
 
-**Où en est le jeu** (2026-08-28) : les mécaniques sont complètes — serpent, pomme, score, record
-persistant, pause, mort, refus du demi-tour — et le jeu s'ouvre sur un **menu principal** (jouer,
-comment jouer, crédits, quitter), navigable au clavier comme à la souris. Restent au programme avant
-une première version publiée : la sensation (retours, « juicy »), les assets graphiques, les effets
-sonores et la musique.
+**Où en est le jeu** (2026-08-30) : les mécaniques sont complètes — serpent, pomme, score, record
+persistant, pause, mort, refus du demi-tour — le jeu s'ouvre sur un **menu principal** navigable au
+clavier comme à la souris, et **la sensation est finie** : le serpent glisse, s'écrase quand il
+avale, penche dans ses virages et regarde où il va ; la pomme arrive en pop, la case qui vous tue
+s'illumine avant l'écran de fin. Deux versions web sont sorties (0.1.0, 0.2.0), la page itch reste
+**en Draft**. Restent avant de la rendre publique : les assets graphiques, les effets sonores et la
+musique.
 
 > Ce dépôt est né du gabarit
 > **[unity-game-template-with-claude](https://github.com/drangoht/unity-game-template-with-claude)**.

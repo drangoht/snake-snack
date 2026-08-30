@@ -29,13 +29,18 @@ même commit.** C'est ce fichier qui évite qu'un bug se reproduise six mois plu
 <!-- Une phase = un objectif court, daté, avec ce qui reste à faire. La mettre à jour, pas
      l'accumuler : l'historique appartient à docs/DEVLOG.md. -->
 
-**Phase 0 — mise en place** (démarrée le 2026-08-27)
+**Phase 1 — rendre le jeu présentable** (depuis le 2026-08-28)
 
-- [x] Premier build : `& "tools/build.ps1" -Lancer` — il importe le projet (~20 min) et génère
-      `Library/` + `ProjectSettings/`. Rien à ouvrir dans Unity Hub.
-- [ ] Remplir `docs/GDD.md` — skill **`/rediger-le-gdd`** : pitch, boucle de jeu et commandes
-      avant la première ligne de code ; le reste s'écrit système par système.
-- [ ] Créer la page itch (`Kind of project` = HTML pour un jeu web) et publier une 0.1.0.
+Mécaniques, menu, GDD, page itch et deux versions web (0.1.0, 0.2.0) sont faits. ⚠ La page itch
+existe mais reste en **Draft** : seul l'auteur la rend publique, et il a posé les chantiers
+ci-dessous comme condition.
+
+- [x] Le **juicy** entier (`docs/art/juicy.md` P1→P3) et le **visage** de la tête
+      (`cartoon.md` §3.3) — livrés et constatés à l'écran le 2026-08-30 (`docs/TEST_REPORT.md`).
+- [ ] Les **assets graphiques** — au-delà des formes générées par script.
+- [ ] Les **SFX**, puis la **musique** — rien n'existe encore : ni `Assets/Audio/`, ni pipeline.
+- [ ] ⚠ Les captures de `docs/itch/` montrent un serpent **sans visage** : à refaire à la
+      prochaine publication.
 
 ## Équipe d'agents — déléguer, mais pas à perte
 
