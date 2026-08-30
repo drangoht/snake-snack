@@ -473,7 +473,7 @@ namespace SnakeSnack.Gameplay
             // ⚠ Après le déplacement, et seulement si le serpent est vivant : incliner la tête d'un
             // serpent qui vient de mourir la ferait pivoter sous le voile de fin, alors que la
             // partie est arrêtée.
-            _vue.SignalerVirage(directionAvant, tick.DirectionAppliquee);
+            _vue.SignalerDirection(directionAvant, tick.DirectionAppliquee);
             _vue.DessinerSerpent(_serpent.Segments);
 
             if (!mange)
@@ -713,6 +713,11 @@ namespace SnakeSnack.Gameplay
             // Pose immédiate : un serpent qui glisserait vers sa position de départ donnerait
             // l'impression que la partie a commencé avant que le joueur ne la voie.
             _vue.DessinerSerpent(_serpent.Segments, false);
+
+            // ⚠ Deux fois la MÊME direction : le serpent de départ est immobile mais ORIENTÉ
+            // (§4.3), donc son visage doit déjà regarder à l'est. Aucun virage n'est signalé — le
+            // sens vaut zéro — et rien ne s'incline.
+            _vue.SignalerDirection(pose.Orientation, pose.Orientation);
             _vue.DessinerPomme(_pomme);
             _vue.MasquerRefus();
 

@@ -37,6 +37,14 @@ namespace SnakeSnack.Gameplay
         /// <summary>Inclinaison de la tête au virage, en degrés (<c>docs/art/juicy.md</c> §9).</summary>
         private const float AngleVirage = 8f;
 
+        // Le visage de la tête (docs/art/cartoon.md §3.3), aux proportions de l'illustration du
+        // menu (`tools/generer_illustration_serpent.py`, `dessiner_tete`) : mêmes ratios, pour que
+        // le personnage de l'affiche et celui de la partie soient reconnaissables comme le même.
+        // Exprimés en fraction du côté de la case, la tête étant dessinée regardant vers l'EST.
+        private const float AvanceOeil = 0.16f;
+        private const float EcartOeil = 0.24f;
+        private const float RayonOeil = 0.11f;
+
         private readonly List<SpriteRenderer> _segments = new List<SpriteRenderer>();
 
         /// <summary>Position d'où part chaque segment de rendu, et celle où il va (juicy §4).</summary>
@@ -76,6 +84,9 @@ namespace SnakeSnack.Gameplay
         private int _indexPop = -1;
         private int _sensVirage;
         private Direction _directionGulp = Direction.Est;
+
+        /// <summary>Les deux yeux, portés par un pivot qui tourne avec la marche (cartoon §3.3).</summary>
+        private Transform _visage;
 
         /// <summary>Côté du losange de la pomme au repos — l'échelle que son pop retrouve (§7).</summary>
         private float _cotePomme;
@@ -349,6 +360,13 @@ namespace SnakeSnack.Gameplay
                 _arrivees.Add(Vector3.zero);
             }
 
+            // ⚠ Ici et pas dans `Construire` : le visage est enfant du segment de tête, qui n'existe
+            // qu'une fois le pool amorcé par le premier dessin.
+            if (_visage == null && _segments.Count > 0)
+            {
+                ConstruireVisage();
+            }
+
             // Un segment de trop est masqué, jamais détruit : le pool resservira à la partie suivante.
             for (int i = segments.Count; i < _segments.Count; i++)
             {
@@ -405,8 +423,46 @@ namespace SnakeSnack.Gameplay
         }
 
         /// <summary>
-        /// La tête s'incline dans le sens du virage, et se redresse sur la durée du tick suivant
-        /// (<c>juicy.md</c> §9).
+        /// Construit le visage de la tête, une fois le pool créé (<c>docs/art/cartoon.md</c> §3.3).
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Enfant du segment de tête</b>, comme le veut le brief : les yeux héritent donc de sa
+        /// position, de son inclinaison de virage (§9) <i>et</i> de son gulp (§5) — ils s'écrasent
+        /// avec elle quand elle avale, ce qu'un visage posé à côté ne ferait pas. Un cercle reste
+        /// une ellipse sous une échelle non uniforme, sans cisaillement : la rotation propre du
+        /// visage ne le déforme pas.
+        ///
+        /// <para>⚠ Le rond vient de <see cref="FormesPrimitives.CarreArrondi"/> avec un rayon
+        /// relatif de 0,5 : à ce rayon, la distance signée du rectangle arrondi <b>est</b> celle
+        /// d'un disque. Aucune fabrique nouvelle, et le même sprite partagé par les deux yeux.</para>
+        ///
+        /// <para>⚠ Couleur <see cref="UiPalette.Fond"/>, comme l'illustration du menu : le seul rôle
+        /// assez sombre pour trancher sur la tête claire sans introduire une couleur qui n'existe
+        /// nulle part ailleurs (<c>docs/art/palette.md</c> §1.2).</para>
+        ///
+        /// <para><b>Pas de langue en jeu</b> (§3.3) : elle dépasserait de la case et empiéterait sur
+        /// la suivante à chaque tick, clignotant au rythme des 8 ticks/s.</para>
+        /// </remarks>
+        private void ConstruireVisage()
+        {
+            var pivot = new GameObject("Visage");
+            pivot.transform.SetParent(_segments[0].transform, false);
+            _visage = pivot.transform;
+
+            for (int cote = -1; cote <= 1; cote += 2)
+            {
+                var oeil = FormesPrimitives.RectangleArrondi(_visage, "Oeil" + cote, UiPalette.Fond, 12, 0.5f);
+
+                // Fractions du côté de la case : le parent porte déjà l'échelle de la tête, donc un
+                // enfant à 1 mesurerait une case entière.
+                oeil.transform.localPosition = new Vector3(AvanceOeil, cote * EcartOeil, 0f);
+                oeil.transform.localScale = new Vector3(2f * RayonOeil, 2f * RayonOeil, 1f);
+            }
+        }
+
+        /// <summary>
+        /// La tête s'incline dans le sens du virage, se redresse sur la durée du tick suivant
+        /// (<c>juicy.md</c> §9), et son visage regarde là où elle va (<c>cartoon.md</c> §3.3).
         /// </summary>
         /// <param name="avant">Direction appliquée au tick précédent.</param>
         /// <param name="apres">Direction appliquée à ce tick.</param>
@@ -420,8 +476,16 @@ namespace SnakeSnack.Gameplay
         /// <para>Le tri du virage revient à <see cref="Directions.SensDuVirage"/> plutôt qu'à
         /// l'appelant : le jeu signale ce qu'il a fait, la vue décide de ce qu'elle en montre.</para>
         /// </remarks>
-        public void SignalerVirage(Direction avant, Direction apres)
+        public void SignalerDirection(Direction avant, Direction apres)
         {
+            // Le visage suit la marche à chaque tick, virage ou pas : c'est la MÊME information —
+            // « voilà où va la tête » — et la faire arriver par deux appels distincts, c'est se
+            // préparer à en oublier un des deux le jour où l'un des deux appelants change.
+            if (_visage != null)
+            {
+                _visage.localRotation = Quaternion.Euler(0f, 0f, AngleVisage(apres));
+            }
+
             int sens = Directions.SensDuVirage(avant, apres);
 
             if (sens == 0)
@@ -667,6 +731,18 @@ namespace SnakeSnack.Gameplay
         public void MasquerRefus()
         {
             _chevron.gameObject.SetActive(false);
+        }
+
+        /// <summary>Le visage est dessiné regardant à l'est : le reste n'est qu'une rotation.</summary>
+        private static float AngleVisage(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.Nord: return 90f;
+                case Direction.Ouest: return 180f;
+                case Direction.Sud: return 270f;
+                default: return 0f;
+            }
         }
 
         /// <summary>Le chevron est dessiné pointant au nord : le reste n'est qu'une rotation.</summary>

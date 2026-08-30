@@ -65,11 +65,11 @@ suffit, ou si un second petit PNG dédié (`pomme-arrondie.png`, même script) e
 - **Pas de langue en jeu** (contrairement au menu) : elle dépasserait de la case et empiéterait sur
   la case suivante à chaque tick, clignotant au rythme des 8 ticks/s — l'inverse exact de l'interdit
   « pas de clignotement » de `ART.md` §4.
-- ⚠ **Risque explicite, non tranché ici** : à 44 px de case, un œil au ratio de l'illustration
-  (0,11 × 40 px à l'échelle du menu) ferait ~4-5 px de rayon à l'écran — en dessous du seuil courant
-  de lisibilité d'un petit rond anticrénelé. **À prototyper et faire valider par `game-tester` sur une
-  capture réelle avant de committer.** Si ça ne lit pas : garder le rounding seul (§3.1 suffit déjà à
-  sortir du papier millimétré) plutôt que forcer un détail illisible.
+- ✔ **Livré le 2026-08-30 au ratio exact du menu** (rayon 0,11 de la case), après capture à l'échelle
+  réelle : le risque annoncé — « ~4-5 px de rayon, sous le seuil de lisibilité » — **ne s'est pas
+  vérifié** ; un rayon de 4,6 px fait un œil de 9 px de diamètre, franc à 44 px. Les yeux sont
+  **enfants du segment de tête**, donc soumis à son gulp (`juicy.md` §5) et à son inclinaison (§9) —
+  un cercle sous échelle non uniforme reste une ellipse, sans cisaillement.
 
 ### 3.4 Ce qui pourrait suivre, priorité basse
 
@@ -139,7 +139,7 @@ Recommandations du directeur artistique retenues sans modification :
   jeu du papier millimétré, et il ne dépend d'aucune décision restée ouverte.
 - **Le visage en jeu (§3.3) est prototypé, pas décidé** : à voir sur une capture à l'échelle réelle
   (44 px) avant d'être gardé. S'il ne lit pas, le rounding seul fait le travail — ne pas forcer un
-  détail illisible.
+  détail illisible. → **Tranché le 2026-08-30 sur capture : gardé tel quel, sans réduire les yeux.**
 - **Les coins de l'aire (§3.4) ne bougent pas** : le mur reste dur, par contraste avec la créature
   ronde. Choix de lecture, pas oubli.
 - **Les captures itch (§5) sont régénérées dès le rounding livré** : `capture-2-partie.png` et
