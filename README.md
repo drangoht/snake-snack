@@ -10,8 +10,9 @@ best, pause, death, refusal of the U-turn — the game opens on a **main menu** 
 keyboard as well as the mouse, and **the feel is finished**: the snake glides, squashes when it
 swallows, leans into its turns and looks where it is going; the apple pops in, the cell that kills you
 lights up before the end screen. The whole game — interface, code and documentation — is in English.
-Three web versions have shipped (0.1.0, 0.2.0, 0.3.0), the itch page stays **in Draft**. Remaining
-before making it public: the graphical assets, the sound effects and the music.
+It **plays on a phone** too, in landscape: swipe to turn, or use the pad in the right-hand margin.
+Four web versions have shipped (0.1.0 → 0.4.0) and the itch page is **public**. Still missing: the
+graphical assets, the sound effects and the music.
 
 > This repository was born from the
 > **[unity-game-template-with-claude](https://github.com/drangoht/unity-game-template-with-claude)**

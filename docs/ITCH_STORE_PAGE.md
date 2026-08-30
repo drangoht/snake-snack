@@ -4,6 +4,13 @@
 is ever in another language, keep both files and **correct them together**: otherwise one of the two
 lies, and nobody knows which.
 
+⚠⚠ **THE LIVE PAGE AND THIS FILE DISAGREE, as of 2026-08-30.** This file describes 0.4.0, which has
+touch controls. The page online still carries the 0.3.0 text, which says in so many words "there are
+no touch controls" — false since the 0.4.0 build went up. Three attempts to save the corrected text
+through the itch editor were swallowed without an error and without the "Saved" banner (the pitfall
+`.claude/agents/marketing.md` already names). **Fix by pasting this file's Description by hand**, and
+delete this warning once it is done.
+
 ⚠ **This text must describe the game AS IT IS.** A page describing a feature removed two versions
 earlier is the most common and the most costly defect: the visitor sees the gap and closes the tab.
 Re-read it at every release that changes something visible.
@@ -84,13 +91,16 @@ To check by hand after every publish; they were wrong for several versions on an
 - [ ] **Classification** tab: genre, tags, **player count**, multiplayer mode
 - [x] **Cover 630 × 500** — the only image seen by visitors who do not open the page.
       Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be
-      regenerated when the page's language changes. Regenerated in English on 2026-08-30
-      ("It grows with every bite.") — ⚠ **the new file is on disk, not yet uploaded**: replacing it
-      goes through the dashboard.
-- [ ] **Screenshots** — three, taken IN the browser on the itch page itself.
-      ⚠ The in-game ones show the game's rendering: **to be regenerated at every visible change**,
-      otherwise the page announces a snake the game no longer shows. Those online still show the
-      French interface and a snake with no face: they predate 0.3.0 and are now wrong twice over.
+      regenerated when the page's language changes. Regenerated in English and **uploaded** on
+      2026-08-30 ("It grows with every bite.").
+- [x] **Screenshots** — three, taken IN the browser on the running build, and uploaded on 2026-08-30:
+      menu, a game at 4 points, and the end screen with "New best: 4". The `v0.3.0` stamp is visible on
+      each.
+      ⚠ They show the game's rendering, so they are **to be redone at every visible change** — the
+      0.4.0 touch controls are NOT on them.
+      ⚠ **The three old ones (French interface, faceless snake) are still online underneath**: deleting
+      them opens a confirmation dialog that froze the browser session. To finish by hand.
 
-⚠ **Visibility**: the page has been in **Draft** since it was created (2026-08-28). Nothing is public
-until the author clicks "Publish" themselves.
+⚠ **Visibility**: the page is **PUBLIC** — found so on 2026-08-30. Every document in this repository
+claimed it was still in Draft, and had done since 2026-08-28. Whatever is written here is therefore
+being read by visitors, not held back for review: a wrong line on this page is wrong in public.
