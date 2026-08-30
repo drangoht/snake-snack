@@ -80,6 +80,41 @@ capture a échoué : le jeu s'est fermé (ou minimisé) pendant le scénario. Li
 `Build/Windows/player.log` — une fermeture propre s'y voit sans aucune exception, et c'est
 justement ce qui la rend trompeuse.
 
+## Mesurer une animation de 100 ms (ajouté le 2026-08-30)
+
+Vérifier un retour de juicy, c'est prouver qu'une enveloppe de 90 à 220 ms se déroule à l'écran.
+Six pièges, tous rencontrés sur la même session, tous silencieux.
+
+- ⚠ **Une boîte englobante est fixée par ses points extrêmes**, donc par ses pixels parasites : la
+  boîte de la teinte « tête de serpent » mesurait **638 × 423 px pour une case de 42 px**, à cause
+  de quelques pixels d'anticrénelage d'un texte clair à l'autre bout de l'écran. Filtrer sur une
+  fenêtre autour de la **médiane** des pixels retenus, qui ignore les isolés.
+- ⚠ **La barre de titre Windows (#F3F3F3) tombe dans la tolérance du texte du HUD (#E7EDF2).** Une
+  bande de mesure du score commençant trop haut comptait 3 700 px de barre de titre pour 800 px de
+  score : le bond de +39 % de surface du score s'y noyait à moins de 1 %, et la mesure concluait
+  « rien n'a bougé » sur un retour qui fonctionnait.
+- ⚠ **Le blanc pur ne mesure pas un flash dont l'opacité monte.** Le flash de la case fautive ne vaut
+  `FFFFFF` qu'au voisinage de son pic — et à cet instant précis le voile de fin (62 % de noir) est
+  déjà posé par-dessus, ce qui le ramène à un gris. Mesurer la **clarté** (r≈g≈b, luminance haute)
+  dans l'aire, jamais la couleur exacte.
+- ⚠ **La boîte d'un carré ARRONDI incliné ne croît pas comme celle d'un carré net** : les coins
+  arrondis absorbent la rotation. Pour un côté `c`, un rayon `r` et un angle `θ`, prédire
+  `(c/2 − r)(cos θ + sin θ) + r`, pas `c(cos θ + sin θ)` — sinon on attend 47 px, on mesure 44, et on
+  conclut à tort que l'inclinaison est trois fois trop faible.
+- ⚠ **Piloter d'abord puis mesurer ensuite rate l'événement.** La bouchée arrive quand le bot atteint
+  la pomme, c'est-à-dire *pendant* l'approche : une version qui s'approchait puis lançait la rafale
+  mangeait deux pommes avant que la mesure ne commence. **Mesurer pendant qu'on pilote.**
+- ⚠ **Le pas d'échantillonnage borne ce qu'on peut prouver.** Une capture coûte 50 à 85 ms : une
+  enveloppe de 160 ms peut n'être échantillonnée qu'à son début et à sa fin, et paraître absente.
+  Le bond du score (160 ms) n'a jamais été capté près de son pic là où celui du record (220 ms) l'a
+  été trois fois — **même code, même méthode**. Prouver le mécanisme sur l'enveloppe la plus longue.
+- ⚠ **Un bot lit l'écran une fois par tick, pas plus** : relire plus vite que le jeu ne bouge le fait
+  raisonner sur une position qu'il vient de corriger — il renvoie cinq fois la même touche, la juge
+  sans effet, et repart dans l'autre sens.
+- ⚠ **Le record persistant se prête, il ne se prend pas** : pour éprouver « nouveau record », abaisser
+  `snakesnack.record` dans `HKCU:\Software\Drangoht\Snake Snack` — puis le **restaurer dans un
+  `finally`**. C'est le score de quelqu'un.
+
 **⚠ Entre deux invocations de `piloter_jeu.py`, le jeu continue de tourner** — prise de focus,
 amorce et sortie du script coûtent facilement deux secondes, soit une quinzaine de ticks à 8/s. Un
 scénario écrit en une commande par touche laisse donc au serpent le temps de traverser la grille et

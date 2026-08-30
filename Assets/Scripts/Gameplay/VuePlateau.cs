@@ -29,8 +29,13 @@ namespace SnakeSnack.Gameplay
         private const double DureeGulp = 0.090;
         private const double DureePop = 0.140;
         private const double DureeFlashMort = 0.220;
+        private const double DureePopPomme = 0.150;
         private const double AmplitudeGulp = 0.15;
         private const double DepassementPop = 0.12;
+        private const double DepassementPopPomme = 0.08;
+
+        /// <summary>Inclinaison de la tête au virage, en degrés (<c>docs/art/juicy.md</c> §9).</summary>
+        private const float AngleVirage = 8f;
 
         private readonly List<SpriteRenderer> _segments = new List<SpriteRenderer>();
 
@@ -64,10 +69,16 @@ namespace SnakeSnack.Gameplay
         private double _debutGlissement = double.NegativeInfinity;
         private double _debutGulp = double.NegativeInfinity;
         private double _debutPop = double.NegativeInfinity;
+        private double _debutPopPomme = double.NegativeInfinity;
         private double _debutFlash = double.NegativeInfinity;
+        private double _debutVirage = double.NegativeInfinity;
 
         private int _indexPop = -1;
+        private int _sensVirage;
         private Direction _directionGulp = Direction.Est;
+
+        /// <summary>Côté du losange de la pomme au repos — l'échelle que son pop retrouve (§7).</summary>
+        private float _cotePomme;
 
         /// <summary>
         /// Durée d'un tick, pour que le glissement dure exactement le temps d'une case.
@@ -162,9 +173,9 @@ namespace SnakeSnack.Gameplay
             // distingue la pomme du serpent avant même la couleur, y compris pour un daltonien.
             _pomme = FormesPrimitives.RectangleArrondi(_racine, "Pomme", UiPalette.Pomme, 5, RayonPomme);
 
-            float cote = (float)(_plateau.TailleCase * 0.72 / Mathf.Sqrt(2f));
+            _cotePomme = (float)(_plateau.TailleCase * 0.72 / Mathf.Sqrt(2f));
             _pomme.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            _pomme.transform.localScale = new Vector3(cote, cote, 1f);
+            PoserEchellePomme(1.0);
             _pomme.gameObject.SetActive(false);
         }
 
@@ -176,16 +187,32 @@ namespace SnakeSnack.Gameplay
         /// tick même où elle est mangée. Une grille vide, même une fraction de seconde, se lit comme
         /// un bug et non comme une transition — d'où le fait que cette méthode ne masque jamais,
         /// elle déplace.
+        ///
+        /// <para>⚠ <b>Le pop-in de §7 part de l'échelle zéro, et ne contredit pourtant pas le §4.4
+        /// ci-dessus</b> : la montée est en ease-out, donc la pomme atteint déjà près du tiers de sa
+        /// taille à la première image et sa taille pleine en 150 ms. Elle n'est jamais absente de la
+        /// grille — elle y arrive. Une montée linéaire, elle, l'aurait laissée invisible assez
+        /// longtemps pour qu'on la cherche.</para>
         /// </remarks>
         public void DessinerPomme(Case caseDeLaPomme)
         {
             PointPlateau centre = _plateau.CentreDeLaCase(caseDeLaPomme);
 
-            // ⚠ La position seule est écrite : l'échelle a été posée à la construction, et la
-            // réécrire ici avec `Poser` effacerait la rotation à 45° — le losange redeviendrait un
-            // carré, indiscernable d'un segment de serpent.
+            // ⚠ La position seule est écrite ici : la rotation à 45° a été posée à la construction,
+            // et la réécrire avec `Poser` l'effacerait — le losange redeviendrait un carré,
+            // indiscernable d'un segment de serpent. Seule l'échelle bouge, et uniformément.
             _pomme.transform.localPosition = new Vector3((float)centre.X, (float)centre.Y, 0f);
             _pomme.gameObject.SetActive(true);
+
+            _debutPopPomme = Time.timeAsDouble;
+            PoserEchellePomme(0.0);
+        }
+
+        /// <summary>Échelle du losange, en fraction de sa taille de repos.</summary>
+        private void PoserEchellePomme(double facteur)
+        {
+            float cote = (float)(_cotePomme * facteur);
+            _pomme.transform.localScale = new Vector3(cote, cote, 1f);
         }
 
         /// <summary>Retire la pomme de l'écran — uniquement à la victoire, quand il n'y en a plus.</summary>
@@ -377,6 +404,37 @@ namespace SnakeSnack.Gameplay
             _indexPop = _segmentsVisibles - 1;
         }
 
+        /// <summary>
+        /// La tête s'incline dans le sens du virage, et se redresse sur la durée du tick suivant
+        /// (<c>juicy.md</c> §9).
+        /// </summary>
+        /// <param name="avant">Direction appliquée au tick précédent.</param>
+        /// <param name="apres">Direction appliquée à ce tick.</param>
+        /// <remarks>
+        /// ⚠ <b>Purement visuel.</b> Cette rotation vit sur le <c>Transform</c> de la tête et n'est
+        /// lue par personne : la collision se calcule sur la case, et <c>Plateau.AncrageRefus</c>
+        /// continue de placer le chevron par rapport à la case, jamais par rapport à cet angle
+        /// (§9). Un chevron qui suivrait l'inclinaison désignerait un bord de case légèrement
+        /// faux — au moment précis où le jeu explique un refus.
+        ///
+        /// <para>Le tri du virage revient à <see cref="Directions.SensDuVirage"/> plutôt qu'à
+        /// l'appelant : le jeu signale ce qu'il a fait, la vue décide de ce qu'elle en montre.</para>
+        /// </remarks>
+        public void SignalerVirage(Direction avant, Direction apres)
+        {
+            int sens = Directions.SensDuVirage(avant, apres);
+
+            if (sens == 0)
+            {
+                // Tout droit : surtout ne pas réarmer l'enveloppe, sinon la tête resterait
+                // inclinée à angle nul en permanence et la vraie inclinaison ne repartirait jamais.
+                return;
+            }
+
+            _sensVirage = sens;
+            _debutVirage = Time.timeAsDouble;
+        }
+
         /// <summary>Met en évidence la case où le contact a eu lieu (<c>juicy.md</c> §6).</summary>
         /// <remarks>
         /// ⚠ Pour une morsure, c'est la case mordue ; pour un mur, c'est la case de la tête, et non
@@ -406,12 +464,35 @@ namespace SnakeSnack.Gameplay
             EteindreEnveloppes();
         }
 
+        /// <summary>
+        /// Coupe les enveloppes en cours <b>et repose ce qu'elles animaient à sa valeur de repos</b>.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ Les éteindre sans reposer laisserait la dernière valeur intermédiaire à l'écran pour de
+        /// bon : une pomme figée à 30 % de sa taille, une tête penchée à 6° — un défaut permanent né
+        /// d'une animation de 150 ms, et que personne ne penserait à chercher là.
+        /// </remarks>
         private void EteindreEnveloppes()
         {
             _debutGlissement = double.NegativeInfinity;
             _debutGulp = double.NegativeInfinity;
             _debutPop = double.NegativeInfinity;
             _indexPop = -1;
+
+            _debutPopPomme = double.NegativeInfinity;
+            PoserEchellePomme(1.0);
+
+            _debutVirage = double.NegativeInfinity;
+            RedresserTete();
+        }
+
+        /// <summary>Remet la tête à l'horizontale. Sans effet si le pool est encore vide.</summary>
+        private void RedresserTete()
+        {
+            if (_segments.Count > 0)
+            {
+                _segments[0].transform.localRotation = Quaternion.identity;
+            }
         }
 
         /// <summary>
@@ -425,12 +506,23 @@ namespace SnakeSnack.Gameplay
         /// </remarks>
         private void Update()
         {
-            if (!_construit || _segmentsVisibles == 0)
+            if (!_construit)
             {
                 return;
             }
 
             double maintenant = Time.timeAsDouble;
+
+            // ⚠ Avant la garde ci-dessous : ni la pomme ni le flash de mort ne vivent sur un
+            // segment. Les ranger derrière un test sur le serpent, c'est se préparer à ce qu'ils
+            // cessent muettement de s'animer le jour où le pool sera vide à un instant donné.
+            AppliquerPopPomme(maintenant);
+            AppliquerFlash(maintenant);
+
+            if (_segmentsVisibles == 0)
+            {
+                return;
+            }
 
             if (_debutGlissement > double.NegativeInfinity)
             {
@@ -444,7 +536,46 @@ namespace SnakeSnack.Gameplay
             }
 
             AppliquerEchelles(maintenant);
-            AppliquerFlash(maintenant);
+            AppliquerInclinaison(maintenant);
+        }
+
+        /// <summary>Le pop-in de la pomme qui vient d'être posée (<c>juicy.md</c> §7).</summary>
+        private void AppliquerPopPomme(double maintenant)
+        {
+            if (_debutPopPomme <= double.NegativeInfinity)
+            {
+                return;
+            }
+
+            double t = Rebond.Progres(_debutPopPomme, DureePopPomme, maintenant);
+            PoserEchellePomme(Rebond.Apparition(t, DepassementPopPomme));
+
+            if (t >= 1.0)
+            {
+                _debutPopPomme = double.NegativeInfinity;
+            }
+        }
+
+        /// <summary>L'inclinaison de la tête, qui se dissipe sur la durée du tick (§9).</summary>
+        private void AppliquerInclinaison(double maintenant)
+        {
+            if (_debutVirage <= double.NegativeInfinity)
+            {
+                return;
+            }
+
+            double t = Rebond.Progres(_debutVirage, _dureeTick, maintenant);
+            float angle = _sensVirage * AngleVirage * (float)Rebond.Retombee(t);
+            _segments[0].transform.localRotation = Quaternion.Euler(0f, 0f, angle);
+
+            if (t >= 1.0)
+            {
+                _debutVirage = double.NegativeInfinity;
+
+                // Reposée explicitement : `Retombee(1)` vaut zéro, mais c'est l'angle EXACT qui
+                // compte ici — un résidu s'accumulerait virage après virage.
+                RedresserTete();
+            }
         }
 
         private void AppliquerGlissement(double t)

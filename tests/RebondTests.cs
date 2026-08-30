@@ -179,4 +179,63 @@ public class RebondTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => Rebond.Gulp(0.5, -0.05));
     }
+
+    // --- Retombee --------------------------------------------------------------------
+
+    /// <summary>
+    /// ⚠ Le zéro final : ce facteur multiplie l'angle de la tête. Un résidu la laisserait de
+    /// travers pour le reste de la partie, et quelques virages du même côté l'y installeraient.
+    /// </summary>
+    [Fact]
+    public void LaRetombeePartDUnEtFinitExactementAZero()
+    {
+        Assert.Equal(1.0, Rebond.Retombee(0.0), 9);
+        Assert.Equal(0.0, Rebond.Retombee(1.0), 9);
+    }
+
+    [Fact]
+    public void LaRetombeeResteBorneeHorsDeSaPlage()
+    {
+        Assert.Equal(1.0, Rebond.Retombee(-3.0), 9);
+        Assert.Equal(0.0, Rebond.Retombee(4.0), 9);
+    }
+
+    /// <summary>Elle décroît, sans jamais remonter : une tête qui se redresse ne se repenche pas.</summary>
+    [Fact]
+    public void LaRetombeeDecroitStrictement()
+    {
+        double precedent = Rebond.Retombee(0.0);
+
+        for (int i = 1; i <= 50; i++)
+        {
+            double courant = Rebond.Retombee(i / 50.0);
+            Assert.True(courant < precedent + Tolerance,
+                $"La retombée est remontée entre {(i - 1) / 50.0} et {i / 50.0}.");
+            precedent = courant;
+        }
+    }
+
+    /// <summary>
+    /// Le gros du chemin est fait tôt : à mi-parcours il reste moins d'un cinquième de l'angle.
+    /// C'est ce qui fait lire un redressement, et non une dérive lente.
+    /// </summary>
+    [Fact]
+    public void LaRetombeeEstRapideAuDebut()
+    {
+        Assert.True(Rebond.Retombee(0.5) < 0.2);
+    }
+
+    /// <summary>
+    /// Elle complète exactement la montée d'<c>Apparition</c> : une seule signature d'animation
+    /// pour le pop qui s'installe et pour l'angle qui se dissipe.
+    /// </summary>
+    [Fact]
+    public void LaRetombeeEstLeComplementDeLaMonteeDApparition()
+    {
+        for (int i = 0; i <= 10; i++)
+        {
+            double t = i / 10.0;
+            Assert.Equal(1.0 - Rebond.Apparition(t, 0.0), Rebond.Retombee(t), 9);
+        }
+    }
 }

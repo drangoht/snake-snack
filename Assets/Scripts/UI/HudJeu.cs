@@ -65,6 +65,13 @@ namespace SnakeSnack.UI
 
         private double _debutBondScore = double.NegativeInfinity;
         private double _debutBondRecord = double.NegativeInfinity;
+        private double _debutBondRecap = double.NegativeInfinity;
+
+        /// <summary>
+        /// Vrai tant que l'écran de fin reste ouvert — c'est son <b>ouverture</b> qui fait bondir le
+        /// récapitulatif, jamais un rafraîchissement du même écran (§8 : « rejoue <i>une fois</i> »).
+        /// </summary>
+        private bool _finOuverte;
 
         private void Awake()
         {
@@ -169,6 +176,12 @@ namespace SnakeSnack.UI
         /// <summary>Met l'interface à l'état de la partie.</summary>
         public void Afficher(EtatPartie etat)
         {
+            // ⚠ Relevée AVANT le switch : c'est la transition vers l'écran de fin qui déclenche le
+            // bond du récapitulatif (§8), et `Fin(...)` plus bas aura déjà tout réécrit.
+            bool ecranDeFin = etat == EtatPartie.Mort || etat == EtatPartie.Victoire;
+            bool finVientDeSOuvrir = ecranDeFin && !_finOuverte;
+            _finOuverte = ecranDeFin;
+
             switch (etat)
             {
                 case EtatPartie.EnAttente:
@@ -197,6 +210,14 @@ namespace SnakeSnack.UI
                     _etat.text = TextesUi.EtatMort;
                     Fin(true, TextesUi.TitreMort, TextesUi.SousTitreMort, Recapitulatif());
                     break;
+            }
+
+            if (finVientDeSOuvrir && _recordBattu)
+            {
+                // Le seul moment de fierté du jeu (§8) : la ligne « Nouveau record » bondit une
+                // fois, à l'ouverture. Sans record battu, le récapitulatif n'est qu'un rappel de
+                // chiffres — le faire sauter dirait « bravo » à qui vient de perdre à 3 points.
+                _debutBondRecap = Time.unscaledTimeAsDouble;
             }
 
             if (etat != EtatPartie.EnPause)
@@ -259,6 +280,10 @@ namespace SnakeSnack.UI
 
             _debutBondScore = AppliquerBond(_score, _debutBondScore, DureeBondScore, AmpleurBondScore, maintenant);
             _debutBondRecord = AppliquerBond(_record, _debutBondRecord, DureeBondRecord, AmpleurBondRecord, maintenant);
+
+            // Le même bond que le record du bandeau, rejoué une fois sur la ligne « Nouveau
+            // record » de l'écran de fin (§8) : c'est la même nouvelle, annoncée au même rythme.
+            _debutBondRecap = AppliquerBond(_recapFin, _debutBondRecap, DureeBondRecord, AmpleurBondRecord, maintenant);
         }
 
         /// <summary>Rend le nouveau début d'enveloppe : éteint une fois le bond terminé.</summary>

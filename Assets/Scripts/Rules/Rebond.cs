@@ -109,6 +109,37 @@ namespace SnakeSnack.Rules
         }
 
         /// <summary>
+        /// Retombée : <c>1 → 0</c>, vite d'abord puis en douceur. L'inclinaison de la tête qui
+        /// revient à l'horizontale après un virage (<c>juicy.md</c> §9).
+        /// </summary>
+        /// <param name="t">Avancement dans <c>[0, 1]</c>, tel que rendu par <see cref="Progres"/>.</param>
+        /// <remarks>
+        /// Exactement le complément de la montée d'<see cref="Apparition"/> : l'angle se dissipe
+        /// donc au même rythme que le pop s'installe, ce qui donne au jeu une seule signature
+        /// d'animation plutôt que deux courbes voisines mais différentes.
+        ///
+        /// <para>⚠ <b>Le retour à exactement 0 compte autant que celui d'<see cref="Apparition"/>
+        /// à 1</b> : le facteur multiplie ici un angle, et un résidu laisserait la tête
+        /// définitivement de travers — après quelques virages du même côté, de travers pour de bon.
+        /// </para>
+        /// </remarks>
+        public static double Retombee(double t)
+        {
+            if (t <= 0.0)
+            {
+                return 1.0;
+            }
+
+            if (t >= 1.0)
+            {
+                return 0.0;
+            }
+
+            double reste = 1.0 - t;
+            return reste * reste * reste;
+        }
+
+        /// <summary>
         /// Compression puis retour : rend le facteur d'écrasement du « gulp » de la tête
         /// (<c>juicy.md</c> §5), à appliquer sur un axe et son inverse sur l'autre.
         /// </summary>

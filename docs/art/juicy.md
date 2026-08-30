@@ -42,15 +42,20 @@ Lu dans `Assets/Scripts/Gameplay/VuePlateau.cs` et `JeuSnake.cs` :
 
 ## 3. Priorités
 
-| # | Retour | Pourquoi il prime |
-|---|---|---|
-| P1 | Interpolation du mouvement (§4) | Le socle : sans lui, tout le reste s'anime sur un jeu qui téléporte. |
-| P1 | Mort — case fautive + hitstop + micro-zoom (§6) | Sert directement « la mort s'impute à une décision ». |
-| P1 | Bouchée — gulp + pop de queue + bond du score (§5) | La seule action positive ; c'est elle qui donne envie de continuer. |
-| P2 | Apparition de la pomme (§7) | Peu coûteux, gain net, cohérent avec P1. |
-| P2 | Record battu (§8) | Rare mais gratuit ; seul moment de fierté du jeu. |
-| P3 | Inclinaison de la tête au virage (§9) | Agréable, non indispensable — le tracé du corps suffit à lire un virage. |
-| — | Écarté (§10) | Coût ou risque de lisibilité supérieur au gain. |
+| # | Retour | Pourquoi il prime | État |
+|---|---|---|---|
+| P1 | Interpolation du mouvement (§4) | Le socle : sans lui, tout le reste s'anime sur un jeu qui téléporte. | livré 0.2.0, vu |
+| P1 | Mort — case fautive + hitstop + micro-zoom (§6) | Sert directement « la mort s'impute à une décision ». | livré 0.2.0, mesuré |
+| P1 | Bouchée — gulp + pop de queue + bond du score (§5) | La seule action positive ; c'est elle qui donne envie de continuer. | livré 0.2.0, gulp mesuré |
+| P2 | Apparition de la pomme (§7) | Peu coûteux, gain net, cohérent avec P1. | livré, mesuré |
+| P2 | Record battu (§8) | Rare mais gratuit ; seul moment de fierté du jeu. | livré, mesuré |
+| P3 | Inclinaison de la tête au virage (§9) | Agréable, non indispensable — le tracé du corps suffit à lire un virage. | livré, mesuré |
+| — | Écarté (§10) | Coût ou risque de lisibilité supérieur au gain. | — |
+
+**Mesuré** = constaté à l'écran sur le jeu qui tourne, chiffre attendu écrit avant la capture
+(`docs/TEST_REPORT.md`, session du 2026-08-30). Deux réserves y sont nommées : le **pop du nouveau
+segment de queue** n'a pas pu être isolé du compte de pixels du corps, et le **bond du score** n'a
+jamais été échantillonné près de son pic — son mécanisme est celui, prouvé, du bond du record.
 
 ## 4. Le socle — interpolation du mouvement
 
@@ -141,9 +146,10 @@ lisible par le tracé du corps.
 - Jamais bloquer une entrée légitime plus longtemps que le hitstop annoncé (§6) : un délai qui
   s'allonge finirait par se lire comme un jeu qui ne répond plus.
 
-## 12. Arbitrage de l'auteur (2026-08-28)
+## 12. Arbitrage de l'auteur, et ce qu'il est devenu
 
-Recommandations du directeur artistique retenues sans modification : livrer **P1 d'abord**
-(interpolation, mort, bouchée) avec le rounding de `cartoon.md` §3.1, mesurer, puis décider du reste ;
-**micro-zoom gardé** (§6) ; **respiration de la pomme écartée** (§7). Le nom `Rules/Rebond.cs` (§2)
-est validé à l'implémentation.
+**2026-08-28** — recommandations du directeur artistique retenues sans modification : livrer **P1
+d'abord** avec le rounding de `cartoon.md` §3.1, mesurer, puis décider du reste ; **micro-zoom
+gardé** (§6) ; **respiration de la pomme écartée** (§7). Nom `Rules/Rebond.cs` (§2) validé.
+**2026-08-30** — P2 et P3 livrés à leur tour, sur décision de l'auteur de finir le juicy avant les
+assets et le son. **Ce brief est clos** : ce qui reste ouvert est nommé sous le tableau du §3.

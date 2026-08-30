@@ -53,6 +53,37 @@ namespace SnakeSnack.Rules
             return demandee == Oppose(appliquee);
         }
 
+        /// <summary>
+        /// Sens du virage entre deux directions successives : <c>+1</c> vers la gauche
+        /// (anti-horaire), <c>-1</c> vers la droite (horaire), <c>0</c> si le serpent va tout droit.
+        /// </summary>
+        /// <remarks>
+        /// Le signe suit la convention d'angle d'Unity — Z croissant tourne dans le sens
+        /// anti-horaire —, ce qui permet à l'appelant de multiplier directement par un angle en
+        /// degrés (<c>docs/art/juicy.md</c> §9) sans réinventer l'orientation.
+        ///
+        /// <para>⚠ <b>Un demi-tour rend 0, pas un sens arbitraire.</b> Il ne peut pas arriver en
+        /// jeu — la file le refuse au tick (GDD §4.2) — mais s'il arrivait, choisir la gauche ou la
+        /// droite serait une invention : les deux quarts de tour sont également faux. Zéro veut
+        /// dire « pas de virage à montrer », et c'est la seule réponse honnête ici.</para>
+        ///
+        /// <para>⚠ <b>Purement présentation.</b> Aucune règle ne lit ce sens : la trajectoire est
+        /// déjà décidée par la direction appliquée au tick (<c>juicy.md</c> §11).</para>
+        /// </remarks>
+        public static int SensDuVirage(Direction avant, Direction apres)
+        {
+            // L'énumération est ordonnée dans le sens horaire (Nord, Est, Sud, Ouest) : un pas en
+            // avant dans cette liste est un virage à droite, un pas en arrière un virage à gauche.
+            int quarts = (((int)apres - (int)avant) + 4) % 4;
+
+            switch (quarts)
+            {
+                case 1: return -1;
+                case 3: return 1;
+                default: return 0;
+            }
+        }
+
         /// <summary>Déplacement d'une case dans cette direction.</summary>
         public static Case Deplacement(Direction direction)
         {

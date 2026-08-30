@@ -8,6 +8,55 @@ datée, avec la version testée.
 > de valeur que la correction. C'est ce fichier qui évite de re-signaler un bug connu et de refaire
 > un test déjà tranché.
 
+## Session du 2026-08-30 — v0.2.0-3b2c0cc+ (build Windows)
+
+**Portée** : les trois retours P2/P3 du juicy livrés ce jour (pop-in de la pomme §7, bond du
+récapitulatif §8, inclinaison de la tête au virage §9) **et la dette de vérification du P1** — gulp,
+pop de queue, flash de la case fautive, hitstop, micro-zoom, jamais constatés à l'écran depuis leur
+livraison en 0.2.0. **Non testé** : le build web (aucune de ces animations n'y a été rejouée), le
+pop du nouveau segment de queue (voir plus bas), la victoire.
+
+**Méthode** : deux scripts jetables (non versés dans `tools/`) qui importent `piloter_jeu`, prennent
+leurs propres captures en rafale (celles de `piloter_jeu` redonnent le focus et dorment 0,2 s :
+trop lent pour suivre une enveloppe de 150 ms) et analysent chaque image en numpy — surface et boîte
+englobante par teinte de `UiPalette`. La cadence est ralentie à 1,5–3 ticks/s **dans la copie de
+build de `reglages.json` seulement**, puis restaurée. Pour §8, le record persistant a été abaissé à
+0 dans le registre et **remis à 24 dans un `finally`**. Le second script embarque un **bot** qui lit
+la position de la tête et de la pomme à l'écran et va la chercher : manger et mourir à un instant
+précis est hors de portée d'un scénario de touches à l'aveugle.
+
+**Le point de méthode** : chaque valeur attendue a été écrite **avant** la mesure, en pixels.
+
+| Retour | Prédit | Mesuré | |
+|---|---|---|---|
+| §7 pop de la pomme | 0 → pic à ×1,08 → repos, en 150 ms | 0 → 30×30 → 28×28 px en ~130 ms | ✔ |
+| §9 inclinaison, amplitude | boîte 42 → **44,4** px à 8° (carré *arrondi*) | 42 → 44 px | ✔ |
+| §9 inclinaison, durée | plus rien de lisible après ~45 % du tick | bosse de 135 ms sur un tick de 333 ms | ✔ |
+| §9 inclinaison, sens | virage à gauche : bord haut décalé à droite | +3 à +7,5 px à gauche, −3,5 à −9 px à droite | ✔ |
+| §5 gulp | boîte 42×42 → ~37×48, **surface constante** | 38×46 px, surface 1 616 → 1 632 px | ✔ |
+| §6 flash de la case fautive | une case s'allume, ~1 760 px | 1 763 px sur l'image du contact | ✔ |
+| §6 hitstop | le flash précède l'écran de fin d'au moins une image | flash à t, récapitulatif encore vide ; voile 68 ms plus tard | ✔ |
+| §6 micro-zoom | bordure de l'aire +1,7 % puis retour exact | 930 → **946** px (+1,72 %), retour à 930 | ✔ |
+| §8 bond du record (bandeau) | surface ×1,69 au pic, 220 ms | 563 → 686 px (×1,22 à l'échantillon) | ✔ |
+| §8 bond du récapitulatif | même bond rejoué une fois à l'ouverture | 1 182 → 1 570 → 1 182 px, trois fois de suite | ✔ |
+| §5 bond du score | surface ×1,39 au pic, 160 ms | jamais capté près du pic | ⚠ |
+| §5 pop du segment de queue | +1 645 px de corps étalés sur 140 ms | hausse étalée sur ~1 s : mesure non concluante | ⚠ |
+
+**Les deux réserves, sans les habiller** :
+- **Le bond du score** n'est pas prouvé *à l'écran*. Une capture coûte 50 à 85 ms ; une enveloppe de
+  160 ms peut n'être échantillonnée qu'à son début et à sa fin. Ce qui est prouvé, c'est le
+  mécanisme : le bond du record et celui du récapitulatif passent par **la même méthode
+  `HudJeu.AppliquerBond`**, avec une ampleur plus grande et une durée plus longue, et tous deux ont
+  été constatés.
+- **Le pop du nouveau segment de queue** n'a pas pu être isolé : le compte de pixels du corps varie
+  aussi avec le glissement, et sa hausse d'un segment s'étale sur bien plus que les 140 ms de
+  l'enveloppe. Ni infirmé ni confirmé — à reprendre avec une mesure qui suit la seule case de la
+  queue, ou à l'œil sur un ralenti.
+
+**Aucun bug trouvé.** Deux pièges de *mesure* ont en revanche produit deux conclusions fausses avant
+d'être corrigés (une boîte englobante étirée à 638 px par des pixels parasites, un bond de score noyé
+dans la barre de titre de la fenêtre Windows) : versés dans `docs/pitfalls/tests-pilotage.md`.
+
 ## Session du 2026-08-28 (2) — v1.0-a735c8d+ (builds Windows ET web)
 
 **Portée** : la typographie d'`ART.md` §2 réellement câblée (famille, graisses, tailles), et le

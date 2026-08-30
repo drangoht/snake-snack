@@ -444,6 +444,12 @@ namespace SnakeSnack.Gameplay
         /// </remarks>
         private void JouerUnTick()
         {
+            // ⚠ Lue AVANT le tick : `DirectionCourante` est la direction appliquée au tick
+            // PRÉCÉDENT, et c'est la seule référence qui dise s'il y a virage (docs/art/juicy.md
+            // §9). Relue après, elle vaudrait déjà la nouvelle direction et aucun virage ne serait
+            // jamais détecté — sans que rien ne le signale.
+            Direction directionAvant = _file.DirectionCourante;
+
             ResultatTick tick = _file.Tick();
 
             if (tick.DemiTourRefuse)
@@ -464,6 +470,10 @@ namespace SnakeSnack.Gameplay
                 return;
             }
 
+            // ⚠ Après le déplacement, et seulement si le serpent est vivant : incliner la tête d'un
+            // serpent qui vient de mourir la ferait pivoter sous le voile de fin, alors que la
+            // partie est arrêtée.
+            _vue.SignalerVirage(directionAvant, tick.DirectionAppliquee);
             _vue.DessinerSerpent(_serpent.Segments);
 
             if (!mange)
