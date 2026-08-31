@@ -4,12 +4,11 @@
 is ever in another language, keep both files and **correct them together**: otherwise one of the two
 lies, and nobody knows which.
 
-⚠⚠ **THE LIVE PAGE AND THIS FILE DISAGREE, as of 2026-08-30.** This file describes 0.4.0, which has
-touch controls. The page online still carries the 0.3.0 text, which says in so many words "there are
-no touch controls" — false since the 0.4.0 build went up. Three attempts to save the corrected text
-through the itch editor were swallowed without an error and without the "Saved" banner (the pitfall
-`.claude/agents/marketing.md` already names). **Fix by pasting this file's Description by hand**, and
-delete this warning once it is done.
+✅ **The live page carries this text, since 2026-08-31.** It was pasted by writing the
+`.redactor-layer` **and** the hidden `textarea`, then waiting for the "Saved" banner — the three
+earlier attempts had failed for want of that. ⚠ The Controls table below goes onto the page as **two
+lists** (Keyboard, then Touch): itch's editor renders a list far better than a three-column table on
+a phone. Same content, different shape — do not take the difference for a drift.
 
 ⚠ **This text must describe the game AS IT IS.** A page describing a feature removed two versions
 earlier is the most common and the most costly defect: the visitor sees the gap and closes the tab.
@@ -82,17 +81,18 @@ To check by hand after every publish; they were wrong for several versions on an
 
 - [x] **Kind of project** = HTML (otherwise the web build downloads instead of playing) — set 2026-08-28
 - [x] File ticked **"This file will be played in the browser"** — set 2026-08-28
-- [ ] **Mobile friendly** — it alone decides what itch offers a visitor on a phone.
-      ⚠ It was **unticked**, and rightly so: the game had no touch controls, and announcing it
-      playable with a finger would have been false. **Touch shipped on 2026-08-30: it must now be
-      ticked**, and until it is, itch keeps hiding from phone visitors a game that plays on a phone.
-- [ ] **Orientation**: **landscape**. The playfield is 21 × 15 and the frame is 16:9; the web template
-      already tells a phone player to turn the device.
+- [x] **Mobile friendly** — it alone decides what itch offers a visitor on a phone. Unticked from
+      2026-08-28 (rightly so then: no touch controls), **ticked on 2026-08-31**, one day after touch
+      shipped. For that one day, itch hid from phone visitors a game that plays on a phone.
+- [x] **Orientation**: **landscape** — set 2026-08-31. It was empty, not landscape. The playfield is
+      21 × 15 and the frame is 16:9; the web template already tells a phone player to turn the device.
 - [ ] **Classification** tab: genre, tags, **player count**, multiplayer mode
-- [x] **Cover 630 × 500** — the only image seen by visitors who do not open the page.
+- [ ] **Cover 630 × 500** — the only image seen by visitors who do not open the page.
       Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be
-      regenerated when the page's language changes. Regenerated in English and **uploaded** on
-      2026-08-30 ("It grows with every bite.").
+      regenerated when the page's language changes. ⚠⚠ **The English cover was regenerated on
+      2026-08-30 but NEVER reached itch**: `docs/itch/cover.png` reads "It grows with every bite."
+      while the page still shows the French "Il s'allonge à chaque bouchée." — checked 2026-08-31.
+      The line below used to claim the upload was done; it was not. **To upload by hand.**
 - [x] **Screenshots** — three, taken IN the browser on the running build, and uploaded on 2026-08-30:
       menu, a game at 4 points, and the end screen with "New best: 4". The `v0.3.0` stamp is visible on
       each.

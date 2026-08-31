@@ -116,3 +116,21 @@ pitfalls, all met in the same session, all silent.
 - ⚠ **The persistent best score is borrowed, not taken**: to exercise "new best", lower
   `snakesnack.record` in `HKCU:\Software\Drangoht\Snake Snack` — then **restore it in a `finally`**.
   It is somebody's score.
+- ⚠ **A Chrome tab the extension can screenshot is not a tab the game RUNS in.** Driving the web
+  build through the browser extension, `document.hidden` was `true` and `requestAnimationFrame`
+  fired **once per second**: Chrome freezes rAF in a backgrounded tab, so Unity WebGL advances one
+  frame per second while the captures keep coming back perfectly rendered. Nothing is raised — the
+  screenshots look right, the snake has simply barely moved, and a timing of 125 ms per cell means
+  nothing. Worse, an `await` on rAF never resolves and the JS call **times out after 45 s**.
+  **Measure `document.hidden` and the real rAF rate before trusting any timing**, and ask for the
+  window to be brought to the front: the extension cannot focus it. Closing the other tabs does not
+  help — what counts is the window being visible, not the tab being alone.
+- ⚠ **Synthetic `KeyboardEvent`s DO get into Unity WebGL** (unlike touch events, see
+  `touch-mobile.md`): a `new KeyboardEvent('keydown', {code, keyCode, bubbles})` dispatched on the
+  canvas *and* on the document is read. This is the only way to drive the web build at the tick,
+  because a round trip through the extension costs ~0.5 to 1 s — eight cells at 8 ticks/s. Schedule
+  the whole sequence with `setTimeout` inside the page, not one call per key.
+- ⚠ **Clicks injected by the extension do not actuate the on-screen touch pad**, while they do
+  select a menu entry. The menu answers the *mouse*; the pad waits for a touch that the injected
+  click never produces, even under `?touch`. Do not conclude the pad is broken — drive it with the
+  keyboard, or with a real finger.
