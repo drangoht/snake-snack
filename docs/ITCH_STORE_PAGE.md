@@ -96,15 +96,14 @@ To check by hand after every publish; they were wrong for several versions on an
       accepts neither a synthetic drop nor an injected file input.
       Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be
       regenerated when the page's language changes.
-- [ ] **Screenshots** — ⚠ **redone on 0.5.0 but NOT uploaded**: `docs/itch/capture-{1-menu,2-game,3-gameover}.png`
-      are the current ones (2026-08-31), taken in the browser on the **published build**
-      (`html-classic.itch.zone`, stamp `v0.5.0-d21f2f7`), showing the touch pad, the pause button, the
-      "Sound: on" toggle, a game at 2 points and an end screen at "New best: 3".
-      ⚠ **The upload must be done BY HAND**: the screenshot widget is a drop zone with no
+- [x] **Screenshots** — three, uploaded **by the author, by hand**, on 2026-08-31, the older ones
+      deleted at the same time (checked online: 3 images, ids 296774xx). They are
+      `docs/itch/capture-{1-menu,2-game,3-gameover}.png`, taken in the browser on the **published
+      build** (`html-classic.itch.zone`, stamp `v0.5.0-d21f2f7`): menu with the "Sound: on" toggle, a
+      game at 2 points with the touch pad and the pause button, the end screen at "New best: 3".
+      ⚠ **The upload is a manual step, always**: the screenshot widget is a drop zone with no
       `input[type=file]` in the DOM, exactly like the cover — neither a synthetic drop nor an injected
       input is accepted (`docs/pitfalls/itch-publishing.md`).
-      ⚠ **4 screenshots are still online**, from 0.3.0: they show neither the touch controls nor the
-      sound toggle. Deleting them opens a confirmation dialog that froze a browser session once.
       ⚠ They show the game's rendering, so they are **to be redone at every visible change**.
 
 ⚠ **Visibility**: the page is **PUBLIC** — found so on 2026-08-30. Every document in this repository

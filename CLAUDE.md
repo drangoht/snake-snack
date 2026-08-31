@@ -45,9 +45,9 @@ below was the author's condition for making it public; that condition was overta
 - [x] The **music** — one CC0 loop on the menu only, with an in-game mute (M key and a button),
       because `settings.json` is not read on the web and a loop nobody can silence closes tabs.
       Proven out of the mixer (`-audiocheck`, RMS 0.12), and listened to (2026-08-31).
-- [x] The **store screenshots** were redone on the 0.3.0 build and uploaded (2026-08-30). Kept as
-      they are — decided 2026-08-31; they therefore do not show the touch controls, and the three
-      older French ones are still online underneath.
+- [x] The **store screenshots** — redone on the **published 0.5.0 build** and uploaded by the author
+      on 2026-08-31, the older ones deleted. Three online: menu with the sound toggle, a game at 2
+      points with the touch pad, the end screen at "New best: 3".
 - [x] The **live store page** describes the touch controls, since 2026-08-31 — the three earlier
       saves had failed for want of writing the hidden `textarea` as well as the editor layer.
 - [x] The **itch cover** is the English one since 2026-08-31, uploaded by the author by hand.
