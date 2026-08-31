@@ -36,6 +36,12 @@ in place. If one of them grates after ten minutes, that is exactly the kind of t
 
 ## v0.4.0 — It plays on a phone (2026-08-30)
 
+*Published on itch **a day late**, on 2026-08-31:
+<https://drangoht.itch.io/snake-snack/devlog/1647488/v040-it-plays-on-a-phone-a-day-late>. The post
+says so in its first line rather than pretending otherwise, and its "still not here: sound and music"
+was rewritten to point at 0.5.0 — publishing today a text claiming the game has no sound would have
+been exactly the defect this page exists to prevent.*
+
 **News**
 - **The game is playable with a finger.** Hold the device in landscape: **swipe anywhere** on the
   playfield to turn, or use the **directional pad** in the right-hand margin. Both work, all the time —
