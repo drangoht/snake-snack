@@ -121,6 +121,7 @@ namespace SnakeSnack.UI
             "Arrows or WASD: steer the snake\n" +
             "Esc: pause\n" +
             "Space: start a new run\n" +
+            "M: mute or unmute\n" +
             "\n" +
             "The snake moves on its own, one cell at a time.\n" +
             "Every apple makes it one segment longer and is worth one point.\n" +

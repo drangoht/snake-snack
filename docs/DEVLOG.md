@@ -6,6 +6,32 @@ written here before being pasted on itch — nothing is published that is not he
 Write **for the player**, not for the git history: "the blobs no longer stick to the net" and not
 "fix(BlobController): clamp horizontal velocity".
 
+## v0.5.0 — The game makes a sound (2026-08-31)
+
+**News**
+- **The game has sound.** The snake bites, the snake dies, the menu answers under your finger or your
+  key. Four sounds, chosen soft and round rather than beepy — this is not a Nokia game.
+- **Music on the menu**, a calm loop. **The game itself stays silent**, and that is on purpose: a run
+  lasts a minute or two and restarts at once, so a loop would go round and round behind it — and the
+  bite would stop standing out.
+- **A mute button**, top right of the menu, and the **M key** anywhere. It silences everything, and it
+  remembers your choice for next time. It is right there because a game you cannot silence in one
+  gesture is a game you close instead.
+
+**Balance**
+- Nothing. Same speed, same grid, same score, same apple draw — a game plays exactly as in 0.4.0, and
+  your best score is kept.
+
+**Fixes**
+- Nothing was broken for you. Behind the scenes the game had no ear at all: the sound would have gone
+  nowhere even once the files were in. It does now, and it is measured rather than assumed.
+
+⚠ **Honest note**: the sounds and the music were picked on measurements — length, attack, brightness,
+and whether a loop repeats without a hole — because they had to be picked before anyone had heard them
+in place. If one of them grates after ten minutes, that is exactly the kind of thing worth telling me.
+
+**Still not here**: the graphics are still shapes drawn by code, not hand-made art.
+
 ## v0.4.0 — It plays on a phone (2026-08-30)
 
 **News**

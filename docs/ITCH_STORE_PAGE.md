@@ -43,6 +43,7 @@ A game restarts in **one key with zero waiting**.
 | Restart after death | Space | Tap anywhere |
 | Back to the menu | Esc (end screen) **or** Backspace (pause) | Pause button, from pause or end screen |
 | Navigate the menu | Arrows or WASD, Enter or Space | Tap an entry · mouse: hover and click |
+| Mute / unmute | **M**, anywhere | The "Sound" button, top right of the menu |
 
 **It plays on a phone**, in landscape: swipe to turn, or use the pad in the right-hand margin. The
 controls take nothing from the playfield — they live in the margin the grid already left empty.
@@ -58,9 +59,12 @@ physical positions, so it works either way, and the arrows work everywhere.
 - A pause, and a refused reversal that **shows** rather than swallowing the press in silence.
 - A snake that **glides** from cell to cell, rounded shapes, a face that looks where it is going, and
   a death that shows the offending cell before the end screen appears.
+- **Sound**: the bite, the death, and the menu answering. A calm loop on the menu — the game itself
+  stays silent, so the bite keeps standing out. Everything is silenced in one key or one tap, and the
+  choice is remembered.
 
-**What is not in it yet**: no sound and no music at all. This is a playable base, not a finished
-version.
+**What is not in it yet**: the graphics are still shapes drawn by code rather than hand-made art.
+This is a playable base, not a finished version.
 
 ### Credits
 
