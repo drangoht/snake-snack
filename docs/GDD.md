@@ -111,6 +111,7 @@ code, so it does not read as an oversight to fix.
 | **4.4** The apple | [`gdd/apple.md`](gdd/apple.md) | A single apple at every instant, placed before the first press so the start has a target. |
 | **4.5** Score and best score | [`gdd/score-best.md`](gdd/score-best.md) | +1 per apple, nothing else; the best score survives closing and is beaten strictly. |
 | **4.6** The main menu | [`gdd/menu.md`](gdd/menu.md) | The game opens on a menu, but nothing comes between a death and the next game. |
+| **4.7** Sound | [`gdd/audio.md`](gdd/audio.md) | Four sounds — bite, death, menu cursor, menu confirmation — soft, from a CC0 bank. |
 
 ## 5. Progression and difficulty
 

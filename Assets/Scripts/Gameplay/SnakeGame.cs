@@ -1,4 +1,5 @@
 using System;
+using SnakeSnack.Audio;
 using SnakeSnack.Core;
 using SnakeSnack.Rules;
 using SnakeSnack.UI;
@@ -52,6 +53,7 @@ namespace SnakeSnack.Gameplay
         /// create two truths, and it is the fade-out's one that would end up drifting.
         /// </summary>
         private MenuScreen _menu;
+        private SfxPlayer _sfx;
 
         /// <summary>
         /// The fingers, when there are any (GDD §3, touch — reopened on 2026-08-30).
@@ -177,7 +179,12 @@ namespace SnakeSnack.Gameplay
             _snake = new Snake(pose.Segments);
             _queue = new InputQueue(pose.Orientation, _settings.queueDepth);
 
+            // Built before the menu, which plays its own sounds as soon as it opens.
+            _sfx = gameObject.AddComponent<SfxPlayer>();
+            _sfx.Build(_settings.sfxVolume);
+
             _menu = gameObject.AddComponent<MenuScreen>();
+            _menu.UseSfx(_sfx);
             _menu.Confirmed += OnMenuEntryConfirmed;
 
             // ⚠ No game is prepared here: `NewGame` seeds the randomness and logs the seed (§4.4).
@@ -674,6 +681,7 @@ namespace SnakeSnack.Gameplay
             // The bite feedback starts BEFORE the score: it is the snake's gesture, not the number,
             // that the player is looking at right then (docs/art/juicy.md §5).
             _view.SignalBite(tick.AppliedDirection);
+            _sfx.Play(Sfx.Bite);
 
             // Step 6 — the score first (§4.4: "score +1, then draw the new apple"). Counted even when
             // this apple is the one that fills the grid: it has been eaten, and the win screen must
@@ -796,6 +804,7 @@ namespace SnakeSnack.Gameplay
                 : headBefore;
 
             _view.FlashCell(offending);
+            _sfx.Play(Sfx.Death);
 
             _deathFeedbackStart = Time.unscaledTimeAsDouble;
             _endScreenShown = false;

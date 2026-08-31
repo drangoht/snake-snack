@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SnakeSnack.Audio;
 using SnakeSnack.Rules;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -151,6 +152,14 @@ namespace SnakeSnack.UI
         private Vector2 _pointerAtOpening;
 
         private bool _pointerMoved;
+
+        /// <summary>The sound effects, or <c>null</c> when nobody supplied any.</summary>
+        /// <remarks>
+        /// ⚠ Optional on purpose: this screen is built by <c>SnakeGame</c>, but nothing must make it
+        /// depend on sound to work. A menu that throws because there is no audio would be a menu
+        /// broken by a missing .wav.
+        /// </remarks>
+        private SfxPlayer _sfx;
 
         /// <summary>True as long as the menu owns the screen, fade-out included.</summary>
         public bool Active
@@ -351,6 +360,12 @@ namespace SnakeSnack.UI
         /// from a game: "Play" is what the player wants nine times out of ten, and finding the cursor
         /// where it was left is only useful in a long menu.
         /// </remarks>
+        /// <summary>Gives the menu the voice it uses for its cursor and its confirmations.</summary>
+        public void UseSfx(SfxPlayer sfx)
+        {
+            _sfx = sfx;
+        }
+
         public void Open()
         {
             _root.SetActive(true);
@@ -401,6 +416,14 @@ namespace SnakeSnack.UI
             int next;
             if (MainMenu.Move(_index, _entries.Count, direction, out next))
             {
+                // ⚠ Only when the index actually changes. MainMenu.Move answers true for a movement
+                // that stays put at the end of the list, and a cursor sound on a cursor that did not
+                // move tells the player they moved when they did not.
+                if (next != _index && _sfx != null)
+                {
+                    _sfx.Play(Sfx.MenuMove);
+                }
+
                 _index = next;
             }
         }
@@ -411,6 +434,11 @@ namespace SnakeSnack.UI
             if (!Interactive)
             {
                 return;
+            }
+
+            if (_sfx != null)
+            {
+                _sfx.Play(Sfx.MenuConfirm);
             }
 
             if (PanelOpen)
@@ -474,7 +502,16 @@ namespace SnakeSnack.UI
                 return;
             }
 
-            _index = MainMenu.Clamp(rank, _entries.Count);
+            int next = MainMenu.Clamp(rank, _entries.Count);
+
+            // The mouse gets the same sound as the arrows — an interface that answers to the
+            // keyboard and stays mute to the mouse reads as half broken.
+            if (next != _index && _sfx != null)
+            {
+                _sfx.Play(Sfx.MenuMove);
+            }
+
+            _index = next;
         }
 
         /// <summary>True as soon as the pointer has moved since the menu opened.</summary>

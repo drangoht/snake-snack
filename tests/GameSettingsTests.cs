@@ -168,6 +168,56 @@ public class GameSettingsTests
     }
 
     /// <summary>
+    /// ⚠ <b>Zero volume is an intent, not an error.</b> Every duration in this file falls back to
+    /// its default when it is not strictly positive; applying that rule to the volume would give a
+    /// player who asked for silence a game that keeps talking, and no way to understand why.
+    /// </summary>
+    [Fact]
+    public void SilenceIsAValidVolume()
+    {
+        GameSettings raw = GameSettings.Default();
+        raw.sfxVolume = 0.0;
+
+        GameSettings safe = raw.Validate(out IList<string> issues);
+
+        Assert.Equal(0.0, safe.sfxVolume);
+        Assert.Empty(issues);
+    }
+
+    /// <summary>
+    /// A volume out of range is <b>clamped</b>, not sent back to the default: someone writing 2
+    /// wants the loudest the game has, and 0.8 would answer the opposite of their intent. Only a
+    /// value that is not a number has no readable intent behind it.
+    /// </summary>
+    [Theory]
+    [InlineData(2.0, 1.0)]
+    [InlineData(-1.0, 0.0)]
+    [InlineData(1.0, 1.0)]
+    [InlineData(0.35, 0.35)]
+    public void AnOutOfRangeVolumeIsClamped(double written, double expected)
+    {
+        GameSettings raw = GameSettings.Default();
+        raw.sfxVolume = written;
+
+        GameSettings safe = raw.Validate(out IList<string> issues);
+
+        Assert.Equal(expected, safe.sfxVolume);
+    }
+
+    /// <summary>A volume that is not a number has no intent to honour: back to the default.</summary>
+    [Fact]
+    public void AVolumeThatIsNotANumberFallsBack()
+    {
+        GameSettings raw = GameSettings.Default();
+        raw.sfxVolume = double.NaN;
+
+        GameSettings safe = raw.Validate(out IList<string> issues);
+
+        Assert.Equal(GameSettings.Default().sfxVolume, safe.sfxVolume);
+        Assert.NotEmpty(issues);
+    }
+
+    /// <summary>
     /// ⚠ A mute correction is worse than no correction: the player edits their JSON, sees no change,
     /// and has no way to know why. Every issue must be an actionable sentence, not a code.
     /// </summary>

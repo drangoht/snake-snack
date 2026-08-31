@@ -90,6 +90,13 @@ namespace SnakeSnack.EditorTools
             // The camera's URP data is a separate component: without it, the camera falls back on
             // defaults and ignores the 2D renderer.
             go.AddComponent<UniversalAdditionalCameraData>();
+
+            // ⚠ Without this, NOTHING is ever heard — and nothing says so. Every clip loads, every
+            // PlayOneShot succeeds, and the mixer has no ear to deliver to; Unity logs one warning,
+            // among the startup lines nobody re-reads. It was missing until 2026-08-31, which cost
+            // nothing only because there was no sound yet. On the camera because that is where a
+            // listener is expected to be found.
+            go.AddComponent<AudioListener>();
         }
 
         /// <summary>

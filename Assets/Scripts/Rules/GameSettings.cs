@@ -84,6 +84,17 @@ namespace SnakeSnack.Rules
         /// </remarks>
         public double rejectionFadeSeconds = 0.06;
 
+        /// <summary>Master volume of the sound effects, from 0 (mute) to 1.</summary>
+        /// <remarks>
+        /// ⚠ <b>Zero is a legitimate value here</b>, unlike every duration above: a player who wants
+        /// silence must be able to write 0 and get silence, not a value "corrected" back to the
+        /// default. Hence <see cref="ValidateVolume"/> rather than <c>ValidateDouble</c>.
+        ///
+        /// <para>0.8 rather than 1: the sounds are mixed to sit under the game, not over it. It is
+        /// the value to try first, and to retune from — that is what this file is for.</para>
+        /// </remarks>
+        public double sfxVolume = 0.8;
+
         /// <summary>A set of values identical to the GDD constants.</summary>
         public static GameSettings Default()
         {
@@ -190,6 +201,8 @@ namespace SnakeSnack.Rules
             safe.rejectionFadeSeconds = ValidateDouble(
                 rejectionFadeSeconds, defaults.rejectionFadeSeconds, "rejectionFadeSeconds", found);
 
+            safe.sfxVolume = ValidateVolume(sfxVolume, defaults.sfxVolume, "sfxVolume", found);
+
             // A cap shorter than the display duration would put the feedback out before it had been
             // read — the exact opposite of what ART §5.5 expects from it.
             if (safe.rejectionExtensionCapSeconds < safe.rejectionDisplaySeconds)
@@ -223,6 +236,35 @@ namespace SnakeSnack.Rules
             {
                 found.Add(name + " = " + value + " is not a finite, strictly positive number. Falling back to " + fallback + ".");
                 return fallback;
+            }
+
+            return value;
+        }
+
+        /// <summary>A volume is a finite number in [0, 1]; out of range it is clamped, not refused.</summary>
+        /// <remarks>
+        /// ⚠ Clamped rather than sent back to the default, unlike the durations: someone writing 2
+        /// wants the loudest sound the game has, and giving them 0.8 back would answer the opposite
+        /// of their intent. Only a value that is not a number has no readable intent behind it.
+        /// </remarks>
+        private static double ValidateVolume(double value, double fallback, string name, ICollection<string> found)
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                found.Add(name + " = " + value + " is not a finite number. Falling back to " + fallback + ".");
+                return fallback;
+            }
+
+            if (value < 0.0)
+            {
+                found.Add(name + " = " + value + " is below 0. Clamped to 0 (silence).");
+                return 0.0;
+            }
+
+            if (value > 1.0)
+            {
+                found.Add(name + " = " + value + " is above 1. Clamped to 1.");
+                return 1.0;
             }
 
             return value;

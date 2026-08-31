@@ -1,0 +1,82 @@
+# 4.7 — Sound
+
+**Four sounds, and nothing else for now**: the bite, the death, the menu cursor, the menu
+confirmation. Decided 2026-08-31, by the author, over a wider list. The game had **no sound at all**
+up to that date — the store page says so in as many words, and it is the last thing that makes it
+read as a demo rather than as a game.
+
+The two in-game ones are the only moments where the state really changes: an apple disappears, or the
+game ends. The two menu ones exist for a different reason — they are what makes the interface feel
+like it answers, before a single apple has been eaten.
+
+## Why so few
+
+A sound on every tick, on every turn, on every refused reversal, is a sound the player stops hearing
+in ninety seconds — and then the bite is no longer an event either. The refusal in particular fires
+under hammering, up to eight times a second (§4.1): it already has a **visual** channel routed
+through `RejectionRouting`, chosen precisely because it can repeat without becoming aggressive.
+Adding a sound to it would undo that.
+
+**Ruled out for this pass, not forever** (§7): the beaten best score and the win. Both are rare
+enough to be worth a sound of their own, and the code already knows how to name the moment
+(`Score.CountApple` returns the signal, `Apple.GridIsFull` decides the win). They were left out to
+keep the first pass to what can be judged in one listen.
+
+## The grain
+
+**Soft and organic** — filtered sines, slack attacks, a mouth "plop" rather than a beep. Decided
+2026-08-31. It continues the rounded, faced snake of `docs/art/cartoon.md`: this game does not look
+like a Nokia game, and a square-wave beep would say it does. A retro 8-bit set was ruled out for
+exactly that reason.
+
+⚠ **Nothing here can be verified by reading.** Whether a sound is "soft" is heard, not measured; what
+a script can measure — duration, attack time, spectral centroid, noise ratio — only narrows the
+shortlist. Every sound in this system needs someone to listen before it ships.
+
+## Where the sounds are produced
+
+**A free CC0 bank, not synthesis** — decided by the author on 2026-08-31, against the recommendation
+of the moment, which was to generate them by script like the fonts, the illustration and the store
+cover. What the choice buys: sounds recorded by people, immediately more alive than an oscillator.
+What it costs, and what must therefore be watched:
+
+- **Opaque binaries in the repository.** A `.wav` cannot be diffed, cannot be retuned by changing a
+  parameter, and cannot be regenerated if it is lost. Balancing therefore happens **outside** the
+  files, in `SfxCatalog.Volume` — re-exporting a clip to make it quieter loses the original.
+- **Licences to trace.** CC0 requires no attribution, but the project traces the OFL of its font and
+  will trace this the same way, in `docs/CREDITS.md` and on the in-game Credits screen. A bank whose
+  licence is not written down becomes, two years later, a bank nobody dares ship.
+
+## Values and volumes
+
+Master volume in `settings.json` (`sfxVolume`, default **0.8**): mixed to sit under the game, not
+over it. ⚠ **Zero is a legitimate value** — a player who writes 0 wants silence, and the validator
+therefore clamps this setting rather than falling back to the default like every duration around it.
+Out of range it is clamped, not refused: someone writing 2 wants the loudest the game has.
+
+Per-sound volumes in `SfxCatalog.Volume`, relative to the master: the cursor is at **0.45** because it
+fires on every arrow press, and a menu run through quickly must not turn into a rattle.
+
+## What makes this system silent, and how it says so
+
+⚠ Audio fails silently by construction: a missing clip, a missing listener, a suspended browser
+context and a volume at zero all produce the same nothing, and none of them raises an error. Hence
+the startup audit in `SfxPlayer`, which names each cause separately, and the enum-to-table check that
+turns a sound declared but unbound into a console line instead of a moment nobody notices is mute.
+
+⚠ **The scene had no `AudioListener` at all** until 2026-08-31 — found while wiring this system. It
+cost nothing only because there was no sound to lose. It is added by `SceneBuilder.BuildCamera`, and
+the audit checks for it first, because its absence makes every other check moot.
+
+The browser side is already handled: the WebGL template wakes the audio context on the first
+gesture (`docs/pitfalls/audio.md`), inherited from the project template.
+
+**Proof that a sound came out** is `SfxPlayer.OutputRms()`, not a log: a `PlayOneShot` log proves an
+intention. The RMS is read downstream of the volume, the listener and the context.
+
+## Status
+
+Design and wiring done 2026-08-31 (`Assets/Scripts/Audio/`, `SceneBuilder`, `MenuScreen`,
+`SnakeGame`). **The clip files themselves are not chosen yet**: until they are in
+`Assets/Resources/Audio/`, the audit names four missing files at every startup, and the game is
+silent — deliberately, and loudly.

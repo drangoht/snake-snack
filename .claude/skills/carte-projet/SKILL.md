@@ -27,9 +27,11 @@ Assets/
     BuildTools.cs             Windows and web builds, build stamp, web cache guard
     RenderPipelineSetup.cs    Enables URP on every quality level
     SceneBuilder.cs           ⚠ Builds the scene ENTIRELY from code — the scene is an artefact
+    ImportAudio.cs            Forces the import settings of Resources/Audio/ (mono, decompressed)
   Scripts/
     Core/                     Groundwork: BuildInfo, settings, shared types
     Rules/                    ⚠ PURE testable logic — no `using UnityEngine`. See `references/rules.md`
+    Audio/                    Sound effects: the catalogue, the player and its startup audit
     Gameplay/                 MonoBehaviour: entities, controls, physics
     UI/                       Screens, HUD, menus
   Settings/                   URP assets (pipeline, 2D renderer, global settings)

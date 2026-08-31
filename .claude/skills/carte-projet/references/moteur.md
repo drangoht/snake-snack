@@ -20,6 +20,17 @@ the scene is regenerated.
 ⚠ **Canvas sorting order** — HUD 100, menu 200, build stamp 1000. Two canvases at the same order stack
 according to the hierarchy, which is not stable when the scene is regenerated from code.
 
+## §Audio — `Assets/Scripts/Audio/`
+
+| File | Responsibility |
+|---|---|
+| `Sfx.cs` | The `Sfx` enum (**declares** a sound to exist) and `SfxCatalog` (**binds** it to a file and a volume). ⚠ The single place where a sound gets a file name — a moment bound to nothing is silent, and silence raises nothing |
+| `SfxPlayer.cs` | Loads, plays, and **audits at startup**: missing listener, unbound sound, absent file, volume at zero — each named separately. `OutputRms()` is the only proof that a sound came out, a `PlayOneShot` log proving only an intention |
+| `Assets/Resources/Audio/` | The clips, loaded BY PATH. ⚠ `Resources/`, never `Art/`. Import settings forced by `Assets/Editor/ImportAudio.cs` |
+
+Design: `docs/gdd/audio.md` (§4.7). ⚠ The `AudioListener` is added by `SceneBuilder.BuildCamera` —
+it was missing entirely until 2026-08-31.
+
 ## §UI — `Assets/Scripts/UI/`
 
 | File | Responsibility |
