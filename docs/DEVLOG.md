@@ -113,6 +113,19 @@ telling me, and it is exactly the feedback this was waiting for.
 
 ## v0.1.0 — First playable version (2026-08-28)
 
+*Published on itch **three days late**, on 2026-08-31:
+<https://drangoht.itch.io/snake-snack/devlog/1647493/v010-first-playable-version-published-late>. The
+post carries a "Reading this today" section rather than pretending to be from the 28th: this version
+was in French, needed a keyboard and made no sound, and a reader arriving now would otherwise take
+all three for the current state.*
+
+⚠ **The devlog list is ordered by PUBLICATION date, not by version.** With 0.1.0, 0.4.0 and 0.5.0 all
+posted on 2026-08-31, the page now reads 0.1.0, 0.4.0, 0.5.0, 0.3.0, 0.2.0. The itch form has an
+*Original publish date* field that would fix the order — it is meant for posts migrated from another
+site, and using it would date a text written today as the 28th. Left alone deliberately, each late
+post saying so in its own first line. To revisit if the disorder bothers a reader more than a wrong
+date would.
+
 **News**
 - The full game of Snake: a snake that grows with every apple, walls that kill, a score and a best
   score that survives closing the game.
