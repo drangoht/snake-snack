@@ -8,6 +8,8 @@ Write **for the player**, not for the git history: "the blobs no longer stick to
 
 ## v0.5.0 — The game makes a sound (2026-08-31)
 
+*Published on itch: <https://drangoht.itch.io/snake-snack/devlog/1647477/v050-the-game-makes-a-sound>*
+
 **News**
 - **The game has sound.** The snake bites, the snake dies, the menu answers under your finger or your
   key. Four sounds, chosen soft and round rather than beepy — this is not a Nokia game.

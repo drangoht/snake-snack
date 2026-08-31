@@ -50,9 +50,7 @@ below was the author's condition for making it public; that condition was overta
       older French ones are still online underneath.
 - [x] The **live store page** describes the touch controls, since 2026-08-31 — the three earlier
       saves had failed for want of writing the hidden `textarea` as well as the editor layer.
-- [ ] ⚠ **The itch cover is still the FRENCH one**, while the game and the page are English. The
-      English file exists (`docs/itch/cover.png`); the upload claimed done on 2026-08-30 never
-      happened. It is the only image seen by visitors who do not open the page.
+- [x] The **itch cover** is the English one since 2026-08-31, uploaded by the author by hand.
 
 ## The agent team — delegate, but not at a loss
 

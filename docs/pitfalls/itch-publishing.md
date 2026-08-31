@@ -28,3 +28,15 @@ visitor on a phone), the **Classification** tab (including the player count), an
 
 **⚠ The itch.io iframe is cross-origin** (`html-classic.itch.zone`): neither injected clicks nor keys
 get in. To exercise the **published** build, open the iframe's URL directly in a tab.
+
+**⚠⚠ The devlog form has a REQUIRED field that says nothing when it is empty**: `post[user_classification]`
+(General update / Major update / Postmortem…). With no radio checked, the form simply does not submit
+— no banner, no error, no page change. Twenty minutes were spent on 2026-08-31 blaming the "Save
+button does not save" pitfall above, which was innocent this time. **Ask the form first**:
+`form.checkValidity()` and `form.querySelectorAll(':invalid')` name the culprit in one call.
+
+**⚠⚠ `getBoundingClientRect()` coordinates are NOT the screenshot's coordinates.** Measured a factor
+of ~1.19 between the two on this setup: a Save button reported at `(483, 790)` by JS sits at
+`(404, 662)` in the capture, and clicking the JS figure lands below the page footer — a click into
+the void that looks exactly like a button refusing to work. **Read the position off a screenshot**,
+or divide by the ratio; never feed a `getBoundingClientRect` value straight to a click.

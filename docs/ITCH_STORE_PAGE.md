@@ -4,7 +4,7 @@
 is ever in another language, keep both files and **correct them together**: otherwise one of the two
 lies, and nobody knows which.
 
-✅ **The live page carries this text, since 2026-08-31.** It was pasted by writing the
+✅ **The live page carries this text, updated for 0.5.0 on 2026-08-31.** It was pasted by writing the
 `.redactor-layer` **and** the hidden `textarea`, then waiting for the "Saved" banner — the three
 earlier attempts had failed for want of that. ⚠ The Controls table below goes onto the page as **two
 lists** (Keyboard, then Touch): itch's editor renders a list far better than a three-column table on
@@ -91,12 +91,11 @@ To check by hand after every publish; they were wrong for several versions on an
 - [x] **Orientation**: **landscape** — set 2026-08-31. It was empty, not landscape. The playfield is
       21 × 15 and the frame is 16:9; the web template already tells a phone player to turn the device.
 - [ ] **Classification** tab: genre, tags, **player count**, multiplayer mode
-- [ ] **Cover 630 × 500** — the only image seen by visitors who do not open the page.
+- [x] **Cover 630 × 500** — the only image seen by visitors who do not open the page. ✅ The English
+      one was uploaded **by the author, by hand**, on 2026-08-31 (cover id 29675391): the widget
+      accepts neither a synthetic drop nor an injected file input.
       Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be
-      regenerated when the page's language changes. ⚠⚠ **The English cover was regenerated on
-      2026-08-30 but NEVER reached itch**: `docs/itch/cover.png` reads "It grows with every bite."
-      while the page still shows the French "Il s'allonge à chaque bouchée." — checked 2026-08-31.
-      The line below used to claim the upload was done; it was not. **To upload by hand.**
+      regenerated when the page's language changes.
 - [x] **Screenshots** — three, taken IN the browser on the running build, and uploaded on 2026-08-30:
       menu, a game at 4 points, and the end screen with "New best: 4". The `v0.3.0` stamp is visible on
       each.
