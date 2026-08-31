@@ -96,13 +96,16 @@ To check by hand after every publish; they were wrong for several versions on an
       accepts neither a synthetic drop nor an injected file input.
       Produced by `tools/generate_itch_cover.py`. ⚠ It carries the tagline as text: it must be
       regenerated when the page's language changes.
-- [x] **Screenshots** — three, taken IN the browser on the running build, and uploaded on 2026-08-30:
-      menu, a game at 4 points, and the end screen with "New best: 4". The `v0.3.0` stamp is visible on
-      each.
-      ⚠ They show the game's rendering, so they are **to be redone at every visible change** — the
-      0.4.0 touch controls are NOT on them.
-      ⚠ **The three old ones (French interface, faceless snake) are still online underneath**: deleting
-      them opens a confirmation dialog that froze the browser session. To finish by hand.
+- [ ] **Screenshots** — ⚠ **redone on 0.5.0 but NOT uploaded**: `docs/itch/capture-{1-menu,2-game,3-gameover}.png`
+      are the current ones (2026-08-31), taken in the browser on the **published build**
+      (`html-classic.itch.zone`, stamp `v0.5.0-d21f2f7`), showing the touch pad, the pause button, the
+      "Sound: on" toggle, a game at 2 points and an end screen at "New best: 3".
+      ⚠ **The upload must be done BY HAND**: the screenshot widget is a drop zone with no
+      `input[type=file]` in the DOM, exactly like the cover — neither a synthetic drop nor an injected
+      input is accepted (`docs/pitfalls/itch-publishing.md`).
+      ⚠ **4 screenshots are still online**, from 0.3.0: they show neither the touch controls nor the
+      sound toggle. Deleting them opens a confirmation dialog that froze a browser session once.
+      ⚠ They show the game's rendering, so they are **to be redone at every visible change**.
 
 ⚠ **Visibility**: the page is **PUBLIC** — found so on 2026-08-30. Every document in this repository
 claimed it was still in Draft, and had done since 2026-08-28. Whatever is written here is therefore
