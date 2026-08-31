@@ -27,3 +27,32 @@ who will never see the repository.
   version from keeping the name, therefore does not apply.
   ⚠ **This check must be redone for any other family**: most of them declare one, and renaming then
   becomes mandatory, not optional.
+
+## Sound effects
+
+### Kenney — "Interface Sounds" — CC0 1.0
+
+- **Author**: Kenney (<https://kenney.nl/assets/interface-sounds>).
+- **Licence**: Creative Commons CC0 1.0 — public domain, **no attribution required**. Credited
+  anyway: a pack given freely costs one line to name, and that line is what lets a reader check the
+  claim.
+- **Files kept**: 4 of the 100 — `drop_002` → `bite.ogg`, `click_002` → `menu-move.ogg`, `confirmation_004` →
+  `menu-confirm.ogg`, `error_006` → `death.ogg`.
+- **Modification**: renamed to the names of `SfxCatalog`, nothing else. ⚠ Volumes are balanced in
+  the code (`SfxCatalog.Volume`), never by re-exporting a file — re-exporting loses the original,
+  and the balance stops being readable in a diff.
+
+### rubberduck — "100 CC0 SFX" — CC0 1.0
+
+- **Author**: rubberduck (<https://opengameart.org/content/100-cc0-sfx>).
+- **Licence**: Creative Commons CC0 1.0 — public domain, no attribution required.
+- **Files kept**: none in the end. The pack was downloaded and measured for the bite (its two
+  "plop" clips are the most literal mouth sounds of the two banks), but they came out at 300 and
+  360 ms and brighter than Kenney's `drop_002`, which took the role. **Kept in the credits because
+  the pack was used to choose**, and because the next pass will start from it again.
+
+⚠ **These four clips were chosen on measurements, not by ear**: duration, attack time, spectral
+centroid and spectral flatness narrowed some 200 candidates to a shortlist (the method is described
+in `docs/gdd/audio.md`). Whether they are *right* is heard, not measured. **They had not been
+listened to as of 2026-08-31** — whoever runs the game with sound first should judge them, and
+swapping one is a matter of dropping another file under the same name.

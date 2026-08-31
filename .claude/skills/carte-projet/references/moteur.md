@@ -29,7 +29,8 @@ according to the hierarchy, which is not stable when the scene is regenerated fr
 | `Assets/Resources/Audio/` | The clips, loaded BY PATH. ⚠ `Resources/`, never `Art/`. Import settings forced by `Assets/Editor/ImportAudio.cs` |
 
 Design: `docs/gdd/audio.md` (§4.7). ⚠ The `AudioListener` is added by `SceneBuilder.BuildCamera` —
-it was missing entirely until 2026-08-31.
+it was missing entirely until 2026-08-31. **`-audiocheck` / `?audiocheck`** plays one sound and
+logs the RMS that came out: the only way to prove a sound was heard rather than merely requested.
 
 ## §UI — `Assets/Scripts/UI/`
 

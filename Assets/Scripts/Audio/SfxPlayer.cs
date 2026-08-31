@@ -45,6 +45,59 @@ namespace SnakeSnack.Audio
 
             Load();
             Audit();
+
+            if (SelfCheckAsked())
+            {
+                StartCoroutine(SelfCheck());
+            }
+        }
+
+        /// <summary>
+        /// <c>-audiocheck</c> (Windows) / <c>?audiocheck</c> (web): plays one sound and reports the
+        /// RMS that came out.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ This exists because <b>nothing else can prove a sound was heard</b>. The audit above
+        /// proves the clips loaded and that there is an ear; it cannot prove anything left the
+        /// mixer — a volume at zero, a suspended browser context or a muted device all pass it
+        /// silently. Same shape as <c>-touch</c>: a diagnostic mode, off by default, that a driving
+        /// harness can switch on.
+        /// </remarks>
+        private static bool SelfCheckAsked()
+        {
+            string[] args = System.Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "-audiocheck")
+                {
+                    return true;
+                }
+            }
+
+            return Application.absoluteURL != null && Application.absoluteURL.Contains("audiocheck");
+        }
+
+        private System.Collections.IEnumerator SelfCheck()
+        {
+            // ⚠ Not on the first frame: the audio device is not necessarily open yet, and a
+            // measurement taken too early reads zero on a chain that works.
+            yield return new WaitForSeconds(0.5f);
+
+            float before = OutputRms();
+            Play(Sfx.Bite);
+
+            // Sampled over several frames: a short clip can fall entirely between two reads, and a
+            // single sample would report silence on a sound that played (docs/pitfalls/tests-driving.md).
+            float peak = 0f;
+            for (int i = 0; i < 30; i++)
+            {
+                peak = Mathf.Max(peak, OutputRms());
+                yield return null;
+            }
+
+            Debug.Log("[audio] self-check: RMS " + before.ToString("F5") + " before, peak "
+                      + peak.ToString("F5") + " while playing Bite. "
+                      + (peak > 0.0005f ? "SOUND IS COMING OUT." : "NOTHING CAME OUT."));
         }
 
         /// <summary>Plays a sound, or does nothing if it has none — the audit has already said so.</summary>
@@ -133,7 +186,10 @@ namespace SnakeSnack.Audio
                 AudioClip clip;
                 if (!_clips.TryGetValue(all[i], out clip) || clip == null)
                 {
-                    missing.Add(all[i] + " → Assets/Resources/" + SfxCatalog.ResourceFolder + file + ".wav");
+                    // No extension in the message: Resources.Load takes the name without one, and
+                    // naming ".wav" would send someone looking for a file that is a .ogg.
+                    missing.Add(all[i] + " → Assets/Resources/" + SfxCatalog.ResourceFolder + file
+                                + " (.ogg or .wav)");
                 }
             }
 

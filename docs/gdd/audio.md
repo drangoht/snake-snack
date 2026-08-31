@@ -74,9 +74,28 @@ gesture (`docs/pitfalls/audio.md`), inherited from the project template.
 **Proof that a sound came out** is `SfxPlayer.OutputRms()`, not a log: a `PlayOneShot` log proves an
 intention. The RMS is read downstream of the volume, the listener and the context.
 
+## How the four clips were chosen
+
+From Kenney's CC0 "Interface Sounds" bank, out of some 200 candidates across two banks, by
+**measurement**: duration, attack time (10% to 90% of the peak), spectral centroid and spectral
+flatness. Slow attack, low centroid and a tonal rather than noisy spectrum is what "soft" looks like
+when a script has to see it.
+
+⚠ **The duration window is part of the brief, not a detail.** Ranked on softness alone, the top of
+"menu cursor" came back full of 1000 ms clips — perfectly soft, and useless: a cursor that long
+turns a quickly-run menu into a rattle. Each role has a window, and outside it a candidate is not
+ranked at all.
+
+⚠ **The measurements narrowed the field; they did not choose.** Whether these four are *right* is
+heard. They had not been listened to when they were committed.
+
 ## Status
 
-Design and wiring done 2026-08-31 (`Assets/Scripts/Audio/`, `SceneBuilder`, `MenuScreen`,
-`SnakeGame`). **The clip files themselves are not chosen yet**: until they are in
-`Assets/Resources/Audio/`, the audit names four missing files at every startup, and the game is
-silent — deliberately, and loudly.
+Design, wiring and clips done 2026-08-31 — `Assets/Scripts/Audio/`, `SceneBuilder` (the listener),
+`MenuScreen` and `SnakeGame` (the four call sites), `Assets/Resources/Audio/` (the clips).
+
+**Proven, not assumed**: `-audiocheck` (Windows) / `?audiocheck` (web) plays one sound and reports
+the RMS that actually left the mixer. Measured on 2026-08-31: `0.00000` before, peak `0.17156`
+during. That is the proof the audit alone cannot give.
+
+**Still open**: someone has to listen. And the music, of which there is nothing.

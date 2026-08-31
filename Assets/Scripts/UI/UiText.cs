@@ -124,6 +124,9 @@ namespace SnakeSnack.UI
             "Font: Nunito, by Vernon Adams, Cyreal and Jacques Le Bailly.\n" +
             "SIL Open Font License 1.1.\n" +
             "\n" +
+            "Sound: Kenney (kenney.nl).\n" +
+            "Creative Commons CC0 - public domain.\n" +
+            "\n" +
             "Illustration and interface made for this game.\n" +
             "Engine: Unity.";
 
