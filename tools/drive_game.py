@@ -80,6 +80,12 @@ KEYS = {
 for _letter, _vk, _sc in [
     ("a", 0x41, 0x1E), ("d", 0x44, 0x20), ("e", 0x45, 0x12), ("q", 0x51, 0x10),
     ("r", 0x52, 0x13), ("s", 0x53, 0x1F), ("w", 0x57, 0x11), ("z", 0x5A, 0x2C),
+    # ⚠ "m" is the QWERTY POSITION of M, which on an AZERTY keyboard is the key printed ",".
+    # The mute shortcut is resolved by PRINTED CHARACTER in the game
+    # (`SnakeGame.ReadMuteKey`), so on an AZERTY machine this entry is NOT the one that mutes:
+    # "m_azerty" below is. Both are here precisely so a test can tell the two apart.
+    ("m", 0x4D, 0x32),
+    ("m_azerty", 0xBA, 0x27),
 ]:
     KEYS[_letter] = (_vk, _sc, False)
 

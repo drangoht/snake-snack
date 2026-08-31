@@ -27,9 +27,21 @@ namespace SnakeSnack.EditorTools
     {
         private const string Folder = "Assets/Resources/Audio/";
 
+        /// <summary>
+        /// Music, which takes the opposite settings from the effects.
+        /// </summary>
+        /// <remarks>
+        /// ⚠ <b>Tested BEFORE <see cref="Folder"/>, which is its prefix.</b> Checking the effects
+        /// folder first would match the music too, and silently apply to a 34-second loop the
+        /// settings meant for a 200 ms click.
+        /// </remarks>
+        private const string MusicFolder = "Assets/Resources/Audio/Music/";
+
         private void OnPreprocessAudio()
         {
-            if (!assetPath.StartsWith(Folder, System.StringComparison.Ordinal))
+            bool music = assetPath.StartsWith(MusicFolder, System.StringComparison.Ordinal);
+
+            if (!music && !assetPath.StartsWith(Folder, System.StringComparison.Ordinal))
             {
                 return;
             }
@@ -39,6 +51,23 @@ namespace SnakeSnack.EditorTools
             importer.forceToMono = true;
 
             AudioImporterSampleSettings settings = importer.defaultSampleSettings;
+
+            if (music)
+            {
+                // ⚠ Everything the effects want is wrong here. Decompressing 34 seconds into memory
+                // costs several megabytes to play one loop nobody hears twice at once, and PCM
+                // would put the whole thing raw into the web build — for a file the player streams
+                // from beginning to end anyway. Streaming Vorbis is the opposite trade, and it is
+                // the right one at this length.
+                settings.loadType = AudioClipLoadType.Streaming;
+                settings.compressionFormat = AudioCompressionFormat.Vorbis;
+                settings.quality = 0.7f;
+                settings.preloadAudioData = false;
+
+                importer.defaultSampleSettings = settings;
+                return;
+            }
+
             settings.loadType = AudioClipLoadType.DecompressOnLoad;
 
             // Loaded with the scene rather than on the first play: the first bite of the first game

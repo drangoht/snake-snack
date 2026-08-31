@@ -134,3 +134,8 @@ pitfalls, all met in the same session, all silent.
   select a menu entry. The menu answers the *mouse*; the pad waits for a touch that the injected
   click never produces, even under `?touch`. Do not conclude the pad is broken — drive it with the
   keyboard, or with a real finger.
+- ⚠ **The mute preference is somebody's too.** Like the best score above, a driving pass that toggles
+  the sound leaves the game muted for the person who owns the machine — and unlike a score, nothing
+  on screen shouts about it afterwards. The key is `snakesnack.muted` in
+  `HKCU:\Software\Drangoht\Snake Snack`: **restore it in a `finally`**, or delete it to fall back to
+  the default.

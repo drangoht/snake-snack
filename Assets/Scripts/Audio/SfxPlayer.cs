@@ -98,12 +98,30 @@ namespace SnakeSnack.Audio
             Debug.Log("[audio] self-check: RMS " + before.ToString("F5") + " before, peak "
                       + peak.ToString("F5") + " while playing Bite. "
                       + (peak > 0.0005f ? "SOUND IS COMING OUT." : "NOTHING CAME OUT."));
+
+            // ⚠ The music is measured LATER, and separately. Its clip is streamed and loads
+            // asynchronously: at 0.5 s it may not have started, and reading the "before" RMS above
+            // as the music's verdict concluded "silent" on a loop that was merely still loading.
+            // Nothing was wrong except the moment of the measurement.
+            yield return new WaitForSeconds(2f);
+
+            float music = 0f;
+            for (int i = 0; i < 30; i++)
+            {
+                music = Mathf.Max(music, OutputRms());
+                yield return null;
+            }
+
+            Debug.Log("[audio] self-check: menu music RMS " + music.ToString("F5") + " at 2.5 s. "
+                      + (music > 0.0005f ? "MUSIC IS COMING OUT." : "NO MUSIC."));
         }
 
         /// <summary>Plays a sound, or does nothing if it has none — the audit has already said so.</summary>
         public void Play(Sfx sound)
         {
-            if (_source == null || _masterVolume <= 0f)
+            // ⚠ The mute is checked here rather than on the AudioSource's volume: PlayOneShot takes
+            // its own volume and would ignore a source silenced after the fact.
+            if (_source == null || _masterVolume <= 0f || AudioMute.Muted)
             {
                 return;
             }

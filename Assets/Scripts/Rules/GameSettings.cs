@@ -95,6 +95,16 @@ namespace SnakeSnack.Rules
         /// </remarks>
         public double sfxVolume = 0.8;
 
+        /// <summary>Master volume of the menu music, from 0 (mute) to 1.</summary>
+        /// <remarks>
+        /// Lower than the effects on purpose: the loop plays under a screen one reads, and it must
+        /// never be the reason a player turns the sound off. ⚠ Like <see cref="sfxVolume"/>, zero is
+        /// an intent and is honoured; and like it, this setting has <b>no effect on the web</b>,
+        /// where <c>SettingsLoader</c> reads nothing — which is why the in-game mute exists
+        /// (<c>Audio/AudioMute.cs</c>).
+        /// </remarks>
+        public double musicVolume = 0.5;
+
         /// <summary>A set of values identical to the GDD constants.</summary>
         public static GameSettings Default()
         {
@@ -202,6 +212,7 @@ namespace SnakeSnack.Rules
                 rejectionFadeSeconds, defaults.rejectionFadeSeconds, "rejectionFadeSeconds", found);
 
             safe.sfxVolume = ValidateVolume(sfxVolume, defaults.sfxVolume, "sfxVolume", found);
+            safe.musicVolume = ValidateVolume(musicVolume, defaults.musicVolume, "musicVolume", found);
 
             // A cap shorter than the display duration would put the feedback out before it had been
             // read — the exact opposite of what ART §5.5 expects from it.

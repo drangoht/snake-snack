@@ -9,5 +9,6 @@
   "rejectionExtensionCapSeconds": 0.5,
   "pauseTextSeconds": 1.5,
   "rejectionFadeSeconds": 0.06,
-  "sfxVolume": 0.8
+  "sfxVolume": 0.8,
+  "musicVolume": 0.5
 }

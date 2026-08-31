@@ -204,6 +204,25 @@ public class GameSettingsTests
         Assert.Equal(expected, safe.sfxVolume);
     }
 
+    /// <summary>
+    /// The music volume follows exactly the same rules as the effects volume. Written down because
+    /// the two are validated by separate calls: adding a third volume and forgetting its call would
+    /// leave it unvalidated, and nothing else would say so.
+    /// </summary>
+    [Theory]
+    [InlineData(0.0, 0.0)]
+    [InlineData(3.0, 1.0)]
+    [InlineData(-0.5, 0.0)]
+    public void TheMusicVolumeIsValidatedLikeTheEffects(double written, double expected)
+    {
+        GameSettings raw = GameSettings.Default();
+        raw.musicVolume = written;
+
+        GameSettings safe = raw.Validate(out IList<string> issues);
+
+        Assert.Equal(expected, safe.musicVolume);
+    }
+
     /// <summary>A volume that is not a number has no intent to honour: back to the default.</summary>
     [Fact]
     public void AVolumeThatIsNotANumberFallsBack()

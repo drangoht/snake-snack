@@ -89,6 +89,54 @@ ranked at all.
 ⚠ **The measurements narrowed the field; they did not choose.** Whether these four are *right* is
 heard. They had not been listened to when they were committed.
 
+## The music
+
+**The menu sings, the game is silent.** A game lasts from thirty seconds to three minutes and
+restarts with no transition (§2): a thirty-four second loop would run dozens of times in a row, and
+the four effects would lose the silence they stand out against. Decided 2026-08-31.
+
+One track, `Audio/Music/menu.ogg` — "Heavenly Loop" by isaiah658, CC0. Chosen against another
+candidate **on a measurement, not an impression**: the other one carried 1 208 ms of digital silence
+at its tail, which as a loop opens a hole of over a second on every wrap. Nothing in reading a file
+reveals that; everything in listening does. The retained one measures 0 ms of padding at both ends
+and a seam step of 0.003 — no click.
+
+⚠ **The music takes the OPPOSITE import settings from the effects** (`Assets/Editor/ImportAudio.cs`,
+which tests the `Music/` subfolder *before* its parent): Streaming Vorbis, not decompressed PCM.
+Decompressing thirty-four seconds into memory to play one loop is the wrong trade at this length,
+and it is the web build that pays.
+
+## Silence, and why it needed a button
+
+⚠⚠ **`settings.json` is not read on the web.** `SettingsLoader` says so itself:
+`streamingAssetsPath` is a URL under WebGL, and `File.Exists` answers false without raising
+anything. So `sfxVolume` and `musicVolume` have **no effect on itch.io** — the only channel this game
+is published on. For four short effects that was venial. For a loop a visitor cannot silence, it is
+what makes them close the tab.
+
+Hence, decided 2026-08-31: **the M key, and a button on the menu**, mirrored in
+`Audio/AudioMute.cs`. It mutes **everything**, music and effects alike — someone reaching for a mute
+is silencing a tab, not balancing a mix. The choice is remembered between sessions (`PlayerPrefs`,
+best effort like the best score: unreadable means "not muted", and the game starts).
+
+The button says **"Sound: on"**, a state, never "Sound off", which half the players read as a state
+and the other half as an action.
+
+⚠ **The M key is resolved by printed character, not by physical position**
+(`FindKeyOnCurrentKeyboardLayout`). `Key.M` names the QWERTY position of M, which on an AZERTY
+keyboard is the key printed `,` — a player told "press M" would press M and get nothing. This is the
+opposite choice from WASD, and deliberately so: a position for a gesture, a character for a mnemonic
+(`docs/pitfalls/inputs.md`).
+
+⚠ **Accepted limit: there is no mute button during a game.** A touch player who wants silence
+mid-run has to go back to the menu. The margins already carry the pause button and the directional
+pad, and a third control there would cost more than it gives — the choice being remembered, it is
+made once. To reopen if anyone actually trips over it.
+
+⚠ **An entry "Settings" stays ruled out** (`gdd/menu.md`), and this does not reopen it: a toggle in
+a corner is not a settings screen. What was ruled out was a screen with nothing to set; the mute has
+something to set, and it sets it in one tap.
+
 ## Status
 
 Design, wiring and clips done 2026-08-31 — `Assets/Scripts/Audio/`, `SceneBuilder` (the listener),

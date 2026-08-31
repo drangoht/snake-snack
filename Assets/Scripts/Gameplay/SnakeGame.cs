@@ -5,6 +5,7 @@ using SnakeSnack.Rules;
 using SnakeSnack.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 // The rules' grid, and not UnityEngine.Grid (the tilemap component). Without this alias every
 // mention of `Grid` in this file is ambiguous and nothing compiles -- a name collision that only
@@ -54,6 +55,7 @@ namespace SnakeSnack.Gameplay
         /// </summary>
         private MenuScreen _menu;
         private SfxPlayer _sfx;
+        private MusicPlayer _music;
 
         /// <summary>
         /// The fingers, when there are any (GDD §3, touch — reopened on 2026-08-30).
@@ -183,6 +185,9 @@ namespace SnakeSnack.Gameplay
             _sfx = gameObject.AddComponent<SfxPlayer>();
             _sfx.Build(_settings.sfxVolume);
 
+            _music = gameObject.AddComponent<MusicPlayer>();
+            _music.Build(_settings.musicVolume);
+
             _menu = gameObject.AddComponent<MenuScreen>();
             _menu.UseSfx(_sfx);
             _menu.Confirmed += OnMenuEntryConfirmed;
@@ -200,6 +205,7 @@ namespace SnakeSnack.Gameplay
             _view.Show(false);
             _hud.Show(false);
             ShowTouchControls(false);
+            _music.SetMenuOpen(true);
             _menu.Open();
         }
 
@@ -223,6 +229,9 @@ namespace SnakeSnack.Gameplay
             _view.Show(true);
             _hud.Show(true);
             ShowTouchControls(true);
+
+            // The menu sings, the game is silent (docs/gdd/audio.md §4.7).
+            _music.SetMenuOpen(false);
             NewGame();
         }
 
@@ -276,6 +285,8 @@ namespace SnakeSnack.Gameplay
                 }
             }
 
+            ReadMuteKey();
+
             if (_menu.Active)
             {
                 // ⚠ Nothing of the game runs while the menu is there, fade-out included: a direction
@@ -293,6 +304,52 @@ namespace SnakeSnack.Gameplay
             AdvanceTime();
             RefreshRejectionFeedback();
         }
+
+        /// <summary>Silences everything, or brings it back — and remembers the choice.</summary>
+        /// <remarks>
+        /// ⚠ Read <b>before</b> the menu/game split, so it works everywhere. The music only plays on
+        /// the menu, but the effects play in the game, and a player reaching for the mute wants the
+        /// tab quiet — not a key that answers on one screen out of two.
+        ///
+        /// <para>⚠ This key is the ONLY way to get silence on the web: <c>settings.json</c> is not
+        /// read there (<c>SettingsLoader</c>), so neither volume applies. See
+        /// <see cref="SnakeSnack.Audio.AudioMute"/>.</para>
+        /// </remarks>
+        private void ReadMuteKey()
+        {
+            Keyboard keyboard = Keyboard.current;
+
+            // ⚠ Never `if (keyboard == null) return;` at the top of a SHARED input read: a phone has
+            // no keyboard, and that guard once made the whole touch port unreachable
+            // (docs/pitfalls/touch-mobile.md). Here it guards this key and nothing else.
+            if (keyboard == null)
+            {
+                return;
+            }
+
+            if (_muteKey == null || _muteKey.device != keyboard)
+            {
+                // ⚠⚠ Resolved by PRINTED CHARACTER, not by physical position — the opposite of the
+                // four direction keys just above. `Key.M` names the QWERTY position of M, which on
+                // an AZERTY keyboard is the key printed ",": the player presses the M they can see
+                // and nothing happens. WASD gets away with naming positions because the shape of the
+                // block is what matters there; a mnemonic ("M for mute") is about the letter, and
+                // the letter moves with the layout.
+                _muteKey = keyboard.FindKeyOnCurrentKeyboardLayout("m") ?? keyboard.mKey;
+            }
+
+            if (_muteKey.wasPressedThisFrame)
+            {
+                AudioMute.Toggle();
+            }
+        }
+
+        /// <summary>The key printed "m" on the CURRENT layout — see <see cref="ReadMuteKey"/>.</summary>
+        /// <remarks>
+        /// Cached, and re-resolved when the device changes: the lookup walks the layout, and this
+        /// runs every frame.
+        /// </remarks>
+        private KeyControl _muteKey;
 
         /// <summary>
         /// The menu keys. Same arrows and same WASD block as the game (GDD §3): the player has no two

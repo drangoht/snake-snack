@@ -117,6 +117,11 @@ namespace SnakeSnack.UI
             {
                 _footer.text = UiText.MenuFooter;
             }
+
+            // The mute label names the M key on a keyboard and stays bare on touch: it depends on
+            // the device too, and a label that keeps naming a key to a phone player says the game
+            // was not meant for them (docs/pitfalls/interface.md).
+            RefreshMuteLabel();
         }
 
 
@@ -160,6 +165,9 @@ namespace SnakeSnack.UI
         /// broken by a missing .wav.
         /// </remarks>
         private SfxPlayer _sfx;
+
+        /// <summary>The mute button's label — it states the state, so it has to follow it.</summary>
+        private Text _muteLabel;
 
         /// <summary>True as long as the menu owns the screen, fade-out included.</summary>
         public bool Active
@@ -221,6 +229,8 @@ namespace SnakeSnack.UI
                 UiPalette.SecondaryText, new Vector2(0.5f, 0f), new Vector2(0f, 26f), new Vector2(1100f, 24f));
             _footer.text = UiText.MenuFooter;
 
+            BuildMuteButton(_root.transform, bodyFont);
+
             // ⚠ The panels are created AFTER the entries: at equal sorting order, uGUI stacks in
             // hierarchy order, and a panel created before would go under the entries it is meant to
             // cover.
@@ -250,6 +260,74 @@ namespace SnakeSnack.UI
             rect.pivot = new Vector2(0f, 0.5f);
             rect.anchoredPosition = new Vector2(x, y);
             return rect;
+        }
+
+        /// <summary>The mute button, top right of the menu.</summary>
+        /// <remarks>
+        /// ⚠ <b>It exists for the web.</b> <c>settings.json</c> is not read under WebGL, so neither
+        /// volume applies there: without this button and its M key, a visitor on itch.io who wants
+        /// silence can only close the tab. It sits on the menu because that is where the music plays,
+        /// and where every player passes before playing.
+        ///
+        /// <para>⚠ Known limit, accepted: there is <b>no</b> mute button during a game. A touch
+        /// player who wants silence mid-run has to come back to the menu. The playfield margins
+        /// already carry the pause button and the directional pad, and a third control there would
+        /// cost more than it gives — the choice is remembered, so it is made once.</para>
+        /// </remarks>
+        private void BuildMuteButton(Transform parent, Font font)
+        {
+            var go = new GameObject("MuteButton", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(240f, 52f);
+            rect.anchoredPosition = new Vector2(-24f, -18f);
+
+            // Transparent raycast target, like the menu entries: the game's Texts are not raycast
+            // targets, so the pointer would have nothing to touch.
+            Image area = UiFactory.Scrim(rect, "Area", new Color(0f, 0f, 0f, 0f));
+            area.raycastTarget = true;
+
+            var clickable = area.gameObject.AddComponent<ClickableArea>();
+            clickable.Clicked = () =>
+            {
+                AudioMute.Toggle();
+
+                // ⚠ Played AFTER the toggle, so that UNMUTING is heard: it is the only feedback that
+                // the button did anything, on a screen where the music takes a moment to come back.
+                // Muting stays silent, which is exactly what was asked for.
+                if (_sfx != null)
+                {
+                    _sfx.Play(Sfx.MenuConfirm);
+                }
+            };
+
+            _muteLabel = UiFactory.Text(rect, "Label", font, 18, TextAnchor.MiddleRight,
+                UiPalette.SecondaryText, Centre, Vector2.zero, new Vector2(232f, 40f));
+
+            // ⚠ Subscribed, not polled: the M key flips the state from SnakeGame, and a label that
+            // only refreshed on a click would tell the opposite of the truth after a keypress.
+            AudioMute.Changed += RefreshMuteLabel;
+            RefreshMuteLabel();
+        }
+
+        private void OnDestroy()
+        {
+            // A static event outlives what subscribed to it: without this, a destroyed menu keeps
+            // being called and Unity raises a MissingReferenceException far from the cause.
+            AudioMute.Changed -= RefreshMuteLabel;
+        }
+
+        /// <summary>Puts the label back in step with the state — and with the input device.</summary>
+        private void RefreshMuteLabel()
+        {
+            if (_muteLabel != null)
+            {
+                _muteLabel.text = UiText.SoundToggle(AudioMute.Muted);
+            }
         }
 
         private void BuildIllustration(Transform parent)

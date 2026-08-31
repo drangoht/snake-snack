@@ -56,3 +56,19 @@ centroid and spectral flatness narrowed some 200 candidates to a shortlist (the 
 in `docs/gdd/audio.md`). Whether they are *right* is heard, not measured. **They had not been
 listened to as of 2026-08-31** — whoever runs the game with sound first should judge them, and
 swapping one is a matter of dropping another file under the same name.
+
+## Music
+
+### isaiah658 — "Heavenly Loop" — CC0 1.0
+
+- **Author**: isaiah658 (<https://opengameart.org/content/heavenly-loop>).
+- **Licence**: Creative Commons CC0 1.0 — public domain, no attribution required. Credited anyway,
+  for the same reason as the effects.
+- **File**: `Heavenly Loop_0.ogg` → `Assets/Resources/Audio/Music/menu.ogg` (1.17 MB). Renamed only.
+- **Why this one, and it is measurable**: the other candidate (`simple_loop`, by polosik, also CC0)
+  carries **1 208 ms of digital silence at its tail**. As a loop it would open a hole of more than a
+  second on every wrap — a defect nothing reveals when reading, and everything reveals when
+  listening. `Heavenly Loop` measures 0 ms of padding at both ends, a seam step of 0.003 on a signal
+  normalised to 1 (no click), and a spectral centroid of 763 Hz, which is the soft grain §4.7 asks
+  for.
+- ⚠ Imported **Streaming Vorbis**, not like the effects: see `Assets/Editor/ImportAudio.cs`.

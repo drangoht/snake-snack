@@ -25,6 +25,8 @@ according to the hierarchy, which is not stable when the scene is regenerated fr
 | File | Responsibility |
 |---|---|
 | `Sfx.cs` | The `Sfx` enum (**declares** a sound to exist) and `SfxCatalog` (**binds** it to a file and a volume). ⚠ The single place where a sound gets a file name — a moment bound to nothing is silent, and silence raises nothing |
+| `MusicPlayer.cs` | The menu loop, and only the menu. ⚠ Streamed: the clip must be asked to load (`LoadAudioData`) and **waited for** — `Play()` on an unloaded clip does nothing, silently |
+| `AudioMute.cs` | The player's silence, remembered (`PlayerPrefs`). ⚠ Exists because `settings.json` is not read on WebGL: it is the ONLY way to get silence on itch |
 | `SfxPlayer.cs` | Loads, plays, and **audits at startup**: missing listener, unbound sound, absent file, volume at zero — each named separately. `OutputRms()` is the only proof that a sound came out, a `PlayOneShot` log proving only an intention |
 | `Assets/Resources/Audio/` | The clips, loaded BY PATH. ⚠ `Resources/`, never `Art/`. Import settings forced by `Assets/Editor/ImportAudio.cs` |
 

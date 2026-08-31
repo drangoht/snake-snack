@@ -61,6 +61,27 @@ namespace SnakeSnack.UI
         /// <summary>The same, for a player who has no keyboard (GDD §3, touch).</summary>
         public const string MenuFooterTouch = "Tap an entry to choose it";
 
+        /// <summary>
+        /// The mute button, on the menu. ⚠ Says what the game IS, not what clicking will do: a
+        /// button reading "Sound off" is read as a state by half the players and as an action by the
+        /// other half. "Sound: on" cannot be read two ways.
+        /// </summary>
+        public const string SoundOn = "Sound: on";
+
+        /// <inheritdoc cref="SoundOn"/>
+        public const string SoundOff = "Sound: off";
+
+        /// <summary>The mute label for the current state, with the key that flips it.</summary>
+        /// <remarks>
+        /// The "(M)" is dropped on touch: naming a key to a player with no keyboard is noise, and
+        /// the button is right there to be tapped.
+        /// </remarks>
+        public static string SoundToggle(bool muted)
+        {
+            string state = muted ? SoundOff : SoundOn;
+            return Touch ? state : state + "   (M)";
+        }
+
         /// <inheritdoc cref="MenuFooterKeyboard"/>
         public static string MenuFooter
         {
@@ -125,6 +146,7 @@ namespace SnakeSnack.UI
             "SIL Open Font License 1.1.\n" +
             "\n" +
             "Sound: Kenney (kenney.nl).\n" +
+            "Music: isaiah658 (opengameart.org).\n" +
             "Creative Commons CC0 - public domain.\n" +
             "\n" +
             "Illustration and interface made for this game.\n" +
