@@ -36,11 +36,11 @@ in place. If one of them grates after ten minutes, that is exactly the kind of t
 
 ## v0.4.0 — It plays on a phone (2026-08-30)
 
-*Published on itch **a day late**, on 2026-08-31:
-<https://drangoht.itch.io/snake-snack/devlog/1647488/v040-it-plays-on-a-phone-a-day-late>. The post
-says so in its first line rather than pretending otherwise, and its "still not here: sound and music"
-was rewritten to point at 0.5.0 — publishing today a text claiming the game has no sound would have
-been exactly the defect this page exists to prevent.*
+*Published on itch a day after the release, on 2026-08-31:
+<https://drangoht.itch.io/snake-snack/devlog/1647488/v040-it-plays-on-a-phone>. The post says in its
+first line that it was added afterwards, and its "still not here: sound and music" was rewritten to
+point at 0.5.0 — publishing today a text claiming the game has no sound would have been exactly the
+defect this page exists to prevent.*
 
 **News**
 - **The game is playable with a finger.** Hold the device in landscape: **swipe anywhere** on the
@@ -113,18 +113,20 @@ telling me, and it is exactly the feedback this was waiting for.
 
 ## v0.1.0 — First playable version (2026-08-28)
 
-*Published on itch **three days late**, on 2026-08-31:
-<https://drangoht.itch.io/snake-snack/devlog/1647493/v010-first-playable-version-published-late>. The
-post carries a "Reading this today" section rather than pretending to be from the 28th: this version
-was in French, needed a keyboard and made no sound, and a reader arriving now would otherwise take
-all three for the current state.*
+*Published on itch three days after the release, on 2026-08-31:
+<https://drangoht.itch.io/snake-snack/devlog/1647493/v010-first-playable-version>. The post carries a
+"Reading this today" section rather than pretending to be from the 28th: this version was in French,
+needed a keyboard and made no sound, and a reader arriving now would otherwise take all three for the
+current state.*
 
-⚠ **The devlog list is ordered by PUBLICATION date, not by version.** With 0.1.0, 0.4.0 and 0.5.0 all
-posted on 2026-08-31, the page now reads 0.1.0, 0.4.0, 0.5.0, 0.3.0, 0.2.0. The itch form has an
-*Original publish date* field that would fix the order — it is meant for posts migrated from another
-site, and using it would date a text written today as the 28th. Left alone deliberately, each late
-post saying so in its own first line. To revisit if the disorder bothers a reader more than a wrong
-date would.
+⚠⚠ **The devlog list cannot be reordered, and this was tried.** It sorts by CREATION date, newest
+first, so the three posts written on 2026-08-31 sit on top in reverse version order: 0.1.0, 0.4.0,
+0.5.0, then 0.3.0 and 0.2.0. The form's *Original publish date* (`post[display_published_at]`) was
+set to the real release dates — 28 and 30 August — and **itch stores it and ignores it**: the value
+comes back when the form is re-opened, and the public list does not move (cache ruled out with a URL
+parameter). Details in `docs/pitfalls/itch-publishing.md`. The only remaining lever would be to
+delete and recreate the posts in order, which loses their URLs and goes through a confirmation dialog
+that has frozen a browser session before — not worth it for an order that would still be imperfect.
 
 **News**
 - The full game of Snake: a snake that grows with every apple, walls that kill, a score and a best

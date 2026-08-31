@@ -40,3 +40,11 @@ of ~1.19 between the two on this setup: a Save button reported at `(483, 790)` b
 `(404, 662)` in the capture, and clicking the JS figure lands below the page footer — a click into
 the void that looks exactly like a button refusing to work. **Read the position off a screenshot**,
 or divide by the ratio; never feed a `getBoundingClientRect` value straight to a click.
+
+**⚠⚠ `post[display_published_at]` is STORED and IGNORED.** The devlog edit form offers an "Original
+publish date"; setting it saves fine (re-open the form and the value is there), and the public devlog
+list keeps showing the creation date and keeps sorting by it. Verified on 2026-08-31 on two posts,
+cache ruled out with a URL parameter. **A backdated devlog cannot be put back in order this way** —
+the list is ordered by creation, newest first. Publishing old entries late therefore puts them at the
+top, in reverse version order; the only lever is the order in which they are created, and it costs a
+delete (whose confirmation dialog has frozen a browser session before) to change afterwards.

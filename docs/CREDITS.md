@@ -53,9 +53,9 @@ who will never see the repository.
 
 ⚠ **These four clips were chosen on measurements, not by ear**: duration, attack time, spectral
 centroid and spectral flatness narrowed some 200 candidates to a shortlist (the method is described
-in `docs/gdd/audio.md`). Whether they are *right* is heard, not measured. **They had not been
-listened to as of 2026-08-31** — whoever runs the game with sound first should judge them, and
-swapping one is a matter of dropping another file under the same name.
+in `docs/gdd/audio.md`). Whether they are *right* is heard, not measured. ✅ **Listened to and kept
+by the author on 2026-08-31.** Swapping one remains a matter of dropping another file under the same
+name.
 
 ## Music
 

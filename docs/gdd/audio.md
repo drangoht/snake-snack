@@ -33,6 +33,9 @@ exactly that reason.
 a script can measure — duration, attack time, spectral centroid, noise ratio — only narrows the
 shortlist. Every sound in this system needs someone to listen before it ships.
 
+✅ **Listened to and accepted by the author on 2026-08-31**, after 0.5.0 went out. The measurement
+method therefore has one data point in its favour — it is not proof that it generalises.
+
 ## Where the sounds are produced
 
 **A free CC0 bank, not synthesis** — decided by the author on 2026-08-31, against the recommendation
@@ -87,7 +90,8 @@ turns a quickly-run menu into a rattle. Each role has a window, and outside it a
 ranked at all.
 
 ⚠ **The measurements narrowed the field; they did not choose.** Whether these four are *right* is
-heard. They had not been listened to when they were committed.
+heard. They had not been listened to when they were committed — the author listened afterwards, on
+2026-08-31, and kept them.
 
 ## The music
 
@@ -146,4 +150,4 @@ Design, wiring and clips done 2026-08-31 — `Assets/Scripts/Audio/`, `SceneBuil
 the RMS that actually left the mixer. Measured on 2026-08-31: `0.00000` before, peak `0.17156`
 during. That is the proof the audit alone cannot give.
 
-**Still open**: someone has to listen. And the music, of which there is nothing.
+**Still open**: nothing on the effects — the author has listened and kept them (2026-08-31).
